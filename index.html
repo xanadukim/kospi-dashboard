@@ -3,16 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KOSPI Quant Terminal - Full Restored + Firebase</title>
-<link rel="icon" href="data:,"><script src="https://cdn.tailwindcss.com"></script>
+<title>KOSPI Quant Terminal - Fixed</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root { --font-kr: 'Noto Sans KR', sans-serif; --font-mono: 'JetBrains Mono', monospace; }
 body { font-family: var(--font-kr); background: #f8fafc; }
 .font-mono { font-family: var(--font-mono) !important; }
 .bar-animate { transition: width 0.6s cubic-bezier(0.22,1,0.36,1); }
-.card-hover { transition: all 0.2s; }
-.card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
 .help-overlay { backdrop-filter: blur(8px); background: rgba(15,23,42,0.55); }
 .help-card { animation: helpIn 0.3s ease; }
 @keyframes helpIn { from { opacity:0; transform: translateY(12px) scale(0.98);} to { opacity:1; transform: translateY(0) scale(1);} }
@@ -26,14 +24,14 @@ body { font-family: var(--font-kr); background: #f8fafc; }
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-<!-- Firebase Compat - importmap 없이 동작, 404 에러 없음 -->
+<!-- Firebase Compat - importmap 없이 동작 -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script type="text/babel">
 const { useState, useMemo, useEffect } = React;
 
-// === Firebase 설정 - 사용자 프로젝트 연결 완료 ===
+// === 1. Firebase 설정 - 본인 프로젝트 연결 완료 ===
 const firebaseConfig = {
   apiKey: "AIzaSyDg4-fL22BCdCIJPX4tGFmidGCUwAJ4P_Y",
   authDomain: "kospi-quant.firebaseapp.com",
@@ -47,174 +45,65 @@ const firebaseConfig = {
 let db = null;
 let isFirebaseReady = false;
 try {
-  firebase.initializeApp(firebaseConfig);
-  db = firebase.firestore();
-  isFirebaseReady = true;
-  console.log('Firebase connected');
+  if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    isFirebaseReady = true;
+    console.log('Firebase connected');
+  } else {
+    console.log('Firebase 설정 필요 - Local Mode로 동작');
+  }
 } catch(e) {
-  console.log('Firebase 초기화 실패 - Local Mode', e);
+  console.log('Firebase 미설정 - Local Mode', e);
 }
 
-// === 원본 풀기능 데이터 복구 (첨부파일 Kospi.html 기준) ===
 const industries = [
-  { id: 'elec', name: '전기전자/반도체', short: '전기전자', icon: '◫', r2: 0.91, color: '#2563eb', betas: { SP500: 0.42, 외국인: 0.28, 반도체팩터: 0.35, US10Y: -0.18, 중국PMI: 0.12 }, description: '나스닥 및 외국인 수급에 고베타' },
-  { id: 'auto', name: '자동차/운수장비', short: '자동차', icon: '◩', r2: 0.84, color: '#0f766e', betas: { 원달러: 0.25, WTI: -0.15, SP500: 0.20, 중국PMI: 0.18, US10Y: -0.10 }, description: '환율 및 유가에 민감한 수출주' },
-  { id: 'chem', name: '화학/2차전지', short: '화학·전지', icon: '⬡', r2: 0.79, color: '#9333ea', betas: { 중국PMI: 0.28, WTI: -0.18, 원달러: -0.12, SP500: 0.15, US10Y: -0.12 }, description: '중국 수요 및 원자재 스프레드' },
-  { id: 'fin', name: '금융/증권', short: '금융', icon: '₩', r2: 0.87, color: '#1e293b', betas: { 한미스프레드: 0.35, US10Y: -0.25, 외국인: 0.15, 정책더미: 0.18, SP500: 0.10 }, description: '금리 스프레드 및 정책 모멘텀' },
-  { id: 'bio', name: '바이오/의약품', short: '바이오', icon: '⚕', r2: 0.71, color: '#e11d48', betas: { US10Y: -0.20, SP500: 0.18, 정책더미: 0.15, 원달러: -0.08 }, description: '금리 하락 수혜, 정책 이벤트 드리븐' },
-  { id: 'steel', name: '철강/소재/에너지', short: '철강·소재', icon: '⬣', r2: 0.82, color: '#a16207', betas: { 중국PMI: 0.30, 원달러: 0.20, WTI: 0.12, SP500: 0.10 }, description: '중국 경기 및 달러 강세 수혜' },
-  { id: 'const', name: '건설/조선/기계', short: '건설·조선', icon: '⌖', r2: 0.76, color: '#334155', betas: { 원달러: 0.18, WTI: 0.10, 중국PMI: 0.15, US10Y: -0.08, 정책더미: 0.12 }, description: '수주 사이클 및 인프라 정책' },
-  { id: 'retail', name: '유통/IT서비스', short: '유통·IT', icon: '◎', r2: 0.80, color: '#0891b2', betas: { SP500: 0.22, 외국인: 0.18, 한미스프레드: 0.12, 중국PMI: 0.10 }, description: '내수+플랫폼, 외국인 수급 연동' },
+  { id: 'elec', name: '전기전자/반도체', short: '전기전자', icon: '◫', r2: 0.91, color: '#2563eb', betas: { SP500: 0.42, 외국인: 0.28, 반도체팩터: 0.35, US10Y: -0.18, 중국PMI: 0.12 }, description: '나스닥 및 외국인 수급에 고베타', detail: '삼성전자·SK하이닉스가 지수 60% 설명' },
+  { id: 'auto', name: '자동차/운수장비', short: '자동차', icon: '◩', r2: 0.84, color: '#0f766e', betas: { 원달러: 0.25, WTI: -0.15, SP500: 0.20, 중국PMI: 0.18, US10Y: -0.10 }, description: '환율 및 유가에 민감한 수출주', detail: '원달러 10원 상승 시 영업이익 2% 개선' },
+  { id: 'chem', name: '화학/2차전지', short: '화학·전지', icon: '⬡', r2: 0.79, color: '#9333ea', betas: { 중국PMI: 0.28, WTI: -0.18, 원달러: -0.12, SP500: 0.15 }, description: '중국 수요 및 원자재 스프레드', detail: '중국 PMI 1p 상승 시 +1.5%' },
+  { id: 'fin', name: '금융/증권', short: '금융', icon: '₩', r2: 0.87, color: '#1e293b', betas: { 한미스프레드: 0.35, US10Y: -0.25, 외국인: 0.15, 정책더미: 0.18 }, description: '금리 스프레드 및 정책 모멘텀', detail: '밸류업 최대 수혜' },
+  { id: 'bio', name: '바이오/의약품', short: '바이오', icon: '⚕', r2: 0.71, color: '#e11d48', betas: { US10Y: -0.20, SP500: 0.18, 정책더미: 0.15 }, description: '금리 하락 수혜', detail: 'US10Y 0.5%p 하락 시 +4%' },
+  { id: 'steel', name: '철강/소재/에너지', short: '철강·소재', icon: '⬣', r2: 0.82, color: '#a16207', betas: { 중국PMI: 0.30, 원달러: 0.20, WTI: 0.12 }, description: '중국 경기 및 달러 강세 수혜', detail: '중국 철강 재고 10% 감소 시 +3%' },
 ];
 
-const initialZ = { SP500: 0.85, 외국인: 1.20, 반도체팩터: 1.80, US10Y: -0.60, 중국PMI: 0.45, 원달러: 1.50, WTI: -0.30, 한미스프레드: 0.90, 정책더미: 0.20 };
-
-const factorMeta = {
-  SP500: { label: 'S&P500', unit: 'σ', desc: '전일 수익률 Z' },
-  외국인: { label: '외국인 선물', unit: 'σ', desc: 'KOSPI200 선물 순매수' },
-  반도체팩터: { label: 'SOX / 필라', unit: 'σ', desc: '반도체 지수 모멘텀' },
-  US10Y: { label: 'US 10Y', unit: 'σ', desc: '금리 변동 Z (역방향)' },
-  중국PMI: { label: '중국 PMI', unit: 'σ', desc: 'Caixin 제조업 서프라이즈' },
-  원달러: { label: '원/달러', unit: 'σ', desc: '환율 변동 Z' },
-  WTI: { label: 'WTI', unit: 'σ', desc: '유가 변동 Z' },
-  한미스프레드: { label: '한미 스프레드', unit: 'σ', desc: '10Y-2Y 스프레드' },
-  정책더미: { label: '정책 더미', unit: '', desc: '금리/부양 이벤트' },
-};
-
-const baseWeekly = [
-  { industryId: 'elec', ticker: '005930', name: '삼성전자', score: 8.7, reason: '반도체팩터 +1.8σ, 외국인 +1.2σ', targetFactor: '반도체팩터', expectedReturn: 2.4 },
-  { industryId: 'auto', ticker: '005380', name: '현대차', score: 8.1, reason: '원달러 +1.5σ 수혜, 중국PMI 개선', targetFactor: '원달러', expectedReturn: 1.8 },
-  { industryId: 'chem', ticker: '373220', name: 'LG에너지솔루션', score: 7.4, reason: '중국PMI +0.9σ, WTI 안정', targetFactor: '중국PMI', expectedReturn: 1.2 },
-  { industryId: 'fin', ticker: '105560', name: 'KB금융', score: 8.3, reason: '한미스프레드 +0.9σ 확대', targetFactor: '한미스프레드', expectedReturn: 1.5 },
-  { industryId: 'bio', ticker: '207940', name: '삼성바이오로직스', score: 7.1, reason: 'US10Y -0.6σ 하락 수혜', targetFactor: 'US10Y', expectedReturn: 1.1 },
-  { industryId: 'steel', ticker: '005490', name: 'POSCO홀딩스', score: 7.9, reason: '중국PMI +0.45σ, 원달러 강세', targetFactor: '중국PMI', expectedReturn: 2.1 },
-  { industryId: 'const', ticker: '009540', name: 'HD한국조선해양', score: 8.0, reason: '원달러 +1.5σ, 정책 +0.2σ', targetFactor: '원달러', expectedReturn: 1.9 },
-  { industryId: 'retail', ticker: '035720', name: '카카오', score: 6.8, reason: 'SP500 +0.85σ 연동, 외국인 유입', targetFactor: 'SP500', expectedReturn: 0.9 },
-];
-
-const pastPicks = [
-  { date: '09-15', industry: '전기전자', ticker: '005930', name: '삼성전자', buyPrice: 78200, currentPrice: 80700, returnPct: 3.2, vsKospi: 1.8, status: '성공' },
-  { date: '09-15', industry: '자동차', ticker: '005380', name: '현대차', buyPrice: 244500, currentPrice: 241800, returnPct: -1.1, vsKospi: -0.3, status: '보류' },
-  { date: '09-15', industry: '화학', ticker: '373220', name: 'LG엔솔', buyPrice: 412000, currentPrice: 434300, returnPct: 5.4, vsKospi: 4.0, status: '성공' },
-  { date: '09-15', industry: '금융', ticker: '105560', name: 'KB금융', buyPrice: 78500, currentPrice: 80200, returnPct: 2.2, vsKospi: 0.8, status: '성공' },
-  { date: '09-15', industry: '바이오', ticker: '207940', name: '삼성바이오', buyPrice: 985000, currentPrice: 972000, returnPct: -1.3, vsKospi: -0.5, status: '보류' },
-  { date: '09-15', industry: '철강', ticker: '005490', name: 'POSCO홀딩스', buyPrice: 368000, currentPrice: 382500, returnPct: 3.9, vsKospi: 2.5, status: '성공' },
-  { date: '09-15', industry: '건설', ticker: '009540', name: 'HD조선해양', buyPrice: 172000, currentPrice: 169500, returnPct: -1.5, vsKospi: -0.8, status: '실패' },
-  { date: '09-15', industry: '유통', ticker: '035720', name: '카카오', buyPrice: 51200, currentPrice: 52700, returnPct: 2.9, vsKospi: 1.5, status: '성공' },
-];
-
-function HelpModal({ open, onClose }) {
-  const [tab, setTab] = useState('model');
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 help-overlay flex items-center justify-center p-4" onClick={onClose}>
-      <div className="help-card bg-white rounded-[16px] max-w-[820px] w-full max-h-[85vh] overflow-hidden shadow-2xl" onClick={e=>e.stopPropagation()}>
-        <div className="h-[56px] px-5 flex items-center justify-between border-b">
-          <div className="flex items-center gap-2"><span className="w-7 h-7 rounded-lg bg-[#0f172a] text-white flex items-center justify-center text-[12px] font-bold">?</span><span className="font-bold text-[14px]">처음 오셨나요? 3분 가이드</span></div>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-slate-100">✕</button>
-        </div>
-        <div className="flex gap-1 p-2 bg-slate-50 border-b">
-          {[{id:'model', l:'KOSPI 모델이란?'},{id:'industry', l:'산업별 지수'},{id:'factor', l:'팩터 설명'},{id:'firebase', l:'Firebase & 에러'}].map(t=>(
-            <button key={t.id} onClick={()=>setTab(t.id)} className={`px-3 h-8 rounded-[8px] text-[12px] font-semibold ${tab===t.id?'bg-white shadow text-slate-900':'text-slate-500'}`}>{t.l}</button>
-          ))}
-        </div>
-        <div className="p-5 overflow-y-auto max-h-[60vh] text-[13px] leading-relaxed space-y-3">
-          {tab==='model' && (
-            <div className="space-y-3">
-              <h3 className="font-bold text-[15px]">KOSPI 10요인 회귀모델이란?</h3>
-              <p>KOSPI 일간 수익률을 10개 거시 팩터로 설명하는 OLS 모델입니다. R² 0.89로, 어제 S&P500, 외국인 수급, 미국 10년물 등으로 오늘 KOSPI 방향의 89%를 설명합니다.</p>
-              <div className="bg-slate-50 border rounded-[10px] p-3 font-mono text-[11px]">KOSPI = 0.029 + 0.348*SP500 + 0.272*외국인 + 0.192*반도체 -0.150*원달러 -0.096*금리 + ...</div>
-            </div>
-          )}
-          {tab==='industry' && (
-            <div className="space-y-2">
-              {industries.map(ind=>(
-                <div key={ind.id} className="border rounded-[10px] p-3"><div className="font-bold">{ind.icon} {ind.name} - R² {ind.r2}</div><div className="text-slate-600 mt-1 text-[12px]">β: {Object.entries(ind.betas).map(([k,v])=>`${k} ${v}`).join(', ')}</div></div>
-              ))}
-            </div>
-          )}
-          {tab==='factor' && (
-            <div className="space-y-2">
-              {Object.entries(factorMeta).map(([k,v])=>(
-                <div key={k} className="border-b py-2"><div className="font-bold">{v.label} <span className="font-mono text-[10px] bg-slate-100 px-1.5 py-0.5 rounded ml-2">{v.unit}</span></div><div className="text-slate-600 mt-1">{v.desc}</div></div>
-              ))}
-            </div>
-          )}
-          {tab==='firebase' && (
-            <div className="space-y-3">
-              <h3 className="font-bold">에러 처리 가이드</h3>
-              <div className="bg-[#0f172a] text-white rounded-[10px] p-3 font-mono text-[11px] leading-relaxed">
-                1. app.js 404 / Unexpected token '&lt;'<br/>
-                → JSX를 외부 파일로 src="./app.js" 로 불러오면 발생<br/>
-                → 해결: 이 파일처럼 &lt;script type="text/babel"&gt;...&lt;/script&gt; 인라인<br/><br/>
-                2. Firestore 문서를 로드하는 중에 오류<br/>
-                → 규칙이 allow read, write: if false 이면 발생<br/>
-                → Firestore &gt; 규칙 &gt; if true 로 변경 후 게시<br/><br/>
-                3. zScores number → double<br/>
-                → 콘솔에서 number 선택 시 double 선택 (소수 저장)<br/>
-                collections:<br/>
-                - factor_snapshots / 2026-09-25 : SP500 0.85, ...}<br/>
-                - model_versions / v1.2<br/>
-                - weekly_picks / 2026-W38
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
+const initialZ = { SP500: 0.85, 외국인: 1.2, 반도체팩터: 1.8, US10Y: -0.6, 중국PMI: 0.45, 원달러: 1.5, WTI: -0.3, 한미스프레드: 0.9, 정책더미: 0.2 };
 
 function App() {
-  const [selectedIndustry, setSelectedIndustry] = useState('elec');
-  const [activeTab, setActiveTab] = useState('model');
+  const [selected, setSelected] = useState('elec');
+  const [showHelp, setShowHelp] = useState(false);
   const [zScores, setZScores] = useState(initialZ);
-  const [weeklyPicks, setWeeklyPicks] = useState(baseWeekly);
-  const [lastUpdate, setLastUpdate] = useState('07:30 KST');
   const [history, setHistory] = useState([]);
   const [selectedDate, setSelectedDate] = useState('2026-09-26');
   const [loadError, setLoadError] = useState(null);
-  const [showHelp, setShowHelp] = useState(false);
 
-  const currentIndustry = useMemo(() => industries.find(i => i.id === selectedIndustry), [selectedIndustry]);
-
-  const contributions = useMemo(() => {
-    const entries = Object.entries(currentIndustry.betas);
-    return entries.map(([k, beta]) => {
-      const z = zScores[k] ?? 0;
-      return { factor: k, beta, z, contrib: beta * z };
-    }).sort((a,b) => Math.abs(b.contrib) - Math.abs(a.contrib));
-  }, [currentIndustry, zScores]);
-
-  const totalPred = useMemo(() => contributions.reduce((s,c) => s + c.contrib, 0), [contributions]);
-
-  // Firebase 실시간 구독 - 에러 처리 포함
   useEffect(()=>{
     if(!db) return;
+    // Firestore 실시간 구독
     const unsub = db.collection('factor_snapshots').orderBy('date','desc').limit(30)
       .onSnapshot(snap=>{
         const arr = snap.docs.map(d=>d.data());
         setHistory(arr);
+        if(arr.length>0) {
+          // 가장 최신 데이터로 zScores 업데이트
+          // setZScores(arr[0].zScores);
+        }
         setLoadError(null);
-        console.log(`Firebase ${arr.length}개 로드됨`);
       }, err=>{
-        console.error('Firestore 로드 에러', err);
-        setLoadError(`Firestore 로드 실패: ${err.message}. 규칙을 확인하세요: Firestore > 규칙 > allow read, write: if true 로 게시 필요`);
+        console.error(err);
+        setLoadError('문서를 로드하는 중에 오류가 발생했습니다. 규칙을 확인하세요: Firestore > 규칙 > allow read, write: if true');
       });
     return ()=>unsub();
   },[]);
 
-  const randomize = () => {
-    const newZ = {};
-    Object.keys(initialZ).forEach(k => { newZ[k] = +(Math.random()*4 -2).toFixed(2); });
-    setZScores(newZ);
-    setLastUpdate(new Date().toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit' }) + ' KST');
-    setWeeklyPicks(prev => prev.map(p => ({ ...p, score: +(Math.random()*2 + 6.5).toFixed(1), expectedReturn: +(Math.random()*2 + 0.5).toFixed(1) })));
-  };
+  const current = useMemo(()=> industries.find(i=>i.id===selected), [selected]);
+  const contrib = useMemo(()=>{
+    return Object.entries(current.betas).map(([k,b])=>({k,b,z:zScores[k]||0, c:b*(zScores[k]||0)})).sort((a,b)=>Math.abs(b.c)-Math.abs(a.c));
+  }, [current, zScores]);
+  const total = useMemo(()=> contrib.reduce((s,x)=>s+x.c,0), [contrib]);
 
   const saveToFirebase = async () => {
     if(!db) { 
-      alert('Firebase 설정이 필요합니다. firebaseConfig를 확인하세요'); 
+      alert('Firebase 설정이 필요합니다. 코드 상단 firebaseConfig를 본인 프로젝트로 교체하세요'); 
       return; 
     }
     const today = new Date().toISOString().slice(0,10);
@@ -222,43 +111,36 @@ function App() {
       await db.collection('factor_snapshots').doc(today).set({ 
         date: today, 
         zScores, 
-        rawValues: { SP500: 5780.12, US10Y: 4.72, USD_KRW: 1382.5, WTI: 72.3 },
-        weeklyPicks,
+        rawValues: { SP500: 5780.12, US10Y: 4.72, USD_KRW: 1382.5 },
         createdAt: firebase.firestore.FieldValue.serverTimestamp() 
       });
-      alert(`Firebase에 ${today} 저장 완료! Firestore에서 확인하세요.`);
+      alert(`Firebase에 ${today} 저장 완료!`);
     } catch(e) {
-      alert(`저장 실패: ${e.message}\n\n1. Firestore 규칙 확인: allow read, write: if true\n2. 네트워크 확인\n3. 프로젝트 ID: kospi-quant`);
+      alert('저장 실패: '+ e.message + '\n\n규칙을 확인하세요: Firestore > 규칙 탭 > allow read, write: if true');
     }
   };
 
-  const loadHistorical = (date) => {
-    setSelectedDate(date);
-    const found = history.find(h=>h.date===date);
-    if(found && found.zScores) {
-      setZScores(found.zScores);
-      if(found.weeklyPicks) setWeeklyPicks(found.weeklyPicks);
-      setLastUpdate(`${date} Firebase 복원`);
-    }
+  const randomize = () => {
+    const newZ = {};
+    Object.keys(initialZ).forEach(k=>{ newZ[k] = +(Math.random()*4-2).toFixed(2); });
+    setZScores(newZ);
   };
 
   return (
     <div className="min-h-screen">
-      {/* Header - 풀기능 복구 */}
       <header className="sticky top-0 z-20 bg-white border-b border-slate-200">
         <div className="max-w-[1280px] mx-auto px-4 h-[56px] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-[#0f172a] text-white flex items-center justify-center font-bold text-[12px]">KQ</div>
             <div>
               <div className="text-[13px] font-bold leading-none">KOSPI Quant Terminal</div>
-              <div className="text-[10px] font-mono text-slate-500 mt-0.5">Full v2.4 • {isFirebaseReady?'Firebase Live':'Local Mode'} • {lastUpdate}</div>
+              <div className="text-[10px] font-mono text-slate-500 mt-0.5">Firebase Fixed • {isFirebaseReady?'Firebase Live':'Local Mode'}</div>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={()=>setShowHelp(true)} className="h-8 px-3 rounded-lg bg-slate-100 text-[12px] font-semibold">? 도움말</button>
             <button onClick={randomize} className="h-8 px-3 rounded-lg bg-white border border-slate-200 text-[12px] font-semibold">팩터 랜덤</button>
             <button onClick={saveToFirebase} className="h-8 px-3 rounded-lg bg-emerald-600 text-white text-[12px] font-semibold">Firebase 저장</button>
-            <span className={`text-[11px] font-mono px-2.5 py-1 rounded-full border ${isFirebaseReady?'bg-emerald-50 border-emerald-200 text-emerald-700':'bg-slate-100 border-slate-200 text-slate-500'}`}>● {isFirebaseReady?'Firebase Live':'Local'}</span>
           </div>
         </div>
       </header>
@@ -266,9 +148,9 @@ function App() {
       {loadError && (
         <div className="max-w-[1280px] mx-auto mt-3 px-4">
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-[10px] p-3 text-[12px]">
-            <b>⚠️ Firestore 에러:</b> {loadError}
+            <b>오류:</b> {loadError}
             <div className="mt-2 font-mono text-[11px] bg-white border rounded p-2">
-              해결: Firebase Console &gt; Firestore &gt; 규칙 탭 &gt; 아래로 교체 후 [게시]<br/>
+              Firestore &gt; 규칙 탭 &gt; 아래로 교체 후 [게시]<br/>
               rules_version = '2';<br/>
               service cloud.firestore &#123;<br/>
               &nbsp;&nbsp;match /databases/&#123;database&#125;/documents &#123;<br/>
@@ -281,27 +163,27 @@ function App() {
       )}
 
       <div className="max-w-[1280px] mx-auto p-4 grid grid-cols-12 gap-4">
-        {/* Sidebar - 풀기능 복구 */}
         <aside className="col-span-12 lg:col-span-3">
           <div className="bg-white rounded-[12px] border border-slate-200 p-3">
             <div className="text-[11px] font-bold tracking-widest text-slate-500 mb-2">INDUSTRIES (R² 높은 순)</div>
-            {industries.slice().sort((a,b)=>b.r2-a.r2).map(ind=>(
-              <button key={ind.id} onClick={()=>setSelectedIndustry(ind.id)} className={`w-full text-left flex justify-between items-center rounded-[10px] px-3 py-2.5 mb-1.5 border transition ${selectedIndustry===ind.id?'bg-slate-900 text-white border-slate-900':'bg-white border-slate-200 hover:border-slate-300'}`}>
+            {industries.sort((a,b)=>b.r2-a.r2).map(ind=>(
+              <button key={ind.id} onClick={()=>setSelected(ind.id)} className={`w-full text-left flex justify-between items-center rounded-[10px] px-3 py-2.5 mb-1.5 border transition ${selected===ind.id?'bg-slate-900 text-white border-slate-900':'bg-white border-slate-200 hover:border-slate-300'}`}>
                 <span className="text-[12px] font-semibold">{ind.icon} {ind.short}</span>
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/20 border">R² {ind.r2}</span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/20">R² {ind.r2}</span>
               </button>
             ))}
           </div>
           
           <div className="mt-3 bg-white rounded-[12px] border border-slate-200 p-3">
-            <div className="text-[11px] font-bold">타임머신 - 과거 팩터 복원</div>
+            <div className="text-[11px] font-bold">타임머신 - 과거 팩터</div>
             <div className="mt-2 flex gap-1 overflow-x-auto pb-2">
-              {['2026-09-26','2026-09-25','2026-09-24','2026-08-15','2026-03-12'].map(d=>{
-                const exists = history.find(h=>h.date===d);
-                return (
-                  <button key={d} onClick={()=>loadHistorical(d)} className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-mono border ${selectedDate===d?'bg-[#0f172a] text-white border-[#0f172a]': exists?'bg-emerald-50 border-emerald-200 text-emerald-700':'bg-white border-slate-200'}`}>{d} {exists?'✓':''}</button>
-                )
-              })}
+              {['2026-09-26','2026-09-25','2026-09-24','2026-08-15','2026-03-12'].map(d=>(
+                <button key={d} onClick={()=>{
+                  setSelectedDate(d);
+                  const found = history.find(h=>h.date===d);
+                  if(found && found.zScores) setZScores(found.zScores);
+                }} className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-mono border ${selectedDate===d?'bg-[#0f172a] text-white border-[#0f172a]':'bg-white border-slate-200'}`}>{d}</button>
+              ))}
             </div>
             <div className="text-[10px] text-slate-500 mt-1">선택: {selectedDate} {history.find(h=>h.date===selectedDate)?'✓ Firebase에서 불러옴':'- 로컬 데이터'}</div>
             {history.length>0 && <div className="mt-2 text-[10px] font-mono bg-slate-50 border rounded p-2">Firebase 저장 {history.length}개 로드됨</div>}
@@ -311,147 +193,79 @@ function App() {
             <div className="text-[11px] font-bold mb-2">zScores (number → double)</div>
             {Object.entries(zScores).map(([k,v])=>(
               <div key={k} className="flex items-center gap-2 py-1">
-                <div className="w-[88px] text-[11px] font-semibold">{factorMeta[k]?.label || k}</div>
+                <div className="w-[88px] text-[11px] font-semibold">{k}</div>
                 <input type="number" step="0.01" value={v} onChange={e=>setZScores({...zScores, [k]: parseFloat(e.target.value)||0})} className="flex-1 h-7 px-2 rounded border border-slate-200 text-[11px] font-mono" />
-                <div className="text-[10px] text-slate-400">σ</div>
+                <div className="text-[10px] text-slate-400">double</div>
               </div>
             ))}
-            <div className="mt-2 text-[10px] text-slate-500">소수는 <b>double</b> 유형으로 저장 (Firestore에서 number 선택 시 double)</div>
+            <div className="mt-2 text-[10px] text-slate-500">0.85 같은 소수는 무조건 <b>double</b> 유형으로 저장</div>
           </div>
         </aside>
 
-        {/* Main - 탭 3개 풀기능 복구 */}
         <main className="col-span-12 lg:col-span-9">
-          {/* Tab Navigation - 첨부파일 기능 복구 */}
-          <div className="bg-white rounded-[12px] border border-slate-200 p-2 flex gap-1">
-            {[
-              { id: 'model', label: '산업 회귀모델', sub: 'Today' },
-              { id: 'picks', label: '월요일 추천', sub: 'Monday Picks' },
-              { id: 'track', label: '성과 추적', sub: 'Track Record' }
-            ].map(tab=>(
-              <button key={tab.id} onClick={()=>setActiveTab(tab.id)} className={`flex-1 h-10 rounded-[8px] text-[12px] font-semibold flex flex-col items-center justify-center ${activeTab===tab.id?'bg-[#0f172a] text-white':'text-slate-500 hover:bg-slate-50'}`}>
-                <span>{tab.label}</span>
-                <span className="text-[9px] font-mono opacity-60">{tab.sub}</span>
-              </button>
-            ))}
+          <div className="bg-white rounded-[12px] border border-slate-200 p-4">
+            <div className="flex justify-between items-start">
+              <div>
+                <h2 className="text-[16px] font-bold">{current.name} <span className="font-mono text-[11px] bg-slate-100 px-2 py-0.5 rounded ml-2">R² {current.r2}</span></h2>
+                <p className="text-[12px] text-slate-500 mt-1">{current.description} • {current.detail}</p>
+              </div>
+              <div className="text-right">
+                <div className="text-[11px] text-slate-500">오늘 산업 예측</div>
+                <div className={`text-[22px] font-mono font-bold ${total>=0?'text-emerald-600':'text-red-600'}`}>{total>=0?'+':''}{total.toFixed(3)}σ</div>
+                <div className="text-[11px] font-mono text-slate-500">≈ {(total*1.2).toFixed(2)}%</div>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <div className="text-[11px] font-bold tracking-widest text-slate-500 mb-2">FACTOR BETA × Z-SCORE = CONTRIBUTION</div>
+              {contrib.map(c=>(
+                <div key={c.k} className="flex items-center gap-2 py-2 border-b border-slate-100 last:border-0">
+                  <div className="w-[88px] text-[11px] font-semibold">{c.k}</div>
+                  <div className="w-[44px] text-[10px] font-mono text-slate-500">β {c.b.toFixed(2)}</div>
+                  <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div className={`h-2 rounded-full bar-animate ${c.c>=0?'bg-emerald-500':'bg-red-500'}`} style={{ width: `${Math.min(100, Math.abs(c.c)*50)}%` }} />
+                  </div>
+                  <div className="w-[48px] text-[10px] font-mono text-center">{(c.z).toFixed(2)}σ</div>
+                  <div className={`w-[72px] text-right text-[11px] font-mono font-bold ${c.c>=0?'text-emerald-600':'text-red-600'}`}>{c.c>=0?'+':''}{c.c.toFixed(3)}σ</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 rounded-[10px] bg-slate-50 border border-slate-200 p-3">
+              <div className="text-[11px] font-bold">회귀식 (산업별)</div>
+              <div className="font-mono text-[10px] leading-relaxed mt-2 text-slate-700 break-all">
+                {current.name} = {Object.entries(current.betas).map(([k,b])=> `${b>0?'+':''}${b.toFixed(2)}*${k}`).join(' ')} + ε (R² {current.r2})
+              </div>
+              <div className="mt-2 text-[11px] text-slate-500">가장 영향 큰 팩터: <b className="text-slate-900">{contrib[0]?.k}</b> (기여도 {contrib[0]?.c.toFixed(3)}σ)</div>
+            </div>
           </div>
 
-          {activeTab==='model' && (
-            <div className="mt-3 bg-white rounded-[12px] border border-slate-200 p-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className="text-[16px] font-bold">{currentIndustry.name} <span className="font-mono text-[11px] bg-slate-100 px-2 py-0.5 rounded ml-2">R² {currentIndustry.r2}</span></h2>
-                  <p className="text-[12px] text-slate-500 mt-1">{currentIndustry.description} • R² {currentIndustry.r2} - {currentIndustry.betas ? Object.keys(currentIndustry.betas).length+'개 팩터' : ''}</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-[11px] text-slate-500">오늘 산업 예측</div>
-                  <div className={`text-[20px] font-mono font-bold ${totalPred>=0?'text-emerald-600':'text-red-600'}`}>{totalPred>=0?'+':''}{totalPred.toFixed(3)}σ</div>
-                  <div className="text-[11px] font-mono text-slate-500">≈ {(totalPred*1.2).toFixed(2)}%</div>
-                </div>
-              </div>
-
-              <div className="mt-4 grid grid-cols-12 gap-3">
-                <div className="col-span-12 md:col-span-7">
-                  <div className="text-[11px] font-bold tracking-widest text-slate-500 mb-2">FACTOR BETA × Z-SCORE = CONTRIBUTION</div>
-                  {contributions.map(c => (
-                    <div key={c.factor} className="flex items-center gap-2 py-2 border-b border-slate-100 last:border-0">
-                      <div className="w-[88px] text-[11px] font-semibold">{factorMeta[c.factor]?.label || c.factor}</div>
-                      <div className="w-[44px] text-[10px] font-mono text-slate-500">β {c.beta.toFixed(2)}</div>
-                      <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div className={`h-2 rounded-full bar-animate ${c.contrib>=0?'bg-emerald-500':'bg-red-500'}`} style={{ width: `${Math.min(100, Math.abs(c.contrib)*50)}%` }} />
-                      </div>
-                      <div className={`w-[72px] text-right text-[11px] font-mono font-bold ${c.contrib>=0?'text-emerald-600':'text-red-600'}`}>{c.contrib>=0?'+':''}{c.contrib.toFixed(3)}σ</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="col-span-12 md:col-span-5">
-                  <div className="rounded-[10px] bg-slate-50 border border-slate-200 p-3">
-                    <div className="text-[11px] font-bold">회귀식</div>
-                    <div className="font-mono text-[10px] leading-relaxed mt-2 text-slate-700 break-all">
-                      {currentIndustry.name} = {Object.entries(currentIndustry.betas).map(([k,b])=> `${b>0?'+':''}${b.toFixed(2)}*${k}`).join(' ')} + ε
-                    </div>
-                    <div className="mt-3 text-[11px] text-slate-500">해석: 이 산업은 <b className="text-slate-900">{contributions[0]?.factor}</b>에 가장 민감합니다. {factorMeta[contributions[0]?.factor]?.desc}</div>
-                  </div>
-                  <div className="mt-3 rounded-[10px] bg-[#0f172a] text-white p-3">
-                    <div className="text-[11px] font-bold">Firebase 연동 상태</div>
-                    <div className="mt-1 text-[10px] text-slate-300 leading-relaxed">
-                      저장된 스냅샷: {history.length}개<br/>
-                      현재 선택: {selectedDate}<br/>
-                      RawValues: SP500 5780, US10Y 4.72% 등 double 저장
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab==='picks' && (
-            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-              {weeklyPicks.map(p => {
-                const ind = industries.find(i=>i.id===p.industryId);
-                return (
-                  <div key={p.ticker} className="bg-white rounded-[12px] border border-slate-200 p-3 card-hover">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[12px]">{ind?.icon}</span>
-                        <span className="text-[11px] font-bold">{ind?.short}</span>
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100">{p.ticker}</span>
-                      </div>
-                      <span className="text-[11px] font-mono font-bold px-2 py-1 rounded bg-[#0f172a] text-white">Score {p.score}</span>
-                    </div>
-                    <div className="mt-2 text-[14px] font-bold">{p.name}</div>
-                    <div className="text-[11px] text-slate-500 mt-1">{p.reason}</div>
-                    <div className="mt-2 flex items-center gap-2 text-[11px] font-mono">
-                      <span className="px-2 py-1 rounded bg-emerald-50 border border-emerald-200 text-emerald-700">예상 +{p.expectedReturn}%</span>
-                      <span className="text-slate-400">Target: {p.targetFactor}</span>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-
-          {activeTab==='track' && (
-            <div className="mt-3 bg-white rounded-[12px] border border-slate-200 overflow-hidden">
-              <div className="p-3 flex items-center justify-between border-b">
-                <h3 className="text-[13px] font-bold">지난주 추천 성과 (09-15 → 09-22)</h3>
-                <span className="text-[11px] font-mono px-2 py-1 rounded bg-emerald-50 border border-emerald-200">평균 +1.84% • KOSPI 대비 +1.21%p • Hit 5/8</span>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-[11px]">
-                  <thead className="bg-slate-50 text-slate-500 font-mono text-[10px]">
-                    <tr><th className="text-left px-3 py-2">산업</th><th className="text-left px-3 py-2">종목</th><th className="text-right px-3 py-2">추천가</th><th className="text-right px-3 py-2">현재가</th><th className="text-right px-3 py-2">수익률</th><th className="text-right px-3 py-2">vs KOSPI</th><th className="text-left px-3 py-2">상태</th></tr>
-                  </thead>
-                  <tbody>
-                    {pastPicks.map(r => (
-                      <tr key={r.ticker} className="border-t border-slate-100">
-                        <td className="px-3 py-2.5">{r.industry}</td>
-                        <td className="px-3 py-2.5 font-semibold">{r.name} <span className="font-mono text-[10px] text-slate-400 ml-1">{r.ticker}</span></td>
-                        <td className="px-3 py-2.5 text-right font-mono">{r.buyPrice.toLocaleString()}</td>
-                        <td className="px-3 py-2.5 text-right font-mono">{r.currentPrice.toLocaleString()}</td>
-                        <td className={`px-3 py-2.5 text-right font-mono font-bold ${r.returnPct>=0?'text-emerald-600':'text-red-600'}`}>{r.returnPct>0?'+':''}{r.returnPct}%</td>
-                        <td className={`px-3 py-2.5 text-right font-mono ${r.vsKospi>=0?'text-emerald-600':'text-red-600'}`}>{r.vsKospi>0?'+':''}{r.vsKospi}%p</td>
-                        <td className="px-3 py-2.5"><span className={`px-1.5 py-0.5 rounded text-[10px] ${r.status==='성공'?'bg-emerald-50 text-emerald-700 border border-emerald-200': r.status==='실패'?'bg-red-50 text-red-700 border border-red-200':'bg-slate-100 text-slate-600 border'}`}>{r.status}</span></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
           <div className="mt-4 bg-[#0f172a] text-white rounded-[12px] p-4">
-            <div className="text-[12px] font-bold">에러 처리 완료 내역</div>
-            <div className="mt-2 text-[11px] leading-relaxed text-slate-300 grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div><b className="text-white">✅ 404 app.js</b><br/>외부 JSX 파일 src로 로드 시 발생 → 인라인 &lt;script type="text/babel"&gt;로 해결</div>
-              <div><b className="text-white">✅ Firestore 로드 실패</b><br/>규칙이 if false 이면 발생 → if true 로 게시 후 해결, onSnapshot 에러 핸들러 추가</div>
-              <div><b className="text-white">✅ zScores double</b><br/>number 0.85 저장 시 int64 → double 선택, parseFloat 처리</div>
+            <div className="text-[12px] font-bold">이번 오류 해결 요약</div>
+            <div className="mt-2 text-[11px] leading-relaxed text-slate-300">
+              <b className="text-white">1. app.js:48 Unexpected token '&lt;'</b> → JSX를 별도 파일로 <code className="bg-white/10 px-1 rounded">src="./app.js"</code> 로 불러오면 Babel이 변환하기 전에 브라우저가 &lt;를 만나 터집니다. <br/>
+              해결: 이 파일처럼 <code className="bg-white/10 px-1 rounded">&lt;script type="text/babel"&gt;...JSX...&lt;/script&gt;</code> 로 인라인으로 넣어야 합니다.<br/><br/>
+              <b className="text-white">2. 문서를 로드하는 중에 오류</b> → Firestore 규칙이 <code className="bg-white/10 px-1 rounded">allow read, write: if false</code>이면 콘솔에서도 못 읽습니다. 규칙 탭에서 <code className="bg-white/10 px-1 rounded">if true</code>로 변경 후 새로고침.
             </div>
           </div>
         </main>
       </div>
 
-      <HelpModal open={showHelp} onClose={()=>setShowHelp(false)} />
+      {showHelp && (
+        <div className="fixed inset-0 z-50 help-overlay flex items-center justify-center p-4" onClick={()=>setShowHelp(false)}>
+          <div className="help-card bg-white rounded-[16px] max-w-[720px] w-full max-h-[80vh] overflow-hidden shadow-2xl" onClick={e=>e.stopPropagation()}>
+            <div className="h-[56px] px-5 flex items-center justify-between border-b">
+              <span className="font-bold text-[14px]">KOSPI Quant 도움말</span>
+              <button onClick={()=>setShowHelp(false)} className="w-8 h-8 rounded-full bg-slate-100">✕</button>
+            </div>
+            <div className="p-5 text-[13px] leading-relaxed space-y-3 overflow-y-auto max-h-[60vh]">
+              <p><b>zScores &gt; SP500 : number 0.85</b> 에서 number는 콘솔에서 <b>double</b>을 선택하세요. int64는 정수만, double은 소수까지 됩니다.</p>
+              <p><b>저장 버튼이 안 눌릴 때</b>: 문서 ID가 비었거나, 필드 이름이 빈 줄이 있으면 비활성화됩니다. 빈 줄은 ⊖로 삭제.</p>
+              <p><b>Firebase 설정</b>: 코드 상단 firebaseConfig를 본인 프로젝트 설정으로 교체 후 Firebase Hosting에 배포하면 됩니다.</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
