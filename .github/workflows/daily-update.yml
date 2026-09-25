@@ -1,0 +1,26 @@
+name: Daily KOSPI Auto Update - Cloud Only
+
+on:
+  schedule:
+    - cron: '30 22 * * 0-4'  # UTC 22:30 = KST 07:30 평일
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install firebase-admin yfinance
+
+      - name: Run daily update
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: python scripts/daily_update.py
