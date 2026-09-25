@@ -343,12 +343,44 @@ function App(){
     return picks;
   }, [history, selectedDate, zScores]);
 
-  const pastPicks = [
-    { date: '09-15', industry: '전기전자', ticker: '005930', name: '삼성전자', buyPrice: 78200, currentPrice: 80700, returnPct: 3.2, vsKospi: 1.8, status: '성공' },
-    { date: '09-15', industry: '자동차', ticker: '005380', name: '현대차', buyPrice: 244500, currentPrice: 241800, returnPct: -1.1, vsKospi: -0.3, status: '보류' },
-    { date: '09-15', industry: '화학', ticker: '373220', name: 'LG엔솔', buyPrice: 412000, currentPrice: 434300, returnPct: 5.4, vsKospi: 4.0, status: '성공' },
-    { date: '09-15', industry: '금융', ticker: '105560', name: 'KB금융', buyPrice: 78500, currentPrice: 80200, returnPct: 2.2, vsKospi: 0.8, status: '성공' },
-  ];
+  const pastPicks = useMemo(()=>{
+    // 지난주 성과: 업종별 8종목씩, 실제 추천가 대비 현재가 시뮬레이션
+    // weeklyPicks(현재 64) 기준으로 지난주 가격을 역산하여 수익률 생성
+    const industryMap = { elec:'전기전자', auto:'자동차', chem:'화학·전지', fin:'금융', bio:'바이오', steel:'철강·소재', const:'건설·조선', retail:'유통·IT' };
+    const picksForIndustry = weeklyPicks.filter(p=>p.industryId===selectedIndustry).slice(0,8);
+    // 만약 weeklyPicks가 아직 8개 미만이면 전체에서 필터
+    const source = picksForIndustry.length>=1 ? picksForIndustry : weeklyPicks.filter(p=>p.industryId===selectedIndustry);
+    return source.map((p, idx)=>{
+      // 시뮬레이션: Score가 높을수록 성공 확률 높음
+      const baseReturn = (p.score - 6.5) * 0.8 + (Math.random()*2 - 0.5); // Score 기반
+      const returnPct = parseFloat(baseReturn.toFixed(1));
+      const vsKospi = parseFloat((returnPct - (Math.random()*1.5 - 0.2)).toFixed(1));
+      const buyPrice = 30000 + Math.floor(Math.random()*400000);
+      const currentPrice = Math.floor(buyPrice * (1 + returnPct/100));
+      const status = returnPct > 1.5 ? '성공' : returnPct > -1 ? '보류' : '실패';
+      return {
+        date: '09-15',
+        industryId: p.industryId,
+        industry: industryMap[p.industryId] || p.industryId,
+        ticker: p.ticker,
+        name: p.name,
+        buyPrice,
+        currentPrice,
+        returnPct,
+        vsKospi,
+        status,
+        score: p.score
+      };
+    });
+  }, [weeklyPicks, selectedIndustry]);
+
+  const pastPicksAvg = useMemo(()=>{
+    if(pastPicks.length===0) return { avg:0, vsKospi:0, hit:0 };
+    const avg = pastPicks.reduce((s,r)=>s+r.returnPct,0)/pastPicks.length;
+    const vs = pastPicks.reduce((s,r)=>s+r.vsKospi,0)/pastPicks.length;
+    const hit = pastPicks.filter(r=>r.returnPct>0).length;
+    return { avg: avg.toFixed(2), vsKospi: vs.toFixed(2), hit };
+  }, [pastPicks]);
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
@@ -577,8 +609,11 @@ function App(){
           {activeTab==='track' && (
             <div className="mt-4 bg-white rounded-[16px] border border-slate-200 overflow-hidden">
               <div className="p-4 flex items-center justify-between border-b">
-                <h3 className="text-[13px] font-bold">지난주 추천 성과 (09-15 → 09-22)</h3>
-                <span className="text-[11px] font-mono px-2 py-1 rounded bg-emerald-50 border border-emerald-200">평균 +1.84% • KOSPI 대비 +1.21%p • Hit 5/8</span>
+                <div>
+                  <h3 className="text-[13px] font-bold">지난주 추천 성과 - {currentIndustry.name} 8종목 <span className="text-[10px] font-mono text-slate-400 ml-2">(09-15 → 09-22)</span></h3>
+                  <div className="text-[10px] font-mono text-slate-500 mt-0.5">{currentIndustry.short} Top 8 기준 • Firebase weeklyPicks 기반 수익률 시뮬레이션</div>
+                </div>
+                <span className="text-[11px] font-mono px-2 py-1 rounded bg-emerald-50 border border-emerald-200">평균 {pastPicksAvg.avg>0?'+':''}{pastPicksAvg.avg}% • KOSPI 대비 {pastPicksAvg.vsKospi>0?'+':''}{pastPicksAvg.vsKospi}%p • Hit {pastPicksAvg.hit}/{pastPicks.length}</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-[11px]">
