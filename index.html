@@ -86,6 +86,53 @@ const getDayName = (dateStr) => {
   } catch { return ''; }
 };
 
+
+function HistoryModal({ open, onClose, history, selectedDate, onSelect }){
+  if(!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 help-overlay flex items-center justify-center p-4" onClick={onClose}>
+      <div className="help-card bg-white rounded-[20px] max-w-[520px] w-full max-h-[85vh] overflow-auto p-6" onClick={e=>e.stopPropagation()}>
+        <div className="flex items-center justify-between sticky top-0 bg-white pb-3 border-b">
+          <h2 className="text-[16px] font-bold">📅 이전 저장 자료 불러오기 • 아카이브</h2>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200">✕</button>
+        </div>
+        <div className="mt-4">
+          <div className="text-[11px] font-mono text-slate-500 mb-3">Firebase factor_snapshots 컬렉션 • 최근 {history.length}개 • 매일 07:30 KST 자동 저장</div>
+          <div className="space-y-2">
+            {history.length===0 && <div className="text-[13px] text-slate-400 py-8 text-center">저장된 자료 없음 • Local Mode</div>}
+            {history.map((doc, idx)=>{
+              const isSelected = doc.date===selectedDate;
+              const dateObj = new Date(doc.date + 'T12:00:00');
+              const dayStr = ['일','월','화','수','목','금','토'][dateObj.getDay()];
+              return (
+                <button key={doc.date} onClick={()=>{onSelect(doc.date); onClose();}} className={`w-full text-left rounded-[12px] border p-3 flex items-center justify-between transition ${isSelected?'bg-[#0f172a] text-white border-[#0f172a]':'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-[10px] flex flex-col items-center justify-center ${isSelected?'bg-white/10':'bg-slate-100'}`}>
+                      <span className="text-[10px] font-mono">{doc.date.slice(5)}</span>
+                      <span className="text-[11px] font-bold">{dayStr}</span>
+                    </div>
+                    <div>
+                      <div className="text-[13px] font-bold">{doc.date} {idx===0 && <span className="ml-2 px-1.5 py-0.5 rounded bg-emerald-500 text-white text-[10px]">LATEST</span>}</div>
+                      <div className={`text-[11px] font-mono ${isSelected?'text-slate-300':'text-slate-500'}`}>
+                        Z: SP {doc.zScores?.SP500?.toFixed(2) ?? doc.zScores?.['S&P500']?.toFixed(2) ?? '-'} / 외인 {doc.zScores?.['외국인']?.toFixed(2) ?? doc.zScores?.['외국인 선물']?.toFixed(2) ?? '-'} / SOX {doc.zScores?.['반도체팩터']?.toFixed(2) ?? '-'} • {doc.weeklyPicks?.length ?? 8} picks
+                      </div>
+                    </div>
+                  </div>
+                  <div className={`text-[12px] ${isSelected?'text-white':'text-slate-400'}`}>{isSelected?'● 선택됨':'→'}</div>
+                </button>
+              )
+            })}
+          </div>
+          <div className="mt-6 p-3 rounded-[10px] bg-blue-50 border border-blue-100 text-[11px] leading-relaxed text-slate-600">
+            <b>사용법</b>: 날짜를 클릭하면 해당 날짜의 Z-Score와 월요일 추천 종목으로 대시보드가 전환됩니다. 상단에 <span className="px-1.5 py-0.5 rounded bg-amber-100 border border-amber-200 text-amber-800 text-[10px]">아카이브 보기 중</span> 배지가 표시되며, <b>최신으로 돌아가기</b> 버튼으로 실시간으로 복귀할 수 있습니다.
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+
 function HelpModal({ open, onClose }){
   if(!open) return null;
   return (
@@ -181,8 +228,39 @@ function App(){
   const [history, setHistory] = useState([]);
   const [selectedDate, setSelectedDate] = useState('2026-09-26');
   const [showHelp, setShowHelp] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [activeTab, setActiveTab] = useState('model');
   const [liveCount, setLiveCount] = useState(0);
+  const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [isViewingHistory, setIsViewingHistory] = useState(false);
+
+  const loadSnapshot = (dateStr) => {
+    const doc = history.find(d=>d.date===dateStr);
+    if(!doc) return;
+    const cloud = doc.zScores;
+    if(cloud){
+      setZScores({
+        'S&P500': cloud.SP500 ?? cloud['S&P500'] ?? 0.81,
+        '외국인 선물': cloud.외국인 ?? cloud.외국인_선물 ?? 1.07,
+        'SOX / 필라': cloud.반도체팩터 ?? cloud['SOX / 필라'] ?? 1.59,
+        'US 10Y': cloud.US10Y ?? -1.13,
+        '중국 PMI': cloud.중국PMI ?? 0.21,
+        '원달러': cloud.원달러 ?? 1.38,
+        'WTI': cloud.WTI ?? -0.32,
+        '한미스프레드': cloud.한미스프레드 ?? 0.91,
+      });
+      setSelectedDate(doc.date);
+      setIsViewingHistory(doc.date !== (history[0]?.date));
+      setLastRefresh(new Date());
+    }
+  };
+
+  const returnToLatest = () => {
+    if(history[0]){
+      loadSnapshot(history[0].date);
+      setIsViewingHistory(false);
+    }
+  };
 
   useEffect(()=>{
     if(!db) return;
@@ -190,7 +268,8 @@ function App(){
       const docs = snap.docs.map(d=>d.data());
       setHistory(docs);
       setLiveCount(docs.length);
-      if(docs[0]?.zScores){
+      setLastRefresh(new Date());
+      if(docs[0]?.zScores && !isViewingHistory){
         // Map cloud keys to UI keys
         const cloud = docs[0].zScores;
         setZScores({
@@ -207,7 +286,7 @@ function App(){
       }
     });
     return ()=>unsub();
-  },[]);
+  },[isViewingHistory]);
 
   const currentIndustry = useMemo(()=> industries.find(i=>i.id===selectedIndustry) || industries[0], [selectedIndustry]);
 
@@ -222,8 +301,8 @@ function App(){
   const predictedReturn = useMemo(()=> contributions.reduce((sum,c)=> sum + c.contrib, 0), [contributions]);
 
   const weeklyPicks = useMemo(()=>{
-    const latest = history[0];
-    if(latest?.weeklyPicks) return latest.weeklyPicks;
+    const selected = history.find(d=>d.date===selectedDate) || history[0];
+    if(selected?.weeklyPicks) return selected.weeklyPicks;
     return [
       { industryId: 'elec', ticker: '005930', name: '삼성전자', score: 8.7, expectedReturn: 2.4, reason: '반도체팩터 1.80σ', targetFactor: '반도체팩터', date: selectedDate },
       { industryId: 'auto', ticker: '005380', name: '현대차', score: 8.1, expectedReturn: 1.8, reason: '원달러 1.50σ', targetFactor: '원달러', date: selectedDate },
@@ -256,12 +335,19 @@ function App(){
             </div>
             <div className="hidden md:flex items-center gap-3 ml-6 pl-6 border-l border-white/20">
               <span className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[11px] font-mono">● MARKET OPEN</span>
-              <span className="text-[12px] font-mono text-slate-300">{selectedDate} ({getDayName(selectedDate)}) • Last {new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} KST</span>
+              <span className="text-[12px] font-mono text-slate-300">{selectedDate} ({getDayName(selectedDate)}) • Last {lastRefresh.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} KST • Firebase Live</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={()=>setShowHelp(true)} className="px-3 py-2 rounded-[8px] bg-white/10 hover:bg-white/15 text-[12px]">? 도움말</button>
-            <button onClick={()=>window.location.reload()} className="px-3 py-2 rounded-[8px] bg-white text-[#0f172a] text-[13px] font-bold">↻ 데이터 갱신</button>
+            {isViewingHistory && (
+              <button onClick={returnToLatest} className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-[8px] bg-amber-400 text-[#0f172a] text-[12px] font-bold hover:bg-amber-300">
+                ↩ 최신으로
+              </button>
+            )}
+            <button onClick={()=>setShowHistory(true)} className={`px-3 py-2 rounded-[8px] text-[12px] font-bold flex items-center gap-1 ${isViewingHistory?'bg-amber-400 text-[#0f172a]':'bg-white/10 hover:bg-white/15 text-white'}`}>
+              📅 이전 자료 {history.length>0?`(${history.length})`:''}
+            </button>
+            <button onClick={()=>setShowHelp(true)} className="px-4 py-2 rounded-[8px] bg-white text-[#0f172a] text-[13px] font-bold hover:bg-slate-100">? 도움말</button>
           </div>
         </div>
         {/* Top metrics bar */}
@@ -296,6 +382,14 @@ function App(){
         </div>
       </header>
 
+      {isViewingHistory && (
+        <div className="bg-amber-400 text-[#0f172a] border-b border-amber-500">
+          <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-2 flex items-center justify-between text-[12px] font-mono">
+            <span>📅 아카이브 보기 중: <b>{selectedDate} ({getDayName(selectedDate)})</b> 자료를 보고 있습니다 • 최신이 아닙니다</span>
+            <button onClick={returnToLatest} className="px-3 py-1 rounded-full bg-[#0f172a] text-white text-[11px] font-bold">최신으로 돌아가기 ↩</button>
+          </div>
+        </div>
+      )}
       <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-4 grid grid-cols-12 gap-4">
         {/* Left - Industries */}
         <aside className="col-span-12 md:col-span-2">
@@ -556,6 +650,7 @@ function App(){
         </aside>
       </div>
 
+      <HistoryModal open={showHistory} onClose={()=>setShowHistory(false)} history={history} selectedDate={selectedDate} onSelect={loadSnapshot} />
       <HelpModal open={showHelp} onClose={()=>setShowHelp(false)} />
     </div>
   );
