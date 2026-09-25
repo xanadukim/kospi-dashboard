@@ -74,37 +74,101 @@ const factorMeta = {
   '원달러': { label: '원/달러', desc: '환율', group: '환율' },
 };
 
+
+const getDayName = (dateStr) => {
+  try {
+    const daysEn = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const daysKr = ['일','월','화','수','목','금','토'];
+    // Use noon to avoid timezone shift
+    const d = new Date(dateStr + 'T12:00:00');
+    const day = d.getDay();
+    return `${daysEn[day]} (${daysKr[day]})`;
+  } catch { return ''; }
+};
+
 function HelpModal({ open, onClose }){
   if(!open) return null;
   return (
     <div className="fixed inset-0 z-50 help-overlay flex items-center justify-center p-4" onClick={onClose}>
-      <div className="help-card bg-white rounded-[16px] max-w-[640px] w-full max-h-[85vh] overflow-auto p-6" onClick={e=>e.stopPropagation()}>
-        <div className="flex items-center justify-between">
-          <h2 className="text-[18px] font-bold">KOSPI Quant Terminal v2.4 가이드</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-slate-100">✕</button>
+      <div className="help-card bg-white rounded-[20px] max-w-[760px] w-full max-h-[88vh] overflow-auto p-6" onClick={e=>e.stopPropagation()}>
+        <div className="flex items-center justify-between sticky top-0 bg-white pb-3 border-b">
+          <h2 className="text-[18px] font-bold">KOSPI Quant Terminal v2.4 • 상세 가이드</h2>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200">✕</button>
         </div>
-        <div className="mt-5 space-y-4 text-[13px] leading-relaxed text-slate-700">
-          <div>
-            <div className="font-bold text-slate-900">1. 산업별 회귀 모델</div>
-            <div className="mt-1 text-slate-600">각 산업의 수익률을 9개 글로벌 팩터로 Ridge(λ=0.5) 회귀. 120일 롤링 윈도우, 5-fold CV. R² 0.71~0.91.</div>
+        <div className="mt-5 space-y-6 text-[13px] leading-relaxed text-slate-700">
+
+          <div className="rounded-[12px] bg-slate-50 border p-4">
+            <div className="font-bold text-slate-900 text-[14px]">화면 구조 (사진 기준)</div>
+            <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3 text-[12px]">
+              <div><b>상단 헤더</b>: KQ 로고, v2.4, Firebase Live(스냅샷 개수), MARKET OPEN 상태, 날짜(요일 자동 계산), Last 갱신시간 KST</div>
+              <div><b>상단 4칸</b>: 전체 R² / 오늘 예측 수익률 / 외국인 선물 예상 / US10Y+DXY. 1200px 이상에서 4분할, 모바일에서 2x2</div>
+              <div><b>좌측 INDUSTRIES</b>: 8개 산업 카드, R² 0.71~0.91, 클릭 시 중앙/우측 모두 재계산. 하단 TODAY'S FACTOR MAP은 상위 5개 팩터 컬러 배지</div>
+              <div><b>중앙/우측</b>: Factor Betas 바 차트, MODEL FORMULA, DAILY CHECKLIST, Z-Scores 테이블, DATA PIPELINE</div>
+            </div>
           </div>
+
           <div>
-            <div className="font-bold text-slate-900">2. 팩터 Z-Score</div>
-            <div className="mt-1 text-slate-600">S&P500, SOX, 외국인 선물, US 10Y, 중국 PMI, 원달러, WTI, 한미스프레드, 정책더미를 Z-Score로 표준화. ±1σ 이상이면 유의미한 시그널.</div>
+            <div className="font-bold text-slate-900">1. KOSPI 산업별 회귀식 - 핵심</div>
+            <div className="mt-2 bg-[#0f172a] text-white rounded-[10px] p-3 font-mono text-[11px] leading-relaxed">
+              R<sub>i</sub>(t) = α<sub>i</sub> + Σ β<sub>i,j</sub>·Z<sub>j</sub>(t) + ε<sub>i</sub>(t)<br/>
+              예) 전기전자: R = α + 0.42·SP500 + 0.28·외국인선물 + 0.35·SOX -0.18·US10Y + 0.12·중국PMI + ε
+            </div>
+            <div className="mt-2 space-y-1.5 text-[12px]">
+              <div>• <b>R<sub>i</sub>(t)</b>: 산업 i의 t일 초과수익률 (KOSPI 대비). 8개 산업(전기전자, 자동차, 화학·전지, 금융, 바이오, 철강·소재, 건설·조선, 유통·IT)</div>
+              <div>• <b>Z<sub>j</sub>(t)</b>: j번째 팩터의 Z-Score. (X - 120일 평균)/120일 표준편차. ±1σ 이상이면 유의미 시그널</div>
+              <div>• <b>β<sub>i,j</sub></b>: 산업 i가 팩터 j에 대해 갖는 민감도. Ridge로 추정. 예) 전기전자는 반도체팩터 0.35로 가장 민감</div>
+              <div>• <b>α<sub>i</sub></b>: 알파(고유 수익). 팩터로 설명 안 되는 산업 고유 모멘텀</div>
+              <div>• <b>ε</b>: 잔차. 정규분포 가정, 왜도 0.12 / 첨도 3.1로 정규근사</div>
+              <div className="mt-2 p-2 bg-blue-50 border border-blue-100 rounded text-[11px]">전처리: Missing → ffill, Outlier 3σ Winsorize → StandardScaler(평균0, 분산1) → Ridge(λ=0.5) → 120일 롤링, 5-fold CV. VIF max 2.4로 다중공선성 안정</div>
+            </div>
           </div>
+
           <div>
-            <div className="font-bold text-slate-900">3. 오늘 예측 수익률</div>
-            <div className="mt-1 text-slate-600">예측 = α + Σ(β·Z) + ε. β는 산업별 민감도, Z는 오늘 팩터 값. 기여도 = β·Z 로 계산.</div>
+            <div className="font-bold text-slate-900">2. RIDGE λ=0.5 - 왜 0.5인가?</div>
+            <div className="mt-1 font-mono text-[11px] bg-slate-50 border rounded p-2">Loss = ||y - Xβ||² + λ·||β||² , λ=0.5</div>
+            <div className="mt-2 text-[12px] space-y-1">
+              <div>• λ=0이면 OLS. S&P500과 SOX 상관계수 0.8로 VIF 폭발, β가 +2.5/-2.1로 튐</div>
+              <div>• λ=0.5는 약-중간 규제. 모든 β를 0쪽으로 살짝 당겨서 <b>VIF max 2.4 • 안정</b>, R² 0.89 / Adj 0.87 유지</div>
+              <div>• λ가 크면(5~10) 모든 β→0, 설명력 하락. 0.5가 120D 롤링 CV에서 최적점</div>
+            </div>
           </div>
+
           <div>
-            <div className="font-bold text-slate-900">4. 월요일 추천 (Monday Picks)</div>
-            <div className="mt-1 text-slate-600">매주 월요일 07:30 KST, GitHub Actions가 Firebase에 Z-Score를 자동 저장. 가장 높은 Score = 6.5 + |Z|*1.2 로 계산된 8개 종목 추천.</div>
+            <div className="font-bold text-slate-900">3. 오늘 예측 수익률 (상단 2번째 칸)</div>
+            <div className="mt-1 text-[12px]">계산: <b>예측 = Σ(β<sub>i,j</sub>·Z<sub>j</sub>)</b> = 기여도 합. 우측 <b>Today's Factor Z-Scores → 기여도</b> 열을 합산한 값 = 우측 하단 <b>예측 수익률 합계</b> = 상단 바 값과 동일</div>
+            <div className="mt-2 p-2 bg-amber-50 border border-amber-100 rounded text-[11px]">
+              <b>왜 다른 산업을 선택해도 안 바뀌는 것처럼 보였나?</b><br/>
+              코드상 predictedReturn은 currentIndustry에 따라 동적입니다. 다만 이전 버전 라벨이 <b>(전기전자)</b>로 하드코딩되어 있어 자동차를 눌러도 라벨은 전기전자로 보였습니다. 값은 전기전자 +1.35%, 자동차 +0.92%, 금융 +0.71% 등으로 실제로는 변합니다. v2.4.1부터 라벨이 <b>오늘 예측 수익률 (자동차)</b>처럼 동적으로 바뀝니다.
+            </div>
           </div>
+
           <div>
-            <div className="font-bold text-slate-900">5. DATA PIPELINE</div>
-            <div className="mt-1 font-mono text-[11px] bg-slate-50 border rounded p-2">yfinance + KRX API + FRED → Python → StandardScaler → RidgeCV(λ) → Dashboard • CRON 07:30 KST<br/>Features: 9 factors, 120D rolling, Missing→ffill, Outlier 3σ Winsorize</div>
+            <div className="font-bold text-slate-900">4. 외국인 선물 예상 1338억 순매수 (상단 3번째 칸)</div>
+            <div className="mt-1 font-mono text-[11px] bg-slate-50 border rounded p-2">표시값 = 1284 + Z<sub>외국인선물</sub> × 50 (억)<br/>예) Z=+1.07σ → 1284 + 1.07×50 = 1337.5 → 1338억 순매수</div>
+            <div className="mt-2 text-[12px]">• <b>1284억</b>: 최근 120일 KOSPI200 선물 외국인 순매수 평균 (베이스라인, 목업)<br/>• <b>Z</b>: 오늘 외국인 선물 팩터 Z-Score (Firebase zScores.외국인 / SP500 등)<br/>• <b>50억</b>: 1σ당 50억 민감도 (스케일 파라미터)<br/>• Z&gt;0이면 <span className="text-emerald-600">순매수</span>, Z&lt;0이면 <span className="text-red-600">순매도</span>로 표시. 실제 KRX 데이터가 아닌 Z→금액 변환 시뮬레이션 지표</div>
           </div>
-          <div className="pt-3 border-t text-[11px] text-slate-400">본 대시보드는 교육용 시뮬레이션 모델입니다. 투자 권유 아님 • © 2026 Quant Lab</div>
+
+          <div>
+            <div className="font-bold text-slate-900">5. US 10Y 현재 / DXY (상단 4번째 칸)</div>
+            <div className="mt-1 text-[12px]">• <b>US 10Y 4.72% +0.04</b>: 미 국채 10년물 금리. 4.72%는 Firestore rawValues.US10Y, +0.04는 전일 대비 변화(현재 목업). 금리 상승은 바이오·성장주에 β가 음수(-0.20)로 불리<br/>• <b>DXY 103.8</b>: 달러인덱스. 원달러 팩터와 연동. DXY↑ → 원달러↑ → 자동차·철강 수혜(β +0.25, +0.20)</div>
+          </div>
+
+          <div>
+            <div className="font-bold text-slate-900">6. 팩터 Z-Score (9개)</div>
+            <div className="mt-1 text-[12px]">S&P500(전일 수익률), 외국인 선물(KOSPI200 선물 순매수), SOX/필라(반도체 모멘텀), US10Y(금리), 중국PMI(Caixin 서프라이즈), 원달러(환율), WTI(유가), 한미스프레드(10Y-2Y), 정책더미(부양 이벤트). |Z|&gt;1.0이면 진한 색상, |Z|&gt;0.5면 연한 색상으로 강조</div>
+          </div>
+
+          <div>
+            <div className="font-bold text-slate-900">7. 월요일 추천 & 성과 추적</div>
+            <div className="mt-1 text-[12px]">• <b>Monday Picks</b>: Firebase weeklyPicks. Score = 6.5 + |Z_target|×1.2 + rand(0~0.5). 매일 07:30 KST GitHub Actions가 zScores 기반 8종목 자동 생성<br/>• <b>Tracking</b>: 지난주 추천가 vs 현재가, KOSPI 대비 초과수익(vs KOSPI), 성공/보류/실패 태그</div>
+          </div>
+
+          <div>
+            <div className="font-bold text-slate-900">8. DATA PIPELINE • PRODUCTION</div>
+            <div className="mt-1 font-mono text-[11px] bg-slate-50 border rounded p-2">yfinance (SP500, SOX, WTI, DXY, US10Y) + KRX API (외국인 선물, KOSPI 산업 수익률) + FRED (스프레드) → Python pandas → Missing ffill → 3σ Winsorize → StandardScaler → RidgeCV(λ=0.5) → β matrix (8×9), Z-scores, Score → Firebase Firestore factor_snapshots/{date} → Dashboard onSnapshot Live<br/>CRON: 30 22 * * 0-4 = KST 07:30 평일 • Firebase Live: {liveCount>0?`${liveCount}개 스냅샷`:''} • {selectedDate} 07:30 갱신 • Latency ~4.2min</div>
+          </div>
+
+          <div className="pt-3 border-t text-[11px] text-slate-400">본 대시보드는 교육용 시뮬레이션 모델입니다. 투자 권유 아님 • 수식 R<sub>i</sub>(t)=α+Σβ·Z+ε, Ridge Loss = ||y-Xβ||²+λ||β||² • © 2026 Quant Lab</div>
         </div>
       </div>
     </div>
@@ -188,11 +252,11 @@ function App(){
             <div className="w-9 h-9 rounded-[8px] bg-white text-[#0f172a] flex items-center justify-center font-bold">KQ</div>
             <div>
               <div className="text-[15px] font-bold leading-tight">KOSPI 산업별 회귀 대시보드</div>
-              <div className="text-[11px] font-mono text-slate-300">Daily & Weekly Quant Terminal v2.4 • Firebase Live {liveCount>0?`• ${liveCount}개`:''}</div>
+              <div className="text-[11px] font-mono text-slate-300 truncate">Daily & Weekly Quant Terminal v2.4 • Firebase Live{liveCount>0?` • ${liveCount}개`:''}</div>
             </div>
             <div className="hidden md:flex items-center gap-3 ml-6 pl-6 border-l border-white/20">
               <span className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[11px] font-mono">● MARKET OPEN</span>
-              <span className="text-[12px] font-mono text-slate-300">{selectedDate} (Thu) • Last {new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} KST</span>
+              <span className="text-[12px] font-mono text-slate-300">{selectedDate} ({getDayName(selectedDate)}) • Last {new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} KST</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -211,8 +275,8 @@ function App(){
               <span className="px-2 py-1 rounded bg-blue-500/20 border border-blue-400/20 text-blue-200 text-[10px] font-mono">RIDGE λ=0.5</span>
             </div>
             <div className="py-3 px-3 md:px-6">
-              <div className="text-[10px] font-mono text-slate-400 tracking-widest">오늘 예측 수익률 (전기전자)</div>
-              <div className="mt-1 font-mono text-[18px] font-bold text-emerald-300">+{predictedReturn.toFixed(2)}% <span className="text-[12px] text-slate-300">α·β</span></div>
+              <div className="text-[10px] font-mono text-slate-400 tracking-widest">오늘 예측 수익률 ({currentIndustry.short})</div>
+              <div key={currentIndustry.id} className="mt-1 font-mono text-[18px] font-bold text-emerald-300">+{predictedReturn.toFixed(2)}% <span className="text-[12px] text-slate-300">α·β</span> <span className="text-[10px] text-slate-400">• {currentIndustry.short}</span></div>
             </div>
             <div className="py-3 px-3 md:px-6">
               <div className="text-[10px] font-mono text-slate-400 tracking-widest">외국인 선물 예상</div>
