@@ -11,10 +11,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: |
+      - name: Install dependencies
+        run: |
           python -m pip install --upgrade pip
           pip install firebase-admin
+      - name: Create service account file
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/sa.json
+          echo "SA file size: $(wc -c < /tmp/sa.json) bytes"
+          python -m json.tool /tmp/sa.json > /dev/null && echo "JSON valid" || echo "JSON invalid"
       - name: Run daily update
         env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/sa.json
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: python scripts/daily_update.py
