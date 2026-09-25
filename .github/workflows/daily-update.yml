@@ -1,7 +1,7 @@
-name: Daily KOSPI Auto Update - Cloud Only
+name: Weekly KOSPI Industry 8x8 Auto Update - Sunday 18:00 KST
 on:
   schedule:
-    - cron: '30 22 * * 0-4'
+    - cron: '0 9 * * 0'  # Sunday 09:00 UTC = Sunday 18:00 KST
   workflow_dispatch:
 jobs:
   update:
@@ -14,7 +14,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install firebase-admin
+          pip install firebase-admin pykrx pandas numpy
       - name: Validate service account file
         run: |
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/sa.json
@@ -33,13 +33,13 @@ jobs:
                   print("ERROR: This is NOT a full service account JSON. You need the whole file with type, project_id, private_key, client_email etc.")
           except Exception as e:
               print(f"JSON parse failed: {e}")
-              # Show first 200 chars for debug (no secrets)
               with open('/tmp/sa.json') as f:
                   txt=f.read()
               print(f"First 200 chars: {txt[:200]}")
           PY
-      - name: Run daily update
+      - name: Run weekly industry screening
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/sa.json
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
         run: python scripts/daily_update.py
