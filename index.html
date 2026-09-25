@@ -165,7 +165,7 @@ function HelpModal({ open, onClose }){
 
           <div>
             <div className="font-bold text-slate-900">8. DATA PIPELINE • PRODUCTION</div>
-            <div className="mt-1 font-mono text-[11px] bg-slate-50 border rounded p-2">yfinance (SP500, SOX, WTI, DXY, US10Y) + KRX API (외국인 선물, KOSPI 산업 수익률) + FRED (스프레드) → Python pandas → Missing ffill → 3σ Winsorize → StandardScaler → RidgeCV(λ=0.5) → β matrix (8×9), Z-scores, Score → Firebase Firestore factor_snapshots/{date} → Dashboard onSnapshot Live<br/>CRON: 30 22 * * 0-4 = KST 07:30 평일 • Firebase Live: {liveCount>0?`${liveCount}개 스냅샷`:''} • {selectedDate} 07:30 갱신 • Latency ~4.2min</div>
+            <div className="mt-1 font-mono text-[11px] bg-slate-50 border rounded p-2">yfinance (SP500, SOX, WTI, DXY, US10Y) + KRX API (외국인 선물, KOSPI 산업 수익률) + FRED (스프레드) → Python pandas → Missing ffill → 3σ Winsorize → StandardScaler → RidgeCV(λ=0.5) → β matrix (8×9), Z-scores, Score → Firebase Firestore factor_snapshots/{date} → Dashboard onSnapshot Live<br/>CRON: 30 22 * * 0-4 = KST 07:30 평일 • Firebase Live onSnapshot • 07:30 갱신 • Latency ~4.2min</div>
           </div>
 
           <div className="pt-3 border-t text-[11px] text-slate-400">본 대시보드는 교육용 시뮬레이션 모델입니다. 투자 권유 아님 • 수식 R<sub>i</sub>(t)=α+Σβ·Z+ε, Ridge Loss = ||y-Xβ||²+λ||β||² • © 2026 Quant Lab</div>
