@@ -15,11 +15,29 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install firebase-admin
-      - name: Create service account file
+      - name: Validate service account file
         run: |
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/sa.json
           echo "SA file size: $(wc -c < /tmp/sa.json) bytes"
-          python -m json.tool /tmp/sa.json > /dev/null && echo "JSON valid" || echo "JSON invalid"
+          python3 << 'PY'
+          import json, os
+          try:
+              with open('/tmp/sa.json') as f:
+                  data=json.load(f)
+              print(f"Keys found: {list(data.keys())}")
+              print(f"Has type field: {'type' in data}")
+              print(f"type value: {data.get('type','MISSING')}")
+              print(f"Has client_email: {'client_email' in data}")
+              print(f"Has private_key: {'private_key' in data}")
+              if 'type' not in data:
+                  print("ERROR: This is NOT a full service account JSON. You need the whole file with type, project_id, private_key, client_email etc.")
+          except Exception as e:
+              print(f"JSON parse failed: {e}")
+              # Show first 200 chars for debug (no secrets)
+              with open('/tmp/sa.json') as f:
+                  txt=f.read()
+              print(f"First 200 chars: {txt[:200]}")
+          PY
       - name: Run daily update
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/sa.json
