@@ -4,8 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KOSPI Quant Terminal - Full Restored + Firebase</title>
-<link rel="icon" href="data:,">
-<script src="https://cdn.tailwindcss.com"></script>
+<link rel="icon" href="data:,"><script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root { --font-kr: 'Noto Sans KR', sans-serif; --font-mono: 'JetBrains Mono', monospace; }
@@ -145,21 +144,18 @@ function HelpModal({ open, onClose }) {
             <div className="space-y-3">
               <h3 className="font-bold">에러 처리 가이드</h3>
               <div className="bg-[#0f172a] text-white rounded-[10px] p-3 font-mono text-[11px] leading-relaxed">
-                <div>1. app.js 404 / Unexpected token</div>
-                <div className="text-slate-400">JSX를 외부 파일 src로 불러오면 발생</div>
-                <div>해결: script type=text/babel 인라인으로 통합</div>
-                <div className="mt-3">2. Firestore 문서를 로드하는 중에 오류</div>
-                <div className="text-slate-400">규칙이 allow read, write: if false 이면 발생</div>
-                <div>해결: Firestore - 규칙 - if true 로 게시</div>
-                <div className="mt-3">3. zScores number to double</div>
-                <div className="text-slate-400">콘솔에서 number 선택 시 double 선택 (소수 저장)</div>
-                <div className="mt-3 pt-3 border-t border-white/10">
-                  <div>collections:</div>
-                  <div>- factor_snapshots / 2026-09-25</div>
-                  <div>- model_versions / v1.2</div>
-                  <div>- weekly_picks / 2026-W38</div>
-                  <div className="mt-2 text-emerald-300">예: SP500 0.85, US10Y -0.60 double 타입</div>
-                </div>
+                1. app.js 404 / Unexpected token '&lt;'<br/>
+                → JSX를 외부 파일로 src="./app.js" 로 불러오면 발생<br/>
+                → 해결: 이 파일처럼 &lt;script type="text/babel"&gt;...&lt;/script&gt; 인라인<br/><br/>
+                2. Firestore 문서를 로드하는 중에 오류<br/>
+                → 규칙이 allow read, write: if false 이면 발생<br/>
+                → Firestore &gt; 규칙 &gt; if true 로 변경 후 게시<br/><br/>
+                3. zScores number → double<br/>
+                → 콘솔에서 number 선택 시 double 선택 (소수 저장)<br/>
+                collections:<br/>
+                - factor_snapshots / 2026-09-25 : SP500 0.85, ...}<br/>
+                - model_versions / v1.2<br/>
+                - weekly_picks / 2026-W38
               </div>
             </div>
           )}
@@ -379,9 +375,9 @@ function App() {
                   <div className="mt-3 rounded-[10px] bg-[#0f172a] text-white p-3">
                     <div className="text-[11px] font-bold">Firebase 연동 상태</div>
                     <div className="mt-1 text-[10px] text-slate-300 leading-relaxed">
-                      저장된 스냅샷: {history.length}개
-                      </div><div>현재 선택: {selectedDate}
-                      </div><div>RawValues: SP500 5780, US10Y 4.72% 등 double 저장
+                      저장된 스냅샷: {history.length}개<br/>
+                      현재 선택: {selectedDate}<br/>
+                      RawValues: SP500 5780, US10Y 4.72% 등 double 저장
                     </div>
                   </div>
                 </div>
@@ -447,9 +443,9 @@ function App() {
           <div className="mt-4 bg-[#0f172a] text-white rounded-[12px] p-4">
             <div className="text-[12px] font-bold">에러 처리 완료 내역</div>
             <div className="mt-2 text-[11px] leading-relaxed text-slate-300 grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div><b className="text-white">✅ 404 app.js</b><div>외부 JSX 파일 src로 로드 시 발생 → 인라인 script type=text/babel 로 해결</div></div>
-              <div><b className="text-white">✅ Firestore 로드 실패</b><div>규칙이 if false 이면 발생 → if true 로 게시 후 해결, onSnapshot 에러 핸들러 추가</div></div>
-              <div><b className="text-white">✅ zScores double</b><div>number 0.85 저장 시 int64 → double 선택, parseFloat 처리</div></div>
+              <div><b className="text-white">✅ 404 app.js</b><br/>외부 JSX 파일 src로 로드 시 발생 → 인라인 &lt;script type="text/babel"&gt;로 해결</div>
+              <div><b className="text-white">✅ Firestore 로드 실패</b><br/>규칙이 if false 이면 발생 → if true 로 게시 후 해결, onSnapshot 에러 핸들러 추가</div>
+              <div><b className="text-white">✅ zScores double</b><br/>number 0.85 저장 시 int64 → double 선택, parseFloat 처리</div>
             </div>
           </div>
         </main>
