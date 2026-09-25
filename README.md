@@ -1,37 +1,24 @@
-# KOSPI 산업별 회귀 대시보드
+# kospi-dashboard - Fixed
 
-GitHub Pages로 배포되는 퀀트 대시보드입니다.
+이전 `app.js` 분리 구조는 `Unexpected token '<'` 에러로 초기화 실패합니다.
+이 버전은 `index.html` 단일 파일에 React + Babel + Firebase Compat가 모두 인라인으로 들어가 있어 GitHub Pages에서 바로 동작합니다.
 
-## 웹에서 보기
-Settings > Pages > Source: `main` branch / `root` 선택
-→ https://{username}.github.io/{repo}/
+## 구조
+- index.html 하나만 있으면 동작 (style.css, app.js, firebase-config.js 불필요)
+- data/, scripts/ 폴더는 백테스트용으로 유지해도 되지만 Pages 배포에는 영향 없음
 
-## 폴더 구조
+## GitHub Pages 배포
+1. 이 index.html로 기존 파일 교체
+2. GitHub > Settings > Pages > Source: Deploy from a branch / Branch: main / root
+3. https://xanadukim.github.io/kospi-dashboard/ 에서 확인
+
+## Firebase 규칙
+Firestore > 규칙 탭
 ```
-/
-├── index.html          # 대시보드 진입점
-├── style.css           # 스타일 (분리됨)
-├── app.js              # 로직 (분리됨)
-├── data/               # 회귀모델 데이터 저장소 ⭐
-│   ├── model.json      # 산업별 β 계수, R²
-│   ├── factors.json    # 매일 갱신되는 Z-score
-│   └── history.json    # 지난주 추천 성과
-├── scripts/
-│   └── daily_update.py # 매일 데이터 수집 스크립트
-└── .github/workflows/
-    └── daily_update.yml # 매일 07:30 KST 자동 실행
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} { allow read, write: if true; }
+  }
+}
 ```
-
-## 데이터는 어디에 저장되나요?
-1. **model.json**: 회귀모델 β (8개 산업 x 9개 팩터) - 수동으로 월 1회 재학습 후 업데이트
-2. **factors.json**: 매일 갱신되는 팩터 Z-score - GitHub Actions가 자동 커밋
-3. **history.json**: 추천 종목 성과 - app.js에서 localStorage + data 파일에 이중 저장
-4. **브라우저 localStorage**: 사용자 개인 설정 (선택 산업 등)
-
-## 매일 갱신은 어떻게?
-1. GitHub Actions cron `30 22 * * *` (07:30 KST) 자동 실행
-2. `daily_update.py`가 yfinance(FRED, KRX)에서 데이터 수집
-3. Z-score 계산 후 `data/factors.json` 덮어쓰기
-4. 변경사항 자동 커밋 & 푸시 → GitHub Pages 자동 재배포 (1분 내 반영)
-
-수동 실행: Actions 탭 > Daily KOSPI Update > Run workflow

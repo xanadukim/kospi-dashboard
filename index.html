@@ -1,29 +1,277 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>KOSPI 산업별 회귀 대시보드 - Firebase Edition</title>
-    <link rel="stylesheet" href="style.css" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+KR:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <div id="root"></div>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOSPI Quant Terminal - Fixed</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root { --font-kr: 'Noto Sans KR', sans-serif; --font-mono: 'JetBrains Mono', monospace; }
+body { font-family: var(--font-kr); background: #f8fafc; }
+.font-mono { font-family: var(--font-mono) !important; }
+.bar-animate { transition: width 0.6s cubic-bezier(0.22,1,0.36,1); }
+.help-overlay { backdrop-filter: blur(8px); background: rgba(15,23,42,0.55); }
+.help-card { animation: helpIn 0.3s ease; }
+@keyframes helpIn { from { opacity:0; transform: translateY(12px) scale(0.98);} to { opacity:1; transform: translateY(0) scale(1);} }
+</style>
+</head>
+<body class="bg-[#f8fafc] text-slate-900">
+<div id="root"></div>
 
-    <script type="importmap">
-      {
-        "imports": {
-          "react": "https://esm.sh/react@18.2.0",
-          "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-          "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
-          "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
+<!-- React UMD -->
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<!-- Firebase Compat - importmap 없이 동작 -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script type="text/babel">
+const { useState, useMemo, useEffect } = React;
+
+// === 1. Firebase 설정 - 본인 프로젝트 연결 완료 ===
+const firebaseConfig = {
+  apiKey: "AIzaSyDg4-fL22BCdCIJPX4tGFmidGCUwAJ4P_Y",
+  authDomain: "kospi-quant.firebaseapp.com",
+  projectId: "kospi-quant",
+  storageBucket: "kospi-quant.firebasestorage.app",
+  messagingSenderId: "194454549722",
+  appId: "1:194454549722:web:fef6a227d517e31d5b61e3",
+  measurementId: "G-TJNBECPW24"
+};
+
+let db = null;
+let isFirebaseReady = false;
+try {
+  if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    isFirebaseReady = true;
+    console.log('Firebase connected');
+  } else {
+    console.log('Firebase 설정 필요 - Local Mode로 동작');
+  }
+} catch(e) {
+  console.log('Firebase 미설정 - Local Mode', e);
+}
+
+const industries = [
+  { id: 'elec', name: '전기전자/반도체', short: '전기전자', icon: '◫', r2: 0.91, color: '#2563eb', betas: { SP500: 0.42, 외국인: 0.28, 반도체팩터: 0.35, US10Y: -0.18, 중국PMI: 0.12 }, description: '나스닥 및 외국인 수급에 고베타', detail: '삼성전자·SK하이닉스가 지수 60% 설명' },
+  { id: 'auto', name: '자동차/운수장비', short: '자동차', icon: '◩', r2: 0.84, color: '#0f766e', betas: { 원달러: 0.25, WTI: -0.15, SP500: 0.20, 중국PMI: 0.18, US10Y: -0.10 }, description: '환율 및 유가에 민감한 수출주', detail: '원달러 10원 상승 시 영업이익 2% 개선' },
+  { id: 'chem', name: '화학/2차전지', short: '화학·전지', icon: '⬡', r2: 0.79, color: '#9333ea', betas: { 중국PMI: 0.28, WTI: -0.18, 원달러: -0.12, SP500: 0.15 }, description: '중국 수요 및 원자재 스프레드', detail: '중국 PMI 1p 상승 시 +1.5%' },
+  { id: 'fin', name: '금융/증권', short: '금융', icon: '₩', r2: 0.87, color: '#1e293b', betas: { 한미스프레드: 0.35, US10Y: -0.25, 외국인: 0.15, 정책더미: 0.18 }, description: '금리 스프레드 및 정책 모멘텀', detail: '밸류업 최대 수혜' },
+  { id: 'bio', name: '바이오/의약품', short: '바이오', icon: '⚕', r2: 0.71, color: '#e11d48', betas: { US10Y: -0.20, SP500: 0.18, 정책더미: 0.15 }, description: '금리 하락 수혜', detail: 'US10Y 0.5%p 하락 시 +4%' },
+  { id: 'steel', name: '철강/소재/에너지', short: '철강·소재', icon: '⬣', r2: 0.82, color: '#a16207', betas: { 중국PMI: 0.30, 원달러: 0.20, WTI: 0.12 }, description: '중국 경기 및 달러 강세 수혜', detail: '중국 철강 재고 10% 감소 시 +3%' },
+];
+
+const initialZ = { SP500: 0.85, 외국인: 1.2, 반도체팩터: 1.8, US10Y: -0.6, 중국PMI: 0.45, 원달러: 1.5, WTI: -0.3, 한미스프레드: 0.9, 정책더미: 0.2 };
+
+function App() {
+  const [selected, setSelected] = useState('elec');
+  const [showHelp, setShowHelp] = useState(false);
+  const [zScores, setZScores] = useState(initialZ);
+  const [history, setHistory] = useState([]);
+  const [selectedDate, setSelectedDate] = useState('2026-09-26');
+  const [loadError, setLoadError] = useState(null);
+
+  useEffect(()=>{
+    if(!db) return;
+    // Firestore 실시간 구독
+    const unsub = db.collection('factor_snapshots').orderBy('date','desc').limit(30)
+      .onSnapshot(snap=>{
+        const arr = snap.docs.map(d=>d.data());
+        setHistory(arr);
+        if(arr.length>0) {
+          // 가장 최신 데이터로 zScores 업데이트
+          // setZScores(arr[0].zScores);
         }
-      }
-    </script>
-    <script type="module" src="app.js"></script>
-  </body>
+        setLoadError(null);
+      }, err=>{
+        console.error(err);
+        setLoadError('문서를 로드하는 중에 오류가 발생했습니다. 규칙을 확인하세요: Firestore > 규칙 > allow read, write: if true');
+      });
+    return ()=>unsub();
+  },[]);
+
+  const current = useMemo(()=> industries.find(i=>i.id===selected), [selected]);
+  const contrib = useMemo(()=>{
+    return Object.entries(current.betas).map(([k,b])=>({k,b,z:zScores[k]||0, c:b*(zScores[k]||0)})).sort((a,b)=>Math.abs(b.c)-Math.abs(a.c));
+  }, [current, zScores]);
+  const total = useMemo(()=> contrib.reduce((s,x)=>s+x.c,0), [contrib]);
+
+  const saveToFirebase = async () => {
+    if(!db) { 
+      alert('Firebase 설정이 필요합니다. 코드 상단 firebaseConfig를 본인 프로젝트로 교체하세요'); 
+      return; 
+    }
+    const today = new Date().toISOString().slice(0,10);
+    try {
+      await db.collection('factor_snapshots').doc(today).set({ 
+        date: today, 
+        zScores, 
+        rawValues: { SP500: 5780.12, US10Y: 4.72, USD_KRW: 1382.5 },
+        createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+      });
+      alert(`Firebase에 ${today} 저장 완료!`);
+    } catch(e) {
+      alert('저장 실패: '+ e.message + '\n\n규칙을 확인하세요: Firestore > 규칙 탭 > allow read, write: if true');
+    }
+  };
+
+  const randomize = () => {
+    const newZ = {};
+    Object.keys(initialZ).forEach(k=>{ newZ[k] = +(Math.random()*4-2).toFixed(2); });
+    setZScores(newZ);
+  };
+
+  return (
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-20 bg-white border-b border-slate-200">
+        <div className="max-w-[1280px] mx-auto px-4 h-[56px] flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[#0f172a] text-white flex items-center justify-center font-bold text-[12px]">KQ</div>
+            <div>
+              <div className="text-[13px] font-bold leading-none">KOSPI Quant Terminal</div>
+              <div className="text-[10px] font-mono text-slate-500 mt-0.5">Firebase Fixed • {isFirebaseReady?'Firebase Live':'Local Mode'}</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={()=>setShowHelp(true)} className="h-8 px-3 rounded-lg bg-slate-100 text-[12px] font-semibold">? 도움말</button>
+            <button onClick={randomize} className="h-8 px-3 rounded-lg bg-white border border-slate-200 text-[12px] font-semibold">팩터 랜덤</button>
+            <button onClick={saveToFirebase} className="h-8 px-3 rounded-lg bg-emerald-600 text-white text-[12px] font-semibold">Firebase 저장</button>
+          </div>
+        </div>
+      </header>
+
+      {loadError && (
+        <div className="max-w-[1280px] mx-auto mt-3 px-4">
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-[10px] p-3 text-[12px]">
+            <b>오류:</b> {loadError}
+            <div className="mt-2 font-mono text-[11px] bg-white border rounded p-2">
+              Firestore &gt; 규칙 탭 &gt; 아래로 교체 후 [게시]<br/>
+              rules_version = '2';<br/>
+              service cloud.firestore &#123;<br/>
+              &nbsp;&nbsp;match /databases/&#123;database&#125;/documents &#123;<br/>
+              &nbsp;&nbsp;&nbsp;&nbsp;match /&#123;document=**&#125; &#123; allow read, write: if true; &#125;<br/>
+              &nbsp;&nbsp;&#125;<br/>
+              &#125;
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-[1280px] mx-auto p-4 grid grid-cols-12 gap-4">
+        <aside className="col-span-12 lg:col-span-3">
+          <div className="bg-white rounded-[12px] border border-slate-200 p-3">
+            <div className="text-[11px] font-bold tracking-widest text-slate-500 mb-2">INDUSTRIES (R² 높은 순)</div>
+            {industries.sort((a,b)=>b.r2-a.r2).map(ind=>(
+              <button key={ind.id} onClick={()=>setSelected(ind.id)} className={`w-full text-left flex justify-between items-center rounded-[10px] px-3 py-2.5 mb-1.5 border transition ${selected===ind.id?'bg-slate-900 text-white border-slate-900':'bg-white border-slate-200 hover:border-slate-300'}`}>
+                <span className="text-[12px] font-semibold">{ind.icon} {ind.short}</span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/20">R² {ind.r2}</span>
+              </button>
+            ))}
+          </div>
+          
+          <div className="mt-3 bg-white rounded-[12px] border border-slate-200 p-3">
+            <div className="text-[11px] font-bold">타임머신 - 과거 팩터</div>
+            <div className="mt-2 flex gap-1 overflow-x-auto pb-2">
+              {['2026-09-26','2026-09-25','2026-09-24','2026-08-15','2026-03-12'].map(d=>(
+                <button key={d} onClick={()=>{
+                  setSelectedDate(d);
+                  const found = history.find(h=>h.date===d);
+                  if(found && found.zScores) setZScores(found.zScores);
+                }} className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-mono border ${selectedDate===d?'bg-[#0f172a] text-white border-[#0f172a]':'bg-white border-slate-200'}`}>{d}</button>
+              ))}
+            </div>
+            <div className="text-[10px] text-slate-500 mt-1">선택: {selectedDate} {history.find(h=>h.date===selectedDate)?'✓ Firebase에서 불러옴':'- 로컬 데이터'}</div>
+            {history.length>0 && <div className="mt-2 text-[10px] font-mono bg-slate-50 border rounded p-2">Firebase 저장 {history.length}개 로드됨</div>}
+          </div>
+
+          <div className="mt-3 bg-white rounded-[12px] border border-slate-200 p-3">
+            <div className="text-[11px] font-bold mb-2">zScores (number → double)</div>
+            {Object.entries(zScores).map(([k,v])=>(
+              <div key={k} className="flex items-center gap-2 py-1">
+                <div className="w-[88px] text-[11px] font-semibold">{k}</div>
+                <input type="number" step="0.01" value={v} onChange={e=>setZScores({...zScores, [k]: parseFloat(e.target.value)||0})} className="flex-1 h-7 px-2 rounded border border-slate-200 text-[11px] font-mono" />
+                <div className="text-[10px] text-slate-400">double</div>
+              </div>
+            ))}
+            <div className="mt-2 text-[10px] text-slate-500">0.85 같은 소수는 무조건 <b>double</b> 유형으로 저장</div>
+          </div>
+        </aside>
+
+        <main className="col-span-12 lg:col-span-9">
+          <div className="bg-white rounded-[12px] border border-slate-200 p-4">
+            <div className="flex justify-between items-start">
+              <div>
+                <h2 className="text-[16px] font-bold">{current.name} <span className="font-mono text-[11px] bg-slate-100 px-2 py-0.5 rounded ml-2">R² {current.r2}</span></h2>
+                <p className="text-[12px] text-slate-500 mt-1">{current.description} • {current.detail}</p>
+              </div>
+              <div className="text-right">
+                <div className="text-[11px] text-slate-500">오늘 산업 예측</div>
+                <div className={`text-[22px] font-mono font-bold ${total>=0?'text-emerald-600':'text-red-600'}`}>{total>=0?'+':''}{total.toFixed(3)}σ</div>
+                <div className="text-[11px] font-mono text-slate-500">≈ {(total*1.2).toFixed(2)}%</div>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <div className="text-[11px] font-bold tracking-widest text-slate-500 mb-2">FACTOR BETA × Z-SCORE = CONTRIBUTION</div>
+              {contrib.map(c=>(
+                <div key={c.k} className="flex items-center gap-2 py-2 border-b border-slate-100 last:border-0">
+                  <div className="w-[88px] text-[11px] font-semibold">{c.k}</div>
+                  <div className="w-[44px] text-[10px] font-mono text-slate-500">β {c.b.toFixed(2)}</div>
+                  <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div className={`h-2 rounded-full bar-animate ${c.c>=0?'bg-emerald-500':'bg-red-500'}`} style={{ width: `${Math.min(100, Math.abs(c.c)*50)}%` }} />
+                  </div>
+                  <div className="w-[48px] text-[10px] font-mono text-center">{(c.z).toFixed(2)}σ</div>
+                  <div className={`w-[72px] text-right text-[11px] font-mono font-bold ${c.c>=0?'text-emerald-600':'text-red-600'}`}>{c.c>=0?'+':''}{c.c.toFixed(3)}σ</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 rounded-[10px] bg-slate-50 border border-slate-200 p-3">
+              <div className="text-[11px] font-bold">회귀식 (산업별)</div>
+              <div className="font-mono text-[10px] leading-relaxed mt-2 text-slate-700 break-all">
+                {current.name} = {Object.entries(current.betas).map(([k,b])=> `${b>0?'+':''}${b.toFixed(2)}*${k}`).join(' ')} + ε (R² {current.r2})
+              </div>
+              <div className="mt-2 text-[11px] text-slate-500">가장 영향 큰 팩터: <b className="text-slate-900">{contrib[0]?.k}</b> (기여도 {contrib[0]?.c.toFixed(3)}σ)</div>
+            </div>
+          </div>
+
+          <div className="mt-4 bg-[#0f172a] text-white rounded-[12px] p-4">
+            <div className="text-[12px] font-bold">이번 오류 해결 요약</div>
+            <div className="mt-2 text-[11px] leading-relaxed text-slate-300">
+              <b className="text-white">1. app.js:48 Unexpected token '&lt;'</b> → JSX를 별도 파일로 <code className="bg-white/10 px-1 rounded">src="./app.js"</code> 로 불러오면 Babel이 변환하기 전에 브라우저가 &lt;를 만나 터집니다. <br/>
+              해결: 이 파일처럼 <code className="bg-white/10 px-1 rounded">&lt;script type="text/babel"&gt;...JSX...&lt;/script&gt;</code> 로 인라인으로 넣어야 합니다.<br/><br/>
+              <b className="text-white">2. 문서를 로드하는 중에 오류</b> → Firestore 규칙이 <code className="bg-white/10 px-1 rounded">allow read, write: if false</code>이면 콘솔에서도 못 읽습니다. 규칙 탭에서 <code className="bg-white/10 px-1 rounded">if true</code>로 변경 후 새로고침.
+            </div>
+          </div>
+        </main>
+      </div>
+
+      {showHelp && (
+        <div className="fixed inset-0 z-50 help-overlay flex items-center justify-center p-4" onClick={()=>setShowHelp(false)}>
+          <div className="help-card bg-white rounded-[16px] max-w-[720px] w-full max-h-[80vh] overflow-hidden shadow-2xl" onClick={e=>e.stopPropagation()}>
+            <div className="h-[56px] px-5 flex items-center justify-between border-b">
+              <span className="font-bold text-[14px]">KOSPI Quant 도움말</span>
+              <button onClick={()=>setShowHelp(false)} className="w-8 h-8 rounded-full bg-slate-100">✕</button>
+            </div>
+            <div className="p-5 text-[13px] leading-relaxed space-y-3 overflow-y-auto max-h-[60vh]">
+              <p><b>zScores &gt; SP500 : number 0.85</b> 에서 number는 콘솔에서 <b>double</b>을 선택하세요. int64는 정수만, double은 소수까지 됩니다.</p>
+              <p><b>저장 버튼이 안 눌릴 때</b>: 문서 ID가 비었거나, 필드 이름이 빈 줄이 있으면 비활성화됩니다. 빈 줄은 ⊖로 삭제.</p>
+              <p><b>Firebase 설정</b>: 코드 상단 firebaseConfig를 본인 프로젝트 설정으로 교체 후 Firebase Hosting에 배포하면 됩니다.</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
 </html>
