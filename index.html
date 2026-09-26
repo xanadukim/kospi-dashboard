@@ -626,61 +626,13 @@ function App(){
             <button onClick={()=>setActiveTab('track')} className={`btn-modern px-4 py-2 rounded-full text-xs font-bold ${activeTab==='track'?'btn-active':'btn-inactive'}`}>지난주 성과 <span className="text-xs font-mono ml-1 opacity-70">8</span></button>
             <button onClick={()=>setActiveTab('analytics')} className={`btn-modern px-4 py-2 rounded-full text-xs font-bold ${activeTab==='analytics'?'btn-active':'btn-inactive'}`} style={activeTab==='analytics'?{background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)', color: 'white', boxShadow: '0 6px 20px rgba(124,58,237,0.35)'}:{}}>📊 성과 <span className="text-xs font-mono ml-1 opacity-70">IC</span></button>
             <button onClick={()=>setActiveTab('kospi')} className={`btn-modern px-4 py-2 rounded-full text-xs font-bold ${activeTab==='kospi'?'btn-active':'btn-inactive'}`} style={activeTab==='kospi'?{background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: 'white', boxShadow: '0 6px 20px rgba(15,23,42,0.35)'}:{}}>🌐 KOSPI <span className="text-xs font-mono ml-1 opacity-70">마켓</span></button>
-            <button onClick={()=>setActiveTab('filter')} className={`btn-modern px-4 py-2 rounded-full text-xs font-bold ${activeTab==='filter'?'btn-active':'btn-inactive'}`} style={activeTab==='filter'?{background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)', color: 'white', boxShadow: '0 6px 20px rgba(220,38,38,0.35)'}:{}}>🛡️ 필터 <span className="text-xs font-mono ml-1 opacity-70">v51</span></button>
+            
+            
             <button onClick={()=>setActiveTab('meta')} className={`btn-modern px-4 py-2 rounded-full text-xs font-bold ${activeTab==='meta'?'btn-active':'btn-inactive'}`} style={activeTab==='meta'?{background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: 'white', boxShadow: '0 6px 20px rgba(16,185,129,0.35)'}:{}}>🔬 메타 <span className="text-xs font-mono ml-1 opacity-70">유효</span></button>
           </div>
           <div className="mt-3 text-xs font-mono text-slate-500">Selected: <span className="font-bold px-2 py-1 rounded-full text-white" style={{background: currentIndustry.color}}>{currentIndustry.name}</span></div>
 
-          {activeTab==='filter' && (
-            <div className="mt-4 space-y-4">
-              <div className="rounded-2xl p-5 text-white shadow-xl" style={{background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)', boxShadow: '0 12px 32px rgba(15,23,42,0.25)'}}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-base font-extrabold tracking-tight">🛡️ 1단계 최적 필터 v51 • 개별 기업 특성 기반 부실주 제거</h3>
-                    <div className="mt-1 text-xs text-slate-300 font-mono">Fundamental Filter: PER, PBR, ROE, 영업이익률, 부채비율, 유동비율, 매출증가율 - Score는 그대로, 부실주만 사전 제외</div>
-                  </div>
-                  <span className="px-3 py-1.5 rounded-full bg-emerald-500 text-white text-xs font-mono font-bold">Hit Rate +4.4%p • MDD -0.8%p</span>
-                </div>
-                <div className="mt-4 grid grid-cols-12 gap-3">
-                  {[
-                    { id:'elec', name:'전기전자', rule:'ROE>8% • 부채<200% • 유동>120% • 영업>5% • PER 0~50', color:'#2563eb', reject:'034220 LG디스플레이(ROE -4.5% • PER 음수 • 영업 -3.2%)', effect:'반도체는 고수익 필수' },
-                    { id:'auto', name:'자동차', rule:'ROE>5% • 부채<250% • 유동>100% • 영업>2% • 매출>-20%', color:'#0f766e', reject:'004020 현대제철(ROE -2.5% • PER 음수) • 023530 롯데쇼핑(ROE -5.2%)', effect:'부채 많은 업종, 유동성으로 생존' },
-                    { id:'chem', name:'화학/전지', rule:'ROE>3% • 부채<250% • 영업>3% • 매출>-20% • PER<80', color:'#7c3aed', reject:'096770 SK이노베이션(ROE -2.1% • 영업 -1.5%) • 011170 롯데케미칼(ROE -8.2%)', effect:'2차전지 고PER 허용, 화학은 마진' },
-                    { id:'fin', name:'금융', rule:'ROE>5% • PBR<1.5 • 부채<1000% • 유동>90%', color:'#1e293b', reject:'088350 한화생명(ROE 4.5% 미달) • 138930 BNK(ROE 6.2% 통과)', effect:'저PBR 고ROE가 정답' },
-                    { id:'bio', name:'바이오', rule:'부채<150% • 유동>150% • 매출>-30% • ROE>-20%', color:'#e11d48', reject:'195940 HLB(ROE -15% • 영업 -45%) • 102780 HLB 중복', effect:'현금과 부채로 생존력 판단' },
-                    { id:'steel', name:'철강', rule:'ROE>3% • 부채<300% • 영업>2% • 유동>90%', color:'#a16207', reject:'004020 현대제철(ROE -2.5%) • 011170 롯데케미칼(화학 중복)', effect:'부채 많음, 마진으로 버티는지' },
-                    { id:'const', name:'건설/조선', rule:'ROE>3% • 부채<300% • 유동>110% • 영업>1%', color:'#334155', reject:'006360 GS건설(ROE -15.2% • 부채 320% • 유동 85%)', effect:'유동성이 생명' },
-                    { id:'retail', name:'유통/IT', rule:'ROE>5% • PER 0~40 • 부채<200% • 영업>3% • PBR<5', color:'#0891b2', reject:'139480 이마트(ROE -2.5% • PER 음수) • 023530 롯데쇼핑', effect:'거품 제거, 효율 판단' },
-                  ].map(f=>(
-                    <div key={f.id} className="col-span-12 md:col-span-6 rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-white text-slate-900">{f.name}</span>
-                        <span className="text-xs font-mono text-slate-300">{f.rule}</span>
-                      </div>
-                      <div className="mt-2 text-xs text-slate-200">탈락: {f.reject}</div>
-                      <div className="mt-1 text-xs text-emerald-300">→ {f.effect}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 grid grid-cols-3 gap-3">
-                  <div className="rounded-xl bg-white/10 border border-white/15 p-3">
-                    <div className="text-xs font-mono text-slate-400">필터 없을 때</div>
-                    <div className="text-sm font-bold">Hit 62.4% • 수익 +1.84% • MDD -3.2%</div>
-                  </div>
-                  <div className="rounded-xl bg-white/10 border border-white/15 p-3">
-                    <div className="text-xs font-mono text-slate-400">필터 적용 후</div>
-                    <div className="text-sm font-bold text-emerald-300">Hit 66.8% • 수익 +2.21% • MDD -2.4%</div>
-                  </div>
-                  <div className="rounded-xl bg-white text-slate-900 p-3">
-                    <div className="text-xs font-mono text-slate-500">개선 효과</div>
-                    <div className="text-sm font-bold">+4.4%p • +0.37%p • -0.8%p • 탈락률 15%</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab==='model' && (
+          activeTab==='model' && (
             <div className="mt-4 space-y-4">
               <div className="card-hover" style={{background: 'white', borderRadius: '20px', border: '1px solid #e2e8f0', boxShadow: '0 4px 24px rgba(0,0,0,0.04)', padding: '20px'}}>
                 <div className="flex items-center justify-between">
@@ -1257,6 +1209,69 @@ function App(){
               </div>
             </div>
           )}
+
+        
+        {/* === 필터 - 별도 메뉴 (6개 탭 아래 빈 공간) === */}
+        <div className="mt-8">
+          <div className="rounded-2xl border bg-white/90 backdrop-blur p-1 shadow-sm">
+            <div className="flex items-center justify-between px-4 py-2">
+              <div className="flex items-center gap-2">
+                <span className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold shadow-md" style={{background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)'}}>🛡️</span>
+                <div>
+                  <div className="text-sm font-extrabold tracking-tight">필터 • 1단계 최적 필터 • 개별 기업 특성 기반 부실주 제거</div>
+                  <div className="text-xs font-mono text-slate-500">PER, PBR, ROE, 영업이익률, 부채비율, 유동비율, 매출증가율 - Score는 그대로, 부실주만 사전 제외</div>
+                </div>
+              </div>
+              <span className="px-3 py-1 rounded-full bg-emerald-500 text-white text-xs font-mono font-bold">Hit Rate +4.4%p • MDD -0.8%p</span>
+            </div>
+          </div>
+          <div className="mt-4 space-y-4">
+              <div className="rounded-2xl p-5 text-white shadow-xl" style={{background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)', boxShadow: '0 12px 32px rgba(15,23,42,0.25)'}}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-extrabold tracking-tight">🛡️ 1단계 최적 필터 • 개별 기업 특성 기반 부실주 제거</h3>
+                    <div className="mt-1 text-xs text-slate-300 font-mono">Fundamental Filter: PER, PBR, ROE, 영업이익률, 부채비율, 유동비율, 매출증가율 - Score는 그대로, 부실주만 사전 제외</div>
+                  </div>
+                  <span className="px-3 py-1.5 rounded-full bg-emerald-500 text-white text-xs font-mono font-bold">Hit Rate +4.4%p • MDD -0.8%p</span>
+                </div>
+                <div className="mt-4 grid grid-cols-12 gap-3">
+                  {[
+                    { id:'elec', name:'전기전자', rule:'ROE>8% • 부채<200% • 유동>120% • 영업>5% • PER 0~50', color:'#2563eb', reject:'034220 LG디스플레이(ROE -4.5% • PER 음수 • 영업 -3.2%)', effect:'반도체는 고수익 필수' },
+                    { id:'auto', name:'자동차', rule:'ROE>5% • 부채<250% • 유동>100% • 영업>2% • 매출>-20%', color:'#0f766e', reject:'004020 현대제철(ROE -2.5% • PER 음수) • 023530 롯데쇼핑(ROE -5.2%)', effect:'부채 많은 업종, 유동성으로 생존' },
+                    { id:'chem', name:'화학/전지', rule:'ROE>3% • 부채<250% • 영업>3% • 매출>-20% • PER<80', color:'#7c3aed', reject:'096770 SK이노베이션(ROE -2.1% • 영업 -1.5%) • 011170 롯데케미칼(ROE -8.2%)', effect:'2차전지 고PER 허용, 화학은 마진' },
+                    { id:'fin', name:'금융', rule:'ROE>5% • PBR<1.5 • 부채<1000% • 유동>90%', color:'#1e293b', reject:'088350 한화생명(ROE 4.5% 미달) • 138930 BNK(ROE 6.2% 통과)', effect:'저PBR 고ROE가 정답' },
+                    { id:'bio', name:'바이오', rule:'부채<150% • 유동>150% • 매출>-30% • ROE>-20%', color:'#e11d48', reject:'195940 HLB(ROE -15% • 영업 -45%) • 102780 HLB 중복', effect:'현금과 부채로 생존력 판단' },
+                    { id:'steel', name:'철강', rule:'ROE>3% • 부채<300% • 영업>2% • 유동>90%', color:'#a16207', reject:'004020 현대제철(ROE -2.5%) • 011170 롯데케미칼(화학 중복)', effect:'부채 많음, 마진으로 버티는지' },
+                    { id:'const', name:'건설/조선', rule:'ROE>3% • 부채<300% • 유동>110% • 영업>1%', color:'#334155', reject:'006360 GS건설(ROE -15.2% • 부채 320% • 유동 85%)', effect:'유동성이 생명' },
+                    { id:'retail', name:'유통/IT', rule:'ROE>5% • PER 0~40 • 부채<200% • 영업>3% • PBR<5', color:'#0891b2', reject:'139480 이마트(ROE -2.5% • PER 음수) • 023530 롯데쇼핑', effect:'거품 제거, 효율 판단' },
+                  ].map(f=>(
+                    <div key={f.id} className="col-span-12 md:col-span-6 rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-white text-slate-900">{f.name}</span>
+                        <span className="text-xs font-mono text-slate-300">{f.rule}</span>
+                      </div>
+                      <div className="mt-2 text-xs text-slate-200">탈락: {f.reject}</div>
+                      <div className="mt-1 text-xs text-emerald-300">→ {f.effect}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 grid grid-cols-3 gap-3">
+                  <div className="rounded-xl bg-white/10 border border-white/15 p-3">
+                    <div className="text-xs font-mono text-slate-400">필터 없을 때</div>
+                    <div className="text-sm font-bold">Hit 62.4% • 수익 +1.84% • MDD -3.2%</div>
+                  </div>
+                  <div className="rounded-xl bg-white/10 border border-white/15 p-3">
+                    <div className="text-xs font-mono text-slate-400">필터 적용 후</div>
+                    <div className="text-sm font-bold text-emerald-300">Hit 66.8% • 수익 +2.21% • MDD -2.4%</div>
+                  </div>
+                  <div className="rounded-xl bg-white text-slate-900 p-3">
+                    <div className="text-xs font-mono text-slate-500">개선 효과</div>
+                    <div className="text-sm font-bold">+4.4%p • +0.37%p • -0.8%p • 탈락률 15%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
 
         </main>
 
