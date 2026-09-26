@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /factor_snapshots/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null || true;
+    }
+    match /performance_tracking/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null || true;
+    }
+    match /model_metrics/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null || true;
+    }
+    match /model_versions/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null || true;
+    }
+    match /config/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null || true;
+    }
+  }
+}

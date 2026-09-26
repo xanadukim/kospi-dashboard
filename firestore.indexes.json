@@ -1,0 +1,63 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "factor_snapshots",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "date",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "performance_tracking",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "recDate",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "industryId",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "performance_tracking",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "trackDate",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "ticker",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "model_metrics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "date",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "model_versions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "yearMonth",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
