@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>KOSPI 산업별 회귀 대시보드 - Modern Quant Terminal v3.1</title>
+<title>KOSPI 산업별 회귀 대시보드 - Quant Terminal v46</title>
 <link rel="icon" href="data:," />
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -173,19 +173,153 @@ function HelpModal({ open, onClose }){
   if(!open) return null;
   return (
     <div className="fixed inset-0 z-50 help-overlay flex items-center justify-center p-4" onClick={onClose}>
-      <div className="help-card bg-white rounded-2xl max-w-2xl w-full max-h-screen overflow-auto p-6" onClick={e=>e.stopPropagation()}>
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs font-extrabold tracking-tight">KOSPI Quant Terminal v3.1 가이드</h2>
+      <div className="help-card bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto p-6" onClick={e=>e.stopPropagation()}>
+        <div className="flex items-center justify-between sticky top-0 bg-white pb-4 border-b z-10">
+          <div>
+            <h2 className="text-sm font-extrabold tracking-tight">KOSPI Quant Terminal v46 완전 가이드</h2>
+            <div className="text-xs font-mono text-slate-500 mt-1">2-Stage 회귀 + 6개월 재학습 + 성과추적 • 2026.09</div>
+          </div>
           <button onClick={onClose} className="w-9 h-9 rounded-full bg-slate-900 text-white hover:bg-slate-800 btn-modern">✕</button>
         </div>
-        <div className="mt-6 space-y-5 text-sm leading-relaxed">
-          <div className="p-4 rounded-xl bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100">
-            <div className="font-bold text-indigo-900">✨ Modern v3.1 업데이트</div>
-            <div className="mt-1 text-indigo-700 text-xs">영역별 그라데이션 컬러, 모던 버튼, 글래스모피즘 카드, 업종별 8종목(64선) KRX β·모멘텀 스크리닝, 일요일 18:00 KST 자동 추천</div>
+        
+        <div className="mt-6 space-y-7 text-sm leading-relaxed">
+          {/* v46 업데이트 */}
+          <div className="p-4 rounded-xl bg-gradient-to-br from-violet-50 via-indigo-50 to-blue-50 border border-violet-200">
+            <div className="font-extrabold text-violet-900 text-sm">🚀 v46 업데이트 하이라이트</div>
+            <div className="mt-2 grid grid-cols-1 gap-2 text-xs text-slate-700">
+              <div className="flex gap-2"><span className="text-violet-600 font-bold">•</span><span><b>2-Stage 회귀:</b> Stage 1 KOSPI 예측 → Stage 2 산업별 β_market 분리로 마켓 리스크 헤지 후 순수 알파 추출</span></div>
+              <div className="flex gap-2"><span className="text-violet-600 font-bold">•</span><span><b>6개월 재학습:</b> 매월 1일 180일 데이터로 β 자동 재학습, 6개월 후 8,000개 샘플로 R² 0.71→0.85 개선</span></div>
+              <div className="flex gap-2"><span className="text-violet-600 font-bold">•</span><span><b>성과추적:</b> 평일 16:00 KST 실제 수익률 자동 추적, IC·Hit Rate로 모델 검증</span></div>
+              <div className="flex gap-2"><span className="text-violet-600 font-bold">•</span><span><b>5개 탭:</b> 산업모델 / 64선 / 성과 / 📊분석 / 🌐마켓</span></div>
+            </div>
           </div>
-          <div><div className="font-bold">1. 산업별 회귀 모델</div><div className="mt-1 text-slate-600">Ridge(λ=0.5) • 120일 롤링 • R² 0.71~0.91 • 업종별 컬러 그라데이션으로 시각화</div></div>
-          <div><div className="font-bold">2. 월요일 추천 64선</div><div className="mt-1 text-slate-600">Score = 6.5 + |Z|×1.2×β_adj + mom×0.3 • 업종별 Top8 • 카드 상단 컬러 라인으로 업종 구분</div></div>
-          <div><div className="font-bold">3. DATA PIPELINE</div><div className="mt-1 font-mono text-xs bg-slate-900 text-slate-200 rounded-lg p-3">yfinance + KRX API + FRED → Python → StandardScaler → RidgeCV → 64 picks → Firebase • CRON 일요일 18:00 KST</div></div>
+
+          {/* 1. 기획 의도 */}
+          <div>
+            <div className="font-extrabold text-sm flex items-center gap-2"><span className="w-6 h-6 rounded-lg bg-slate-900 text-white flex items-center justify-center text-xs">1</span>기획 의도 • 왜 만들었나?</div>
+            <div className="mt-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs leading-relaxed text-slate-700">
+              <div className="font-bold text-slate-900">문제의식: KOSPI는 단일 지수지만 업종별 드라이버는 전혀 다름</div>
+              <div className="mt-2">• 전기전자는 SOX·나스닥·외국인 선물에, 자동차는 원달러·WTI에, 금융은 한미 스프레드에 민감</div>
+              <div className="mt-1">• 단일 팩터 모델로는 설명 불가 → <b>업종별 회귀</b> 필요</div>
+              <div className="mt-2 font-bold text-slate-900">목표:</div>
+              <div className="mt-1">1) 매일 아침 07:30 KST 4단계 체크리스트로 시장 방향 판단</div>
+              <div>2) 일요일 18:00 KST 다음주 월요일 장바구니 64선 자동 생성 (업종별 Top8)</div>
+              <div>3) 실제 수익률로 모델 검증 → 6개월 재학습으로 β 진화</div>
+              <div className="mt-2 p-2 rounded-lg bg-white border text-xs">💡 핵심 아이디어: <b>마켓 리스크를 먼저 예측하고, 산업별 순수 알파만 남기자</b></div>
+            </div>
+          </div>
+
+          {/* 2. 회귀모델 설명 */}
+          <div>
+            <div className="font-extrabold text-sm flex items-center gap-2"><span className="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs">2</span>회귀모델 설명 • 2-Stage</div>
+            <div className="mt-3 space-y-3">
+              <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200">
+                <div className="font-bold text-blue-900 text-xs">Stage 1: KOSPI 지수 회귀 (마켓 모델)</div>
+                <div className="mt-2 font-mono text-xs bg-slate-900 text-slate-100 rounded-lg p-3 leading-relaxed break-all">
+                  R_KOSPI(t) = 0.12% + 0.38·S{"&"}P500 + 0.32·외국인 + 0.28·SOX + 0.15·원달러 + 0.22·중국PMI -0.18·US10Y + 0.18·스프레드 -0.08·WTI + 0.12·정책 + ε<br/>
+                  <span className="text-emerald-300">R²=0.92 • RMSE 0.38%p • 방향 적중 75%</span>
+                </div>
+                <div className="mt-2 text-xs text-slate-600">
+                  <div>• <b>종속변수:</b> KOSPI 일간 수익률</div>
+                  <div>• <b>독립변수 9개:</b> S{"&"}P500(전일), SOX/필라, 외국인 선물, US10Y, 중국 PMI, 원달러, WTI, 한미스프레드, 정책더미</div>
+                  <div>• <b>전처리:</b> 120일 롤링, StandardScaler, Missing→ffill, 3σ Winsorize, VIF {"<"} 2.5</div>
+                  <div>• <b>모델:</b> RidgeCV (λ=0.5, α 최적화) → 과적합 방지</div>
+                  <div className="mt-1 text-blue-700">→ KOSPI의 92%를 9개 글로벌 팩터로 설명</div>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200">
+                <div className="font-bold text-emerald-900 text-xs">Stage 2: 산업별 지수 회귀 (β_market 분리)</div>
+                <div className="mt-2 font-mono text-xs bg-slate-900 text-slate-100 rounded-lg p-3 leading-relaxed">
+                  R_전기전자 = 1.12·R_KOSPI + 0.18% + 0.35·SOX_res + 0.28·외국인_res + ε<br/>
+                  R_자동차 = 0.92·R_KOSPI + 0.08% + 0.25·원달러_res + ...<br/>
+                  <span className="text-emerald-300">β_market {">"}1: KOSPI보다 변동성 큼 • {"<"}0.8: 방어적</span>
+                </div>
+                <div className="mt-2 text-xs text-slate-600">
+                  <div>• <b>종속변수:</b> 산업별 일간 수익률 (전기전자, 자동차, 화학, 금융, 바이오, 철강, 건설, 유통)</div>
+                  <div>• <b>핵심:</b> Stage 1에서 예측한 R_KOSPI로 마켓 리스크 헤지 후, 잔차(residual) 팩터로 순수 산업 알파 추출</div>
+                  <div>• <b>β_market:</b> 산업의 KOSPI 민감도. 전기전자 1.12(공격적), 금융 0.78(방어적)</div>
+                  <div>• <b>β_res:</b> 마켓 중립 후 남은 순수 팩터 민감도. 예) 전기전자 SOX_res 0.35</div>
+                  <div className="mt-1 text-emerald-700">→ 전체 KOSPI 리스크 제거 후 산업별 순수 알파만으로 종목 선택 가능 (마켓 중립 전략)</div>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs">
+                <div className="font-bold text-amber-900">🔄 6개월 재학습 로직 (v46 핵심)</div>
+                <div className="mt-1 text-slate-700">매월 1일 11:00 KST: 최근 180일(6개월) × 64종목 = 11,520개 샘플로 β 재추정<br/>샘플 누적: 1개월 1,920개 → 6개월 11,520개 → R² 0.71→0.85 진화<br/>Firebase: model_versions/날짜 에 β 히스토리 저장, config/industries 최신 β 반영</div>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. 적용 방법 */}
+          <div>
+            <div className="font-extrabold text-sm flex items-center gap-2"><span className="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs">3</span>적용 방법 • 어떻게 쓰나?</div>
+            <div className="mt-3 p-3.5 rounded-xl bg-white border border-slate-200 space-y-3 text-xs">
+              <div>
+                <div className="font-bold text-slate-900">매일 아침 07:30 KST 체크리스트 (4단계)</div>
+                <div className="mt-1.5 grid grid-cols-1 gap-1.5">
+                  <div className="flex gap-2"><span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold">①</span><span>S{"&"}P500·SOX 전일 마감: Z {">"}1이면 위험 선호</span></div>
+                  <div className="flex gap-2"><span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold">②</span><span>외국인 선물·원달러: 외국인 순매수 + 원화 강세 = KOSPI 상승</span></div>
+                  <div className="flex gap-2"><span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">③</span><span>US10Y·중국PMI: 금리 하락 + PMI 서프라이즈 = 성장주 유리</span></div>
+                  <div className="flex gap-2"><span className="px-2 py-0.5 rounded-full bg-violet-100 text-violet-800 font-bold">④</span><span>Z-Score 종합: Today Factor Z-Scores에서 예측 수익률 합계 확인</span></div>
+                </div>
+              </div>
+              <div className="pt-3 border-t">
+                <div className="font-bold text-slate-900">월요일 장바구니 활용</div>
+                <div className="mt-1">• 일요일 18:00 KST 자동 생성된 64선 중 업종별 Top8 중 <b>Score {"<"}6.5 이상</b>만 필터링<br/>• Score = 6.5 + |Z|×1.2×β_adj + mom×0.3 (모멘텀 가중)<br/>• 예) 전기전자 SOX Z=1.59, β=0.35 → 기여도 +0.66% → Score 7.2</div>
+              </div>
+              <div className="pt-3 border-t">
+                <div className="font-bold text-slate-900">마켓 중립 헤지</div>
+                <div className="mt-1">• KOSPI 급락 예상 시 β_market 높은 전기전자(1.12) 비중 축소, β_market 낮은 금융(0.78) 비중 확대<br/>• 또는 KOSPI 선물 숏으로 마켓 리스크 헤지 후 산업별 알파만 추출</div>
+              </div>
+            </div>
+          </div>
+
+          {/* 4. 대시보드 주요 기능 */}
+          <div>
+            <div className="font-extrabold text-sm flex items-center gap-2"><span className="w-6 h-6 rounded-lg bg-violet-600 text-white flex items-center justify-center text-xs">4</span>대시보드 주요 기능 • 5개 탭</div>
+            <div className="mt-3 space-y-2.5">
+              <div className="p-3 rounded-xl border bg-white">
+                <div className="font-bold text-xs">① 산업 모델 (Today)</div>
+                <div className="mt-1 text-xs text-slate-600">• 왼쪽: Factor Betas 바 차트 (초록 양수, 빨강 음수, R²·Ridge 표시)<br/>• 오른쪽: Today Z-Scores (강한 Z는 진한 녹색/빨강 배지), 예측 수익률 합계, VIF·왜도·첨도<br/>• 하단: 07:30 체크리스트 + DATA PIPELINE 상태 (Live 스냅샷 수)</div>
+              </div>
+              <div className="p-3 rounded-xl border bg-white">
+                <div className="font-bold text-xs">② 월요일 추천 64선 (8×8)</div>
+                <div className="mt-1 text-xs text-slate-600">• 업종별 Top8 카드 (상단 컬러 라인으로 업종 구분)<br/>• 각 카드: 종목명, KRX β, 모멘텀, Score, Z-Score 배지<br/>• Score 높은 순 정렬, 6.5 이상이면 매수 신호</div>
+              </div>
+              <div className="p-3 rounded-xl border bg-white">
+                <div className="font-bold text-xs">③ 지난주 성과 (8종)</div>
+                <div className="mt-1 text-xs text-slate-600">• 지난주 월요일 추천 8종 평균 vs KOSPI 수익률 비교<br/>• Hit Rate, 초과 수익률, 종목별 실제 수익률</div>
+              </div>
+              <div className="p-3 rounded-xl border bg-gradient-to-br from-violet-50 to-indigo-50 border-violet-200">
+                <div className="font-bold text-xs text-violet-900">④ 📊 성과 분석 (IC·Hit) • v46 신규</div>
+                <div className="mt-1 text-xs text-slate-700">• <b>IC (Information Coefficient):</b> 예측 순위와 실제 수익률 순위 상관계수. 0.1 이상이면 유효<br/>• <b>Hit Rate:</b> 예측 방향 적중률. 60% 이상 유지 시 모델 안정<br/>• <b>주별 추이:</b> 10주간 IC·Return·Hit·KOSPI 추이 바 차트<br/>• <b>재학습 시뮬레이션:</b> 6개월 데이터 기반 β 조정 예상</div>
+              </div>
+              <div className="p-3 rounded-xl border bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+                <div className="font-bold text-xs">⑤ 🌐 KOSPI 마켓 (2-Stage) • v46 신규</div>
+                <div className="mt-1 text-xs text-slate-300">• <b>Stage 1:</b> 9개 팩터로 KOSPI 예측 (R²=0.92) • S{"&"}P500·SOX·외국인 등 기여도 바 차트<br/>• <b>Stage 2:</b> 산업별 β_market (KOSPI 민감도) • 1.12 공격적 vs 0.78 방어적<br/>• <b>KOSPI 예측 vs 실제:</b> 최근 12주 예측·실제 비교 (평균 오차 0.38%p, 방향 적중 75%)<br/>• <b>최종 수식:</b> Stage1 + Stage2 통합 수식 및 마켓 중립 알파 전략 설명</div>
+              </div>
+            </div>
+          </div>
+
+          {/* 5. 데이터 파이프라인 */}
+          <div>
+            <div className="font-bold text-sm">5. DATA PIPELINE • 자동화</div>
+            <div className="mt-2 font-mono text-xs bg-slate-900 text-slate-200 rounded-xl p-3.5 leading-relaxed">
+              <div className="text-violet-300">yfinance + KRX API + FRED → Python</div>
+              <div className="mt-1">→ StandardScaler (Z-score) → RidgeCV(λ=0.5) → 64 picks</div>
+              <div className="mt-1">→ Firebase Firestore (factor_snapshots, performance_tracking, model_metrics, model_versions)</div>
+              <div className="mt-2 pt-2 border-t border-white/10">CRON 스케줄 (GitHub Actions):</div>
+              <div>• 일요일 18:00 KST: 64선 생성 (weekly-picks)</div>
+              <div>• 평일 16:00 KST: 실제 수익률 추적 (performance-track)</div>
+              <div>• 매월 1일 11:00 KST: β 재학습 (model-retrain, 180D)</div>
+              <div className="mt-2 text-emerald-300">v46: 6개월 후 11,520 샘플로 R² 0.85 달성 예상</div>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t text-xs font-mono text-slate-500 text-center">
+            KOSPI Quant Terminal v46 • 2-Stage Ridge + 6개월 재학습 • Firebase Live + GitHub Actions<br/>© 2026 Quant Lab •문의: GitHub xanadukim/kospi-dashboard
+          </div>
         </div>
       </div>
     </div>
@@ -330,7 +464,7 @@ function App(){
             <div className="w-10 h-10 rounded-xl flex items-center justify-center font-extrabold text-xs tracking-tight" style={{background: 'linear-gradient(135deg, #fff 0%, #e2e8f0 100%)', color: '#0f172a', boxShadow: '0 2px 10px rgba(255,255,255,0.2)'}}>KQ</div>
             <div>
               <div className="text-xs font-extrabold leading-tight tracking-tight text-white">KOSPI Quant Terminal</div>
-              <div className="text-xs font-mono text-slate-300">Modern v3.1 • 8×8 Industry • Firebase Live{liveCount>0?` • ${liveCount}개`:''}</div>
+              <div className="text-xs font-mono text-slate-300">Modern v46 • 8×8 Industry • Firebase Live{liveCount>0?` • ${liveCount}개`:''}</div>
             </div>
             <div className="hidden md:flex items-center gap-3 ml-6 pl-6 border-l border-white/15">
               <span className="px-3 py-1.5 rounded-full text-xs font-bold font-mono tracking-wide" style={{background: 'linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.2) 100%)', border: '1px solid rgba(16,185,129,0.3)', color: '#6ee7b7'}}>● MARKET OPEN</span>
@@ -912,7 +1046,7 @@ function App(){
             <div className="mt-4 space-y-2.5 text-xs font-mono">
               <div className="flex flex-wrap items-center gap-2"><span className="px-2.5 py-1 rounded-full bg-white/10 border border-white/10 backdrop-blur">yfinance</span><span className="text-slate-500">+</span><span className="px-2.5 py-1 rounded-full bg-white/10 border border-white/10">KRX API</span><span className="text-slate-500">+</span><span className="px-2.5 py-1 rounded-full bg-white/10 border border-white/10">FRED</span><span className="text-slate-500">→</span><span className="px-2.5 py-1 rounded-full" style={{background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)', color: 'white'}}>Python</span></div>
               <div className="flex flex-wrap items-center gap-2"><span>→ StandardScaler → RidgeCV(λ) →</span><span className="px-2.5 py-1 rounded-full" style={{background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)', color: 'white'}}>Dashboard</span><span className="text-slate-500">• CRON 일요일 18:00</span></div>
-              <div className="mt-3 pt-3 border-t border-white/10 text-xs text-slate-400 leading-relaxed">Features: 9 factors, 120D rolling, Missing→ffill, Outlier 3σ Winsorize<br/>Output: β matrix (8x9), Z-scores, Score = β·Z + Alpha • Modern UI v3.1<br/>Firebase Live: {liveCount}개 스냅샷 • {selectedDate} • onSnapshot</div>
+              <div className="mt-3 pt-3 border-t border-white/10 text-xs text-slate-400 leading-relaxed">Features: 9 factors, 120D rolling, Missing→ffill, Outlier 3σ Winsorize<br/>Output: β matrix (8x9), Z-scores, Score = β·Z + Alpha • Quant Terminal v46<br/>Firebase Live: {liveCount}개 스냅샷 • {selectedDate} • onSnapshot</div>
               <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
                 <div className="rounded-lg bg-white/5 border border-white/10 p-2.5 backdrop-blur"><div className="text-slate-400">Last Update</div><div className="font-bold mt-0.5 text-white">{selectedDate} 18:00</div></div>
                 <div className="rounded-lg bg-white/5 border border-white/10 p-2.5"><div className="text-slate-400">Latency</div><div className="font-bold mt-0.5 text-white">~4.2 min</div></div>
@@ -921,7 +1055,7 @@ function App(){
             </div>
           </div>
 
-          <div className="text-center text-xs font-mono text-slate-500 py-2">KOSPI Quant Terminal v3.1 Modern • 8×8 Industry • © 2026 Quant Lab</div>
+          <div className="text-center text-xs font-mono text-slate-500 py-2">KOSPI Quant Terminal v46 • 2-Stage 8×8 Industry • 6개월 재학습 • © 2026 Quant Lab</div>
         </aside>
       </div>
 
