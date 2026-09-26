@@ -464,7 +464,7 @@ function App(){
             <div className="w-10 h-10 rounded-xl flex items-center justify-center font-extrabold text-xs tracking-tight" style={{background: 'linear-gradient(135deg, #fff 0%, #e2e8f0 100%)', color: '#0f172a', boxShadow: '0 2px 10px rgba(255,255,255,0.2)'}}>KQ</div>
             <div>
               <div className="text-xs font-extrabold leading-tight tracking-tight text-white">KOSPI Quant Terminal</div>
-              <div className="text-xs font-mono text-slate-300">Modern v46 • 8×8 Industry • Firebase Live{liveCount>0?` • ${liveCount}개`:''}</div>
+              <div className="text-xs font-mono text-slate-300">v46 • 8×8 Industry • 2-Stage • Firebase Live{liveCount>0?` • ${liveCount}개`:''}</div>
             </div>
             <div className="hidden md:flex items-center gap-3 ml-6 pl-6 border-l border-white/15">
               <span className="px-3 py-1.5 rounded-full text-xs font-bold font-mono tracking-wide" style={{background: 'linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.2) 100%)', border: '1px solid rgba(16,185,129,0.3)', color: '#6ee7b7'}}>● MARKET OPEN</span>
@@ -563,7 +563,7 @@ function App(){
                   </div>
                 </div>
                 <div className="mt-8">
-                  <div className="flex items-center justify-between"><h3 className="text-xs font-extrabold tracking-widest">DAILY MORNING CHECKLIST • 07:30 KST</h3><span className="text-xs font-mono px-2.5 py-1 rounded-full bg-amber-100 border border-amber-200 text-amber-800 font-bold">4 STEPS • Modern</span></div>
+                  <div className="flex items-center justify-between"><h3 className="text-xs font-extrabold tracking-widest">DAILY MORNING CHECKLIST • 07:30 KST</h3><span className="text-xs font-mono px-2.5 py-1 rounded-full bg-amber-100 border border-amber-200 text-amber-800 font-bold">4 STEPS • v46</span></div>
                   <div className="mt-3.5 grid grid-cols-1 md:grid-cols-2 gap-3">
                     {[
                       { n:1, title:'US10Y 마감', desc:`${(4.72 + zScores['US 10Y']*0.05).toFixed(2)}% (${zScores['US 10Y'].toFixed(2)}σ)`, cls:'c1' },
@@ -585,7 +585,7 @@ function App(){
           {activeTab==='picks' && (
             <div className="mt-4">
               <div className="rounded-2xl p-4 text-white" style={{background: `linear-gradient(135deg, ${currentIndustry.color} 0%, ${currentIndustry.color}dd 100%)`, boxShadow: `0 8px 24px ${currentIndustry.color}30`}}>
-                <div className="flex items-center justify-between"><h3 className="text-sm font-extrabold tracking-tight">월요일 추천 - {currentIndustry.name} 8종목 <span className="text-xs font-mono ml-2 opacity-80 bg-white/20 px-2 py-1 rounded-full">전체 64종 중 {currentIndustry.short} Top 8 • KRX β·모멘텀</span></h3><span className="text-xs font-mono bg-white/20 backdrop-blur px-2.5 py-1 rounded-full">{selectedDate} 18:00 KST • 일요일</span></div>
+                <div className="flex items-center justify-between gap-2 flex-wrap"><h3 className="text-sm font-extrabold tracking-tight flex items-center gap-2 flex-wrap">{currentIndustry.name} 8종목 <span className="text-xs font-mono opacity-80 bg-white/20 px-2.5 py-1 rounded-full whitespace-nowrap">전체 64종 중 {currentIndustry.short} Top 8 • KRX β·모멘텀</span></h3><span className="text-xs font-mono bg-white/20 backdrop-blur px-2.5 py-1 rounded-full whitespace-nowrap ml-auto">{selectedDate} 18:00 KST • 일요일</span></div>
                 <div className="mt-1.5 text-xs text-white/85">Score = 6.5 + |Z|×1.2×β_adj + mom×0.3 • 타겟팩터 {Object.entries(currentIndustry.betas).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1]))[0]?.[0]}</div>
               </div>
               <div className="mt-3.5 grid grid-cols-1 md:grid-cols-2 gap-3.5">
@@ -1042,7 +1042,7 @@ function App(){
           </div>
 
           <div className="rounded-2xl p-5 text-white shadow-xl" style={{background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', border: '1px solid rgba(255,255,255,0.08)'}}>
-            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div><div className="text-xs font-bold tracking-widest">DATA PIPELINE • PRODUCTION • Modern</div></div>
+            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div><div className="text-xs font-bold tracking-widest">DATA PIPELINE • PRODUCTION • v46</div></div>
             <div className="mt-4 space-y-2.5 text-xs font-mono">
               <div className="flex flex-wrap items-center gap-2"><span className="px-2.5 py-1 rounded-full bg-white/10 border border-white/10 backdrop-blur">yfinance</span><span className="text-slate-500">+</span><span className="px-2.5 py-1 rounded-full bg-white/10 border border-white/10">KRX API</span><span className="text-slate-500">+</span><span className="px-2.5 py-1 rounded-full bg-white/10 border border-white/10">FRED</span><span className="text-slate-500">→</span><span className="px-2.5 py-1 rounded-full" style={{background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)', color: 'white'}}>Python</span></div>
               <div className="flex flex-wrap items-center gap-2"><span>→ StandardScaler → RidgeCV(λ) →</span><span className="px-2.5 py-1 rounded-full" style={{background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)', color: 'white'}}>Dashboard</span><span className="text-slate-500">• CRON 일요일 18:00</span></div>
