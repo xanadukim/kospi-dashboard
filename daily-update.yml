@@ -1,72 +1,26 @@
-name: KOSPI Quant Terminal v4.0 - Full Pipeline
+name: Daily KOSPI Auto Update - Cloud Only
+
 on:
   schedule:
-    - cron: '0 9 * * 0'  # Weekly Picks: Sunday 09:00 UTC = Sunday 18:00 KST
-    - cron: '0 7 * * 1-5'  # Performance Tracking: Mon-Fri 07:00 UTC = 16:00 KST
-    - cron: '0 2 1 * *'  # Model Retrain: 1st of month 02:00 UTC = 11:00 KST
-  workflow_dispatch:
-    inputs:
-      job:
-        description: 'Job to run (picks, track, retrain, all)'
-        required: false
-        default: 'all'
+    - cron: '30 22 * * 0-4'  # UTC 22:30 = KST 07:30 평일 (월-금)
+  workflow_dispatch:  # 수동 실행 버튼
 
 jobs:
-  weekly-picks:
-    if: github.event.schedule == '0 9 * * 0' || contains(github.event.inputs.job, 'picks') || contains(github.event.inputs.job, 'all') || github.event_name == 'workflow_dispatch'
+  update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install firebase-admin pykrx pandas numpy scikit-learn
-      - name: Run weekly 64 picks screening (8x8)
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: /tmp/sa.json
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
-        run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/sa.json
-          python scripts/daily_update.py
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  performance-track:
-    if: github.event.schedule == '0 7 * * 1-5' || contains(github.event.inputs.job, 'track') || contains(github.event.inputs.job, 'all') || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install firebase-admin pykrx pandas numpy
-      - name: Track performance - actual returns
-        env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
-        run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/sa.json
-          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa.json
-          python scripts/track_performance.py
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-  model-retrain:
-    if: github.event.schedule == '0 2 1 * *' || contains(github.event.inputs.job, 'retrain') || contains(github.event.inputs.job, 'all') || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install firebase-admin pandas numpy scikit-learn
-      - name: Retrain models - 6 months performance based
+      - name: Install deps
+        run: pip install firebase-admin yfinance
+
+      - name: Run daily update
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-        run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/sa.json
-          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa.json
-          python scripts/retrain_model.py
+        run: python scripts/daily_update.py
