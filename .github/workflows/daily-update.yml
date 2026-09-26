@@ -1,9 +1,9 @@
 name: KOSPI Quant Terminal v4.0 - Full Pipeline
 on:
   schedule:
-    - cron: '0 9 * * 0'
-    - cron: '0 7 * * 1-5'
-    - cron: '0 2 1 * *'
+    - cron: '0 9 * * 0'  # Weekly Picks: Sunday 09:00 UTC = Sunday 18:00 KST
+    - cron: '0 7 * * 1-5'  # Performance Tracking: Mon-Fri 07:00 UTC = 16:00 KST
+    - cron: '0 2 1 * *'  # Model Retrain: 1st of month 02:00 UTC = 11:00 KST
   workflow_dispatch:
     inputs:
       job:
