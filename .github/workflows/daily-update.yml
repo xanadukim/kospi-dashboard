@@ -1,15 +1,21 @@
-name: KOSPI Quant Terminal v4.0 - Full Pipeline
+name: KOSPI Quant Terminal v5.0 - Meta Model Pipeline
 on:
   schedule:
-    - cron: '0 9 * * 0'  # Weekly Picks: Sunday 09:00 UTC = Sunday 18:00 KST
-    - cron: '0 7 * * 1-5'  # Performance Tracking: Mon-Fri 07:00 UTC = 16:00 KST
-    - cron: '0 2 1 * *'  # Model Retrain: 1st of month 02:00 UTC = 11:00 KST
+    - cron: "0 9 * * 0" # Weekly Picks: Sunday 09:00 UTC = Sunday 18:00 KST
+    - cron: "0 7 * * 1-5" # Performance Tracking: Mon-Fri 07:00 UTC = 16:00 KST
+    - cron: "0 2 1 * *" # Model Retrain: 1st of month 02:00 UTC = 11:00 KST
+    - cron: "30 7 * * *" # Meta Factor Validity: Daily 07:30 UTC = 16:30 KST
+    - cron: "0 7 * * *" # Regime Detector: Daily 07:00 UTC = 16:00 KST
   workflow_dispatch:
     inputs:
       job:
-        description: 'Job to run (picks, track, retrain, all)'
+        description: "Job to run (picks, track, retrain, meta, regime, all)"
         required: false
-        default: 'all'
+        default: "all"
+      regime_trigger:
+        description: "Force event-triggered retrain (war/high-vol)"
+        required: false
+        default: "false"
 
 jobs:
   weekly-picks:
@@ -18,12 +24,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
+        with: { python-version: "3.11" }
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install firebase-admin pykrx pandas numpy scikit-learn
-      - name: Run weekly 64 picks screening (8x8)
+      - name: Run weekly 64 picks screening (8x8) - Meta aware
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/sa.json
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
@@ -38,12 +44,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
+        with: { python-version: "3.11" }
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install firebase-admin pykrx pandas numpy
-      - name: Track performance - actual returns
+          pip install firebase-admin pykrx pandas numpy scikit-learn
+      - name: Track performance - actual returns + IC
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
@@ -52,21 +58,82 @@ jobs:
           export GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa.json
           python scripts/track_performance.py
 
-  model-retrain:
-    if: github.event.schedule == '0 2 1 * *' || contains(github.event.inputs.job, 'retrain') || contains(github.event.inputs.job, 'all') || github.event_name == 'workflow_dispatch'
+  regime-detector:
+    if: github.event.schedule == '0 7 * * *' || contains(github.event.inputs.job, 'regime') || contains(github.event.inputs.job, 'all') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
+        with: { python-version: "3.11" }
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install firebase-admin pandas numpy yfinance
+      - name: Detect market regime - 평시/고변동/전시
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/sa.json
+          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa.json
+          python scripts/regime_detector.py
+
+  meta-factor-tracker:
+    if: github.event.schedule == '30 7 * * *' || contains(github.event.inputs.job, 'meta') || contains(github.event.inputs.job, 'all') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    needs: [regime-detector, performance-track]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install firebase-admin pandas numpy scikit-learn
-      - name: Retrain models - 6 months performance based
+      - name: Track factor validity - Meta Learner data
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/sa.json
+          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa.json
+          python scripts/meta_factor_tracker.py
+
+  model-retrain:
+    if: github.event.schedule == '0 2 1 * *' || contains(github.event.inputs.job, 'retrain') || contains(github.event.inputs.job, 'all') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    needs: [meta-factor-tracker]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install firebase-admin pandas numpy scikit-learn
+      - name: Retrain models - 6 months + Meta validity + Kalman
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/sa.json
           export GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa.json
           python scripts/retrain_model.py
+
+  event-triggered-retrain:
+    if: github.event.inputs.regime_trigger == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install firebase-admin pandas numpy scikit-learn
+      - name: Event-triggered retrain - war/high-vol 60D window
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          REGIME: ${{ github.event.inputs.regime_trigger }}
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/sa.json
+          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa.json
+          echo "Event-triggered retrain: $REGIME - using 60D window"
+          python scripts/retrain_model.py --window 60 --event-trigger
