@@ -1,7 +1,7 @@
-name: KOSPI Quant Terminal v53 - DART Real Fundamental Filter
+name: KOSPI Quant Terminal v54 - DART Real Filter RELAXED v54 RELAXED
 on:
   schedule:
-    - cron: '30 22 * * 0-4'
+    - cron: '30 22 * * 0-4'  # UTC 22:30 = KST 07:30 평일
   workflow_dispatch:
 
 jobs:
@@ -10,14 +10,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
       - name: Install deps
         run: |
           pip install firebase-admin yfinance requests lxml pandas numpy scikit-learn pykrx
-      - name: Run daily update - DART Real Filter
+
+      - name: Run daily update - DART Real Filter RELAXED v54
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
