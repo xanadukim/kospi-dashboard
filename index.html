@@ -627,12 +627,14 @@ function App(){
             <button onClick={()=>setActiveTab('analytics')} className={`btn-modern px-4 py-2 rounded-full text-xs font-bold ${activeTab==='analytics'?'btn-active':'btn-inactive'}`} style={activeTab==='analytics'?{background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)', color: 'white', boxShadow: '0 6px 20px rgba(124,58,237,0.35)'}:{}}>📊 성과 <span className="text-xs font-mono ml-1 opacity-70">IC</span></button>
             <button onClick={()=>setActiveTab('kospi')} className={`btn-modern px-4 py-2 rounded-full text-xs font-bold ${activeTab==='kospi'?'btn-active':'btn-inactive'}`} style={activeTab==='kospi'?{background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: 'white', boxShadow: '0 6px 20px rgba(15,23,42,0.35)'}:{}}>🌐 KOSPI <span className="text-xs font-mono ml-1 opacity-70">마켓</span></button>
             
-            
             <button onClick={()=>setActiveTab('meta')} className={`btn-modern px-4 py-2 rounded-full text-xs font-bold ${activeTab==='meta'?'btn-active':'btn-inactive'}`} style={activeTab==='meta'?{background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: 'white', boxShadow: '0 6px 20px rgba(16,185,129,0.35)'}:{}}>🔬 메타 <span className="text-xs font-mono ml-1 opacity-70">유효</span></button>
           </div>
           <div className="mt-3 text-xs font-mono text-slate-500">Selected: <span className="font-bold px-2 py-1 rounded-full text-white" style={{background: currentIndustry.color}}>{currentIndustry.name}</span></div>
 
-          activeTab==='model' && (
+          
+          
+
+          {activeTab==='model' && (
             <div className="mt-4 space-y-4">
               <div className="card-hover" style={{background: 'white', borderRadius: '20px', border: '1px solid #e2e8f0', boxShadow: '0 4px 24px rgba(0,0,0,0.04)', padding: '20px'}}>
                 <div className="flex items-center justify-between">
@@ -1211,19 +1213,13 @@ function App(){
           )}
 
         
-        {/* === 필터 - 별도 메뉴 (6개 탭 아래 빈 공간) === */}
-        <div className="mt-8">
-          <div className="rounded-2xl border bg-white/90 backdrop-blur p-1 shadow-sm">
-            <div className="flex items-center justify-between px-4 py-2">
-              <div className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold shadow-md" style={{background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)'}}>🛡️</span>
-                <div>
-                  <div className="text-sm font-extrabold tracking-tight">필터 • 1단계 최적 필터 • 개별 기업 특성 기반 부실주 제거</div>
-                  <div className="text-xs font-mono text-slate-500">PER, PBR, ROE, 영업이익률, 부채비율, 유동비율, 매출증가율 - Score는 그대로, 부실주만 사전 제외</div>
-                </div>
-              </div>
-              <span className="px-3 py-1 rounded-full bg-emerald-500 text-white text-xs font-mono font-bold">Hit Rate +4.4%p • MDD -0.8%p</span>
-            </div>
+        
+        {/* ===== 필터 - 별도 메뉴 (6개 탭 아래 빈 공간) - v52 ===== */}
+        <div className="mt-8 border-t border-slate-200 pt-8">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold shadow-md" style={{background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)'}}>🛡️</span>
+            <h2 className="text-lg font-extrabold tracking-tight">필터 • 1단계 최적 필터</h2>
+            <span className="text-xs font-mono text-slate-500 ml-2">개별 기업 특성 기반 부실주 제거</span>
           </div>
           <div className="mt-4 space-y-4">
               <div className="rounded-2xl p-5 text-white shadow-xl" style={{background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)', boxShadow: '0 12px 32px rgba(15,23,42,0.25)'}}>
