@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.env
+venv/
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+
+# Secrets
+serviceAccount.json
+*.json
+!firebase.json
+!firestore.indexes.json
+
+# OS
+.DS_Store
+Thumbs.db
