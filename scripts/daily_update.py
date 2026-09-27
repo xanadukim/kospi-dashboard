@@ -268,10 +268,24 @@ def generate_64_picks(z_scores, details):
     print(f"[v60] Generated {len(all_picks_sorted)} picks (64선) - Top score {all_picks_sorted[0]['score'] if all_picks_sorted else 0}")
     return all_picks_sorted
 
-def save_to_firebase(z_scores, details, weekly_picks, regime_snapshot=None, meta_snapshot=None):
+def fetch_latest_retrain():
+    """beta_snapshots/latest 가져오기 - retrain 탭 LIVE 표시용"""
+    if not db:
+        return None
+    try:
+        doc = db.collection("beta_snapshots").document("latest").get()
+        if doc.exists:
+            data = doc.to_dict()
+            print(f"[Retrain] latest beta fetched - {data.get('date')} avg R2 {data.get('avg_r2')}")
+            return data
+    except Exception as e:
+        print(f"[Retrain] fetch latest error: {e}")
+    return None
+
+def save_to_firebase(z_scores, details, weekly_picks, regime_snapshot=None, meta_snapshot=None, retrain_snapshot=None):
     if not db:
         with open("latest_factors.json","w",encoding="utf-8") as f:
-            json.dump({"date": datetime.now().strftime("%Y-%m-%d"), "zScores": z_scores, "details": details, "weeklyPicks": weekly_picks, "regime": regime_snapshot, "meta": meta_snapshot}, f, ensure_ascii=False, indent=2)
+            json.dump({"date": datetime.now().strftime("%Y-%m-%d"), "zScores": z_scores, "details": details, "weeklyPicks": weekly_picks, "regime": regime_snapshot, "meta": meta_snapshot, "retrain": retrain_snapshot}, f, ensure_ascii=False, indent=2)
         print("[Firebase] local save")
         return
     date_str = datetime.now().strftime("%Y-%m-%d")
@@ -283,16 +297,20 @@ def save_to_firebase(z_scores, details, weekly_picks, regime_snapshot=None, meta
         "weeklyPicks": weekly_picks,
         "regime": regime_snapshot,
         "meta": meta_snapshot,
-        "source": "yfinance (5) + FRED (3) + KRX + China Proxy (구리+상해) + DART v54 + 64 Picks + Regime v60.1 REAL",
-        "version": "v60.1-10factors-china-proxy-DART-64Picks-Regime-REAL",
+        "retrain": retrain_snapshot,
+        "beta_snapshot": retrain_snapshot,
+        "source": "yfinance (5) + FRED (3) + KRX + China Proxy (구리+상해) + DART v54 + 64 Picks + Regime + Retrain v60.2 REAL",
+        "version": "v60.2-10factors-china-proxy-DART-64Picks-Regime-Retrain-REAL",
         "factors_count": 10,
         "picks_count": len(weekly_picks),
         "china_proxy": "구리(HG=F) + 상해종합(000001.SS) - PMI 대체",
-        "real_data_ratio": "100% REAL (yfinance+FRED+pykrx) + DART filter + Regime detector",
+        "real_data_ratio": "100% REAL (yfinance+FRED+pykrx) + DART filter + Regime detector + Retrain",
         "filter_applied": FILTER_ENABLED,
         "regime_enabled": REGIME_ENABLED,
         "meta_enabled": META_ENABLED,
+        "retrain_enabled": True,
         "regime_summary": f"{regime_snapshot.get('regime')} {regime_snapshot.get('confidence')} window {regime_snapshot.get('window')}" if regime_snapshot else "N/A",
+        "retrain_summary": f"{retrain_snapshot.get('date')} R2 {retrain_snapshot.get('avg_r2')} changes {retrain_snapshot.get('changes')}" if retrain_snapshot else "N/A",
     }
     try:
         db.collection("factor_snapshots").document(date_str).set(doc, merge=True)
@@ -308,7 +326,7 @@ def save_to_firebase(z_scores, details, weekly_picks, regime_snapshot=None, meta
         print(f"[Firebase] save error: {e}")
 
 if __name__ == "__main__":
-    print("=== KOSPI Quant Terminal v60.1 - 10 Factors China Proxy + DART + 64 Picks + Regime Dashboard REAL ===")
+    print("=== KOSPI Quant Terminal v60.2 - 10 Factors China Proxy + DART + 64 Picks + Regime + Retrain 6M REAL ===")
     z_scores, details = fetch_10_factors_china_proxy()
     weekly_picks = generate_64_picks(z_scores, details)
     if FILTER_ENABLED and DART_API_KEY and weekly_picks:
@@ -359,5 +377,14 @@ if __name__ == "__main__":
             import traceback
             traceback.print_exc()
     
-    save_to_firebase(z_scores, details, weekly_picks, regime_snapshot, meta_snapshot)
+    # Latest Retrain fetch (for frontend LIVE)
+    latest_retrain = None
+    try:
+        latest_retrain = fetch_latest_retrain()
+        if latest_retrain:
+            print(f"[v60.2] Latest retrain: {latest_retrain.get('date')} R2 {latest_retrain.get('avg_r2')}")
+    except Exception as e:
+        print(f"[v60.2] Latest retrain fetch skip: {e}")
+    
+    save_to_firebase(z_scores, details, weekly_picks, regime_snapshot, meta_snapshot, latest_retrain)
     print(json.dumps({"zScores": z_scores, "picksCount": len(weekly_picks), "regime": regime_snapshot.get('regime') if regime_snapshot else 'N/A', "top3": weekly_picks[:3]}, ensure_ascii=False, indent=2))
