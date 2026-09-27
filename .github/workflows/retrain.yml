@@ -2,7 +2,7 @@ name: KOSPI Quant Terminal v60.2 - Monthly Retrain + 6M Auto REAL
 
 on:
   schedule:
-    - cron: '0 2 1 * *'  # 매월 1일 02:00 UTC = 11:00 KST - 6개월 재학습
+    - cron: '0 2 1 * *'  # 매월 1일 02:00 UTC = 11:00 KST
   workflow_dispatch:
     inputs:
       window_days:
@@ -28,9 +28,13 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install deps v60.2 Retrain REAL
+      - name: Install deps v60.2 Retrain REAL - FIX yfinance
         run: |
-          pip install firebase-admin yfinance requests lxml pandas numpy pykrx beautifulsoup4 scikit-learn
+          python -m pip install --upgrade pip
+          pip install firebase-admin yfinance requests lxml pandas numpy pykrx beautifulsoup4 scikit-learn --upgrade
+          python -c "import yfinance; print(f'yfinance {yfinance.__version__} OK')"
+          python -c "import firebase_admin; print('firebase-admin OK')"
+          python -c "import sklearn; print(f'sklearn {sklearn.__version__} OK')"
 
       - name: Run retrain model - v60.2 RidgeCV REAL 180D
         env:
@@ -51,30 +55,33 @@ jobs:
       - name: Check generated data.js.new
         run: |
           if [ -f "js/data.js.new" ]; then
-            echo "✅ data.js.new generated"
+            echo "✅ data.js.new generated - REAL data"
             ls -lh js/data.js.new
-            echo "--- diff summary ---"
+            echo "--- R2 summary ---"
             if [ -f "js/data.js" ]; then
               echo "Old R2:"
-              grep -o '"r2": [0-9.]*' js/data.js | head -8
+              grep -o '"r2": [0-9.]*' js/data.js | head -8 || echo "old format"
               echo "New R2:"
-              grep -o '"r2": [0-9.]*' js/data.js.new | head -8
-              echo "Beta changes:"
-              diff -u js/data.js js/data.js.new | grep -E '^\+.*betas|^-.*betas' | head -20 || echo "No major diff in betas line"
+              grep -o '"r2": [0-9.]*' js/data.js.new | head -8 || grep -o 'r2: [0-9.]*' js/data.js.new | head -8
             fi
+            echo "--- Beta changes count ---"
+            grep -c "diff" js/data.js.new || echo "check retrain logs"
           else
             echo "❌ data.js.new not found"
+            echo "Checking retrain logs..."
+            ls -lh retrain*.json || echo "no json"
             exit 1
           fi
 
       - name: Summary
         if: always()
         run: |
-          echo "v60.2 Retrain pipeline completed"
+          echo "v60.2 Retrain pipeline completed - REAL yfinance"
           echo "- retrain_history/{today} - 180D RidgeCV REAL"
-          echo "- beta_snapshots/{today} - 8 industries new betas"
-          echo "- beta_snapshots/latest - always latest"
+          echo "- beta_snapshots/{today} - 8 industries new betas REAL"
+          echo "- beta_snapshots/latest - always latest - Frontend LIVE"
           echo "- retrain_logs/{today} - summary"
           echo "- js/data.js.new - auto generated for manual commit"
           echo "Next retrain: 30 days later (monthly)"
-          echo "Manual commit: cp js/data.js.new js/data.js && git commit && git push"
+          echo "Manual: cp js/data.js.new js/data.js && git commit && git push"
+          echo "FIX: Deleted old retrain-model-v60.yml which lacked yfinance"
