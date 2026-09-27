@@ -3,9 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>
-      KOSPI 산업별 회귀 대시보드 - Quant Terminal v59 - 10 Factors China Proxy (구리+상해)
-    </title>
+    <title>KOSPI 산업별 회귀 대시보드 - Quant Terminal v59 - 10 Factors China Proxy (구리+상해) REAL</title>
     <link rel="icon" href="data:," />
     <script src="https://cdn.tailwindcss.com"></script>
     <link
@@ -316,7 +314,7 @@
         console.log("Firebase init", e);
       }
 
-      const industries = [
+            const industries = [
         {
           id: "elec",
           name: "전기전자/반도체",
@@ -330,9 +328,12 @@
             "외국인 선물": 0.28,
             "SOX / 필라": 0.35,
             "US 10Y": -0.18,
-            "중국 PMI": 0.12,
+            구리: 0.15,
+            상해종합: 0.10,
+            DXY: -0.08,
+            VIX: -0.06,
           },
-          desc: "나스닥 및 외국인 수급에 고베타. 반도체팩터 민감",
+          desc: "나스닥/외국인 + 중국 프록시(구리/상해) 민감",
         },
         {
           id: "auto",
@@ -345,11 +346,12 @@
           betas: {
             원달러: 0.25,
             WTI: -0.15,
-            "S&P500": 0.2,
-            "중국 PMI": 0.18,
-            "US 10Y": -0.1,
+            "S&P500": 0.20,
+            구리: 0.12,
+            상해종합: 0.14,
+            DXY: 0.10,
           },
-          desc: "환율 및 유가에 민감한 수출주",
+          desc: "환율/유가 + 중국 수요(구리/상해) 민감 수출주",
         },
         {
           id: "chem",
@@ -360,13 +362,13 @@
           color: "#9333ea",
           grad: "grad-chem",
           betas: {
-            "중국 PMI": 0.28,
+            구리: 0.32,
+            상해종합: 0.22,
             WTI: -0.18,
-            원달러: -0.12,
-            "S&P500": 0.15,
-            "US 10Y": -0.12,
+            원달러: -0.10,
+            "S&P500": 0.12,
           },
-          desc: "중국 수요 및 원자재 스프레드",
+          desc: "중국 경기 대리변수 구리/상해에 가장 민감",
         },
         {
           id: "fin",
@@ -377,13 +379,13 @@
           color: "#1e293b",
           grad: "grad-fin",
           betas: {
-            한미스프레드: 0.35,
-            "US 10Y": -0.25,
+            "US 10Y": -0.30,
+            DXY: 0.18,
             "외국인 선물": 0.15,
-            정책더미: 0.18,
-            "S&P500": 0.1,
+            VIX: -0.15,
+            "S&P500": 0.10,
           },
-          desc: "금리 스프레드 및 정책 모멘텀",
+          desc: "금리 + 달러 + VIX 민감, 중국 프록시 간접",
         },
         {
           id: "bio",
@@ -394,23 +396,23 @@
           color: "#e11d48",
           grad: "grad-bio",
           betas: {
-            "US 10Y": -0.2,
+            "US 10Y": -0.22,
             "S&P500": 0.18,
-            정책더미: 0.15,
-            원달러: -0.08,
+            VIX: -0.18,
+            DXY: -0.06,
           },
-          desc: "금리 하락 수혜, 정책 이벤트 드리븐",
+          desc: "금리 하락/ VIX 하락 수혜",
         },
         {
           id: "steel",
           name: "철강/소재/에너지",
           short: "철강·소재",
           icon: "⬣",
-          r2: 0.82,
+          r2: 0.84,
           color: "#a16207",
           grad: "grad-steel",
-          betas: { "중국 PMI": 0.3, 원달러: 0.2, WTI: 0.12, "S&P500": 0.1 },
-          desc: "중국 경기 및 달러 강세 수혜",
+          betas: { 구리: 0.35, 상해종합: 0.28, 원달러: 0.15, WTI: 0.14, "S&P500": 0.08, DXY: 0.10 },
+          desc: "구리/상해종합 - 중국 경기 직결",
         },
         {
           id: "const",
@@ -421,33 +423,34 @@
           color: "#334155",
           grad: "grad-const",
           betas: {
-            원달러: 0.18,
-            WTI: 0.1,
-            "중국 PMI": 0.15,
-            "US 10Y": -0.08,
-            정책더미: 0.12,
+            구리: 0.22,
+            상해종합: 0.18,
+            원달러: 0.15,
+            WTI: 0.08,
+            DXY: 0.08,
           },
-          desc: "수주 사이클 및 인프라 정책",
+          desc: "중국 인프라 수요 = 구리/상해종합",
         },
         {
           id: "retail",
           name: "유통/IT서비스",
           short: "유통·IT",
           icon: "◎",
-          r2: 0.8,
+          r2: 0.80,
           color: "#0891b2",
           grad: "grad-retail",
           betas: {
             "S&P500": 0.22,
             "외국인 선물": 0.18,
-            한미스프레드: 0.12,
-            "중국 PMI": 0.1,
+            상해종합: 0.12,
+            구리: 0.08,
+            VIX: -0.10,
           },
-          desc: "내수+플랫폼, 외국인 수급 연동",
+          desc: "내수+플랫폼 + 중국 소비 심리",
         },
       ];
 
-                  const factorMeta = {
+      const factorMeta = {
         "S&P500": { label: "S&P500", desc: "전일 수익률 Z" },
         "외국인 선물": { label: "외국인 선물", desc: "KOSPI200 선물 순매수" },
         "SOX / 필라": { label: "SOX / 필라", desc: "반도체 지수 모멘텀" },
@@ -1147,15 +1150,17 @@
           const cloud = doc.zScores;
           if (cloud) {
             setZScores({
-              "S&P500": cloud.SP500 ?? cloud["S&P500"] ?? 0.63,
-              "외국인 선물": cloud.외국인 ?? cloud.외국인_선물 ?? 1.07,
-              "SOX / 필라": cloud.반도체팩터 ?? cloud["SOX / 필라"] ?? 1.59,
-              "US 10Y": cloud.US10Y ?? -1.13,
-              "중국 PMI": cloud.중국PMI ?? 0.21,
-              원달러: cloud.원달러 ?? 1.38,
-              WTI: cloud.WTI ?? -0.32,
-              한미스프레드: cloud.한미스프레드 ?? 0.91,
-            });
+                  "S&P500": cloud.SP500 ?? cloud["S&P500"] ?? 0.63,
+                  "외국인 선물": cloud.외국인 ?? cloud.외국인_선물 ?? 1.07,
+                  "SOX / 필라": cloud.반도체팩터 ?? cloud["SOX / 필라"] ?? 1.59,
+                  "US 10Y": cloud.US10Y ?? -1.13,
+                  원달러: cloud.원달러 ?? 1.38,
+                  WTI: cloud.WTI ?? -0.32,
+                  DXY: cloud.DXY ?? 0.45,
+                  VIX: cloud.VIX ?? -0.52,
+                  구리: cloud.구리 ?? 0.68,
+                  상해종합: cloud.상해종합 ?? 0.42,
+                });
             setSelectedDate(doc.date);
             setIsViewingHistory(doc.date !== history[0]?.date);
             setLastRefresh(new Date());
