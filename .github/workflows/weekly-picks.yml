@@ -10,16 +10,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
       - name: Install deps
         run: |
           pip install firebase-admin yfinance requests lxml pandas numpy scikit-learn pykrx
-
       - name: Generate 64 Picks for Monday - Sunday 18:00 KST
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
@@ -28,8 +25,3 @@ jobs:
           KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
           PRICE_SOURCE: yfinance
         run: python scripts/daily_update.py
-
-      - name: Verify Firebase save
-        run: |
-          echo "Weekly picks generated at $(date) KST"
-          ls -la latest_factors.json || echo "Firebase mode - no local file"
