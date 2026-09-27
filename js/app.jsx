@@ -104,7 +104,148 @@
         );
       }
 
+
+      function DisclaimerModal({ open, onClose }) {
+        if (!open) return null;
+        return (
+          <div
+            className="fixed inset-0 z-[60] help-overlay flex items-center justify-center p-4"
+            onClick={onClose}
+          >
+            <div
+              className="help-card bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-auto p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between sticky top-0 bg-white pb-4 border-b z-10">
+                <div>
+                  <h2 className="text-sm font-extrabold tracking-tight flex items-center gap-2">
+                    <span className="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700">⚠️</span>
+                    투자위험 고지 및 면책사항 • Legal Disclaimer
+                  </h2>
+                  <div className="text-xs font-mono text-slate-500 mt-1">
+                    KOSPI Quant Terminal v60 • 2026.09.27 • 데이터 출처 및 법적 고지
+                  </div>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="w-9 h-9 rounded-full bg-slate-900 text-white hover:bg-slate-800 btn-modern"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="mt-6 space-y-6 text-sm leading-relaxed">
+                <div className="p-4 rounded-xl bg-red-50 border border-red-200">
+                  <div className="font-extrabold text-red-900 text-sm flex items-center gap-2">
+                    <span>🚨</span> 본 서비스는 투자 조언이 아닙니다
+                  </div>
+                  <div className="mt-2 text-xs text-slate-700 leading-relaxed">
+                    KOSPI Quant Terminal v60이 제공하는 <b>예상 수익률 (+1.29%, +0.7% 등), Score, 64 Picks, 산업별 예측</b>은
+                    과거 데이터 기반의 통계적 모델 예측값이며, <b>투자 자문, 투자 일임, 매수/매도 추천이 아닙니다.</b><br/>
+                    모든 투자 결정은 이용자 본인의 판단과 책임 하에 이루어져야 하며, 본 서비스는 어떠한 수익도 보장하지 않습니다.
+                  </div>
+                </div>
+
+                <div>
+                  <div className="font-extrabold text-sm flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-slate-900 text-white flex items-center justify-center text-xs">1</span>
+                    투자 위험 고지
+                  </div>
+                  <div className="mt-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs leading-relaxed text-slate-700">
+                    <div>• 주식 투자는 원금 손실 위험이 있으며, 과거 성과가 미래 수익을 보장하지 않습니다.</div>
+                    <div className="mt-1">• <b>예상 +1.29%</b>는 Ridge 회귀 모델의 예측값으로, 실제 수익률은 -3% ~ +3% 범위에서 크게 벗어날 수 있습니다 (RMSE 0.38%p, 방향 적중 75%).</div>
+                    <div className="mt-1">• 모델은 120일 롤링 윈도우, 10개 팩터 기반이며, 블랙스완, 전쟁, 정책 변화 등 예측 불가 이벤트에 취약합니다.</div>
+                    <div className="mt-1">• 64 Picks는 <b>퀀트적 아이디어</b>이며, 동일 업종/팩터 집중 시 분산 효과가 사라집니다.</div>
+                    <div className="mt-2 p-2 rounded-lg bg-white border text-xs">
+                      💡 권장: 한 종목당 전체 자산의 5% 이하, 한 업종당 20% 이하 분산, 손절 -3% 원칙
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="font-extrabold text-sm flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs">2</span>
+                    데이터 출처 및 정확성
+                  </div>
+                  <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                    <div className="p-3 rounded-xl bg-blue-50 border border-blue-200">
+                      <div className="font-bold text-blue-900">FRED (Federal Reserve)</div>
+                      <div className="mt-1 text-slate-700">DGS10 (US 10Y), DCOILWTICO (WTI), DTWEXBGS (DXY), VIXCLS (VIX)</div>
+                      <div className="mt-1 font-mono text-slate-500">fred.stlouisfed.org • CC0 Public Domain • 지연 1일</div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
+                      <div className="font-bold text-emerald-900">yfinance + Yahoo Finance</div>
+                      <div className="mt-1 text-slate-700">^GSPC (S&P500), ^SOX, KRW=X, HG=F (구리), 000001.SS (상해종합), ^KS11</div>
+                      <div className="mt-1 font-mono text-slate-500">15분 지연, 비공식 API, 데이터 오류 가능성 있음</div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
+                      <div className="font-bold text-amber-900">KRX / pykrx (한국거래소)</div>
+                      <div className="mt-1 text-slate-700">외국인 선물 순매수, KOSPI/KOSDAQ OHLCV</div>
+                      <div className="mt-1 font-mono text-slate-500">승인 대기 중에는 0.85 fallback 사용, 승인 후 100% REAL • pykrx 라이선스 준수</div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-violet-50 border border-violet-200">
+                      <div className="font-bold text-violet-900">DART (금융감독원)</div>
+                      <div className="mt-1 text-slate-700">PER, PBR, ROE, 부채비율 등 재무 필터 - Fundamental Filter v54 RELAXED</div>
+                      <div className="mt-1 font-mono text-slate-500">opendart.fss.or.kr • DART API 키 필요 • 공시 지연 반영</div>
+                    </div>
+                  </div>
+                  <div className="mt-3 p-2.5 rounded-lg bg-slate-900 text-slate-200 font-mono text-xs">
+                    데이터 지연: FRED 1일, yfinance 15분, KRX 일별, DART 분기 • 데이터 오류 시 Z-score 0 처리
+                  </div>
+                </div>
+
+                <div>
+                  <div className="font-extrabold text-sm flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-amber-600 text-white flex items-center justify-center text-xs">3</span>
+                    모델 한계 및 가정
+                  </div>
+                  <div className="mt-3 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs leading-relaxed text-slate-700">
+                    <div>• <b>10 Factors 모델:</b> S&P500, US10Y, 외국인, SOX, 원달러, WTI, DXY, VIX, 구리, 상해종합</div>
+                    <div>• <b>가정:</b> 팩터 간 선형 관계, 120일 롤링 정상성, VIF {"<"} 2.5, 3σ Winsorize</div>
+                    <div>• <b>한계:</b> 중국 PMI 대신 구리/상해종합 프록시 사용 (상관계수 0.68), 외국인 선물은 KRX 승인 전 0.85 고정</div>
+                    <div>• <b>검증:</b> 2023-2026 백테스트 IC 0.12, Hit Rate 64.8%, MDD -4.2% • 실전에서는 슬리피지, 세금, 수수료 미반영</div>
+                    <div className="mt-2 p-2 rounded-lg bg-white border">
+                      모델은 6개월마다 재학습되며, 과거 데이터에 과적합될 수 있습니다. Regime 변화(고변동, 전시) 시 90일 윈도우로 축소
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="font-extrabold text-sm flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs">4</span>
+                    면책 조항 (Disclaimer)
+                  </div>
+                  <div className="mt-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs leading-relaxed text-slate-700">
+                    <div>1. 본 서비스는 정보 제공 목적이며, 특정 금융투자상품의 매수/매도를 권유하지 않습니다.</div>
+                    <div className="mt-1">2. 운영자(Quant Lab)는 이용자의 투자 손실에 대해 어떠한 법적 책임도 지지 않습니다.</div>
+                    <div className="mt-1">3. 데이터 출처(FRED, Yahoo, KRX, DART)의 오류, 지연, 중단으로 인한 손해에 대해 책임지지 않습니다.</div>
+                    <div className="mt-1">4. GitHub Actions 자동화로 제공되며, 서버 중단 시 데이터 갱신이 지연될 수 있습니다.</div>
+                    <div className="mt-1">5. 본 서비스는 개인 연구용이며, 상업적 재배포, API 크롤링, 무단 복제를 금지합니다.</div>
+                    <div className="mt-2 font-bold text-slate-900">6. 투자 전 반드시 금융투자협회, 금감원 등 공인 기관의 정보를 추가 확인하세요.</div>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+                  <div className="text-xs font-bold tracking-widest opacity-80">CONTACT & LICENSE</div>
+                  <div className="mt-2 text-xs font-mono leading-relaxed">
+                    <div>• GitHub: github.com/xanadukim/kospi-dashboard • Issues로 문의</div>
+                    <div>• Data: FRED API Terms, Yahoo Finance ToS, KRX OPEN API 약관, DART API 약관 준수</div>
+                    <div>• Code: MIT License (개인 학습용) • Firebase: Firestore Rules read=true, write=false</div>
+                    <div className="mt-2 text-slate-400">Last Updated: 2026-09-27 • v60 China Proxy + DART + Regime + Retrain • 12주 플랜 4번 완료</div>
+                  </div>
+                </div>
+
+                <div className="text-center text-xs font-mono text-slate-500 py-2">
+                  본 고지를 확인했음을 전제로 서비스를 이용합니다 • 투자 결정은 본인 책임 • © 2026 Quant Lab
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
       function HelpModal({ open, onClose }) {
+
         if (!open) return null;
         return (
           <div
@@ -680,6 +821,7 @@
         const [selectedDate, setSelectedDate] = useState("2026-09-26");
         const [showHelp, setShowHelp] = useState(false);
         const [showHistory, setShowHistory] = useState(false);
+        const [showDisclaimer, setShowDisclaimer] = useState(false);
         const [activeTab, setActiveTab] = useState("model");
         const [liveCount, setLiveCount] = useState(0);
         const [lastRefresh, setLastRefresh] = useState(new Date());
@@ -1056,6 +1198,12 @@
                   >
                     📅 이전 자료{" "}
                     {history.length > 0 ? `(${history.length})` : ""}
+                  </button>
+                  <button
+                    onClick={() => setShowDisclaimer(true)}
+                    className="btn-modern px-3.5 py-2 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold hover:bg-amber-200"
+                  >
+                    ⚠️ 면책
                   </button>
                   <button
                     onClick={() => setShowHelp(true)}
@@ -3443,9 +3591,28 @@
                   </div>
                 </div>
 
-                <div className="text-center text-xs font-mono text-slate-500 py-2">
-                  KOSPI Quant Terminal v60 - 10 Factors China Proxy + DART + 64 Picks + Regime + Retrain • 2-Stage
-                  8×8 Industry • 6개월 재학습 • 1단계 필터 • © 2026 Quant Lab
+                <div className="text-center text-xs font-mono text-slate-500 py-3 space-y-2">
+                  <div>
+                    KOSPI Quant Terminal v60 - 10 Factors China Proxy + DART + 64 Picks + Regime + Retrain • 2-Stage
+                    8×8 Industry • 6개월 재학습 • 1단계 필터 • © 2026 Quant Lab
+                  </div>
+                  <div className="flex items-center justify-center gap-3 flex-wrap">
+                    <button
+                      onClick={() => setShowDisclaimer(true)}
+                      className="px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold hover:bg-amber-100 btn-modern"
+                    >
+                      ⚠️ 투자위험 고지 및 면책사항
+                    </button>
+                    <span className="text-slate-400">•</span>
+                    <a href="disclaimer.html" target="_blank" className="px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-200 btn-modern">
+                      📄 법적 고지 전문 보기
+                    </a>
+                    <span className="text-slate-400">•</span>
+                    <span className="text-xs">FRED • yfinance • KRX • DART 출처 명시</span>
+                  </div>
+                  <div className="text-[10px] text-slate-400">
+                    예상 수익률 +1.29% 등은 모델 예측값이며 투자 조언이 아닙니다 • 원금 손실 위험 • 본인 판단 책임
+                  </div>
                 </div>
               </aside>
             </div>
@@ -3458,6 +3625,7 @@
               onSelect={loadSnapshot}
             />
             <HelpModal open={showHelp} onClose={() => setShowHelp(false)} />
+            <DisclaimerModal open={showDisclaimer} onClose={() => setShowDisclaimer(false)} />
           </div>
         );
       }
