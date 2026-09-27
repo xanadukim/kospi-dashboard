@@ -566,7 +566,7 @@ function App(){
           </div>
           <div className="mt-3 text-xs font-mono text-slate-500">Selected: <span className="font-bold px-2 py-1 rounded-full text-white" style={{background: currentIndustry.color}}>{currentIndustry.name}</span></div>
 
-          activeTab==='model' && (
+          {activeTab==='model' && (
             <div className="mt-4 space-y-4">
               <div className="card-hover" style={{background: 'white', borderRadius: '20px', border: '1px solid #e2e8f0', boxShadow: '0 4px 24px rgba(0,0,0,0.04)', padding: '20px'}}>
                 <div className="flex items-center justify-between">
