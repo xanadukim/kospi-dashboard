@@ -1,4 +1,5 @@
-name: KOSPI Quant Terminal v60 - Performance + Regime + Meta 100% REAL
+name: KOSPI Quant Terminal v60 - Performance + Regime + Meta 100% REAL + China Proxy
+
 on:
   schedule:
     - cron: '0 7 * * 1-5'  # UTC 07:00 = KST 16:00 평일 (장 마감 후)
@@ -10,24 +11,42 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install deps
+
+      - name: Install deps v60 China Proxy
         run: |
-          pip install firebase-admin yfinance requests lxml pandas numpy scikit-learn pykrx
-      - name: Run regime detector - v60 REAL yfinance 100%
+          pip install firebase-admin yfinance requests lxml pandas numpy scikit-learn pykrx beautifulsoup4
+
+      - name: Run regime detector - v60 REAL yfinance 100% + China Proxy
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-        run: python scripts/regime_detector_v56.py
-      - name: Run performance tracking - v60 REAL yfinance 95% + KRX
+        run: |
+          echo "=== Regime Detector v60 China Proxy ==="
+          python scripts/regime_detector_v60.py
+
+      - name: Run performance tracking - v60 REAL yfinance 95% + 64 Picks + China Proxy
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
           PRICE_SOURCE: yfinance
-        run: python scripts/track_performance_v56.py
-      - name: Run meta factor tracker - v60 REAL IC 100%
+        run: |
+          echo "=== Performance Tracking v60 64 Picks China Proxy ==="
+          python scripts/track_performance_v60.py
+
+      - name: Run meta factor tracker - v60 REAL IC 100% + China Proxy 10 Factors
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-        run: python scripts/meta_factor_tracker_v56.py
+        run: |
+          echo "=== Meta Factor Tracker v60 China Proxy IC ==="
+          python scripts/meta_factor_tracker_v60.py
+
+      - name: Summary
+        run: |
+          echo "v60 Performance pipeline completed"
+          echo "- regime_snapshots/{today} - VIX/OVX/DXY/TNX/KRW/KOSPI/SP500 + 구리(HG=F) + 상해종합(000001.SS)"
+          echo "- performance_tracking/{recDate}_{ticker}_{evalDate} - 64 Picks REAL return vs KOSPI"
+          echo "- factor_validity/{factor}_{today} - IC/HitRate for 10 Factors including 구리/상해종합"
