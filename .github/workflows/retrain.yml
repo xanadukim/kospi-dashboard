@@ -1,0 +1,80 @@
+name: KOSPI Quant Terminal v60.2 - Monthly Retrain + 6M Auto REAL
+
+on:
+  schedule:
+    - cron: '0 2 1 * *'  # 매월 1일 02:00 UTC = 11:00 KST - 6개월 재학습
+  workflow_dispatch:
+    inputs:
+      window_days:
+        description: 'Retrain window days (default 180)'
+        required: false
+        default: '180'
+        type: string
+      force:
+        description: 'Force retrain even if recently retrained'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps v60.2 Retrain REAL
+        run: |
+          pip install firebase-admin yfinance requests lxml pandas numpy pykrx beautifulsoup4 scikit-learn
+
+      - name: Run retrain model - v60.2 RidgeCV REAL 180D
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+          KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
+          PRICE_SOURCE: yfinance
+        run: |
+          echo "=== Retrain v60.2 - 6개월 재학습 - RidgeCV REAL ==="
+          echo "- Window: ${{ inputs.window_days || '180' }} days"
+          echo "- Industries: 8 (elec, auto, chem, fin, bio, steel, const, retail)"
+          echo "- Factors: 10 (SP500, US10Y, 외국인, SOX, 원달러, WTI, DXY, VIX, 구리, 상해종합)"
+          echo "- Method: RidgeCV alpha=[0.1,0.5,1.0,2.0] + StandardScaler + 70% new 30% old"
+          echo "- Proxy: 삼성전자 005930 등 8개 대표주 REAL yfinance"
+          python scripts/retrain_model.py
+
+      - name: Check generated data.js.new
+        run: |
+          if [ -f "js/data.js.new" ]; then
+            echo "✅ data.js.new generated"
+            ls -lh js/data.js.new
+            echo "--- diff summary ---"
+            if [ -f "js/data.js" ]; then
+              echo "Old R2:"
+              grep -o '"r2": [0-9.]*' js/data.js | head -8
+              echo "New R2:"
+              grep -o '"r2": [0-9.]*' js/data.js.new | head -8
+              echo "Beta changes:"
+              diff -u js/data.js js/data.js.new | grep -E '^\+.*betas|^-.*betas' | head -20 || echo "No major diff in betas line"
+            fi
+          else
+            echo "❌ data.js.new not found"
+            exit 1
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "v60.2 Retrain pipeline completed"
+          echo "- retrain_history/{today} - 180D RidgeCV REAL"
+          echo "- beta_snapshots/{today} - 8 industries new betas"
+          echo "- beta_snapshots/latest - always latest"
+          echo "- retrain_logs/{today} - summary"
+          echo "- js/data.js.new - auto generated for manual commit"
+          echo "Next retrain: 30 days later (monthly)"
+          echo "Manual commit: cp js/data.js.new js/data.js && git commit && git push"

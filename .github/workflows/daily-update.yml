@@ -1,8 +1,8 @@
-name: KOSPI Quant Terminal v60.1 - Daily Update + QC Gate + Regime REAL
+name: KOSPI Quant Terminal v60.2 - Daily Update + QC Gate + Regime + Retrain REAL
 
 on:
   schedule:
-    - cron: '30 22 * * 0-4'  # UTC 22:30 = KST 07:30 평일 아침 (미국 장 마감 후)
+    - cron: '30 22 * * 0-4'  # UTC 22:30 = KST 07:30 평일 아침
   workflow_dispatch:
 
 jobs:
@@ -17,7 +17,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install deps v60.1 Regime Dashboard
+      - name: Install deps v60.2 Regime + Retrain
         run: |
           pip install firebase-admin yfinance requests lxml pandas numpy pykrx beautifulsoup4
 
@@ -27,11 +27,11 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
         run: |
-          echo "=== QC Gate v60 - 10 Factors NaN 체크 - 실패 시 전체 중단 ==="
+          echo "=== QC Gate v60 - 10 Factors NaN 체크 ==="
           python scripts/data_quality_check_v60.py
-          echo "QC Gate passed - proceeding to daily update"
+          echo "QC Gate passed"
 
-      - name: Run daily update - v60.1 REAL 10 Factors + 64 Picks + DART + Regime
+      - name: Run daily update - v60.2 REAL 10 Factors + 64 Picks + DART + Regime + Retrain
         if: steps.qc_gate.outcome == 'success'
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
@@ -40,17 +40,19 @@ jobs:
           KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
           PRICE_SOURCE: yfinance
         run: |
-          echo "=== Daily Update v60.1 Regime Dashboard REAL ==="
+          echo "=== Daily Update v60.2 Regime + Retrain 6M REAL ==="
           echo "- Regime Detector: VIX/OVX/DXY/WTI/KOSPI REAL"
           echo "- Meta Tracker: P(valid|regime) + bonus"
+          echo "- Retrain: beta_snapshots/latest fetch"
           python scripts/daily_update.py
 
       - name: Summary
         if: always()
         run: |
-          echo "v60.1 Daily pipeline with QC Gate + Regime completed"
-          echo "- QC: data_quality_logs/{today} - NaN/0.85 fallback 체크"
-          echo "- Factors: factor_snapshots/{today} - 10 Factors REAL + regime"
+          echo "v60.2 Daily pipeline with QC Gate + Regime + Retrain completed"
+          echo "- QC: data_quality_logs/{today}"
+          echo "- Factors: factor_snapshots/{today} - 10 Factors REAL + regime + retrain"
           echo "- Regime: regime_history/{today} - VIX/OVX/DXY REAL + 8 indicators"
           echo "- Meta: meta_history/{today} - P(valid|regime) regime aware"
-          echo "QC가 FAIL이면 daily_update는 실행 안 됨 (안전 장치)"
+          echo "- Retrain: beta_snapshots/latest - 8 industries RidgeCV REAL"
+          echo "QC FAIL이면 daily_update 실행 안 됨"
