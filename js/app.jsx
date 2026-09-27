@@ -118,10 +118,10 @@
               <div className="flex items-center justify-between sticky top-0 bg-white pb-4 border-b z-10">
                 <div>
                   <h2 className="text-sm font-extrabold tracking-tight">
-                    KOSPI Quant Terminal v56 - Meta Model 완전 가이드
+                    KOSPI Quant Terminal v60 - 10 Factors China Proxy + DART + Regime 완전 가이드
                   </h2>
                   <div className="text-xs font-mono text-slate-500 mt-1">
-                    2-Stage 회귀 + 6개월 재학습 + 성과추적 • 2026.09
+                    10 Factors China Proxy + DART + Regime + Retrain • 2-Stage + 6개월 재학습 • 2026.09
                   </div>
                 </div>
                 <button
@@ -136,7 +136,7 @@
                 {/* v46 업데이트 */}
                 <div className="p-4 rounded-xl bg-gradient-to-br from-violet-50 via-indigo-50 to-blue-50 border border-violet-200">
                   <div className="font-extrabold text-violet-900 text-sm">
-                    🚀 v46 업데이트 하이라이트
+                    🚀 v60 업데이트 하이라이트 (China Proxy + DART + Regime + Retrain)
                   </div>
                   <div className="mt-2 grid grid-cols-1 gap-2 text-xs text-slate-700">
                     <div className="flex gap-2">
@@ -654,7 +654,7 @@
                 </div>
 
                 <div className="pt-4 border-t text-xs font-mono text-slate-500 text-center">
-                  KOSPI Quant Terminal v56 - Meta Model • 2-Stage Ridge + 6개월
+                  KOSPI Quant Terminal v60 - 10 Factors China Proxy + DART + Regime + Retrain • 2-Stage Ridge + 6개월
                   재학습 + 카드 해석 • Firebase Live + GitHub Actions
                   <br />© 2026 Quant Lab •문의: GitHub xanadukim/kospi-dashboard
                 </div>
@@ -1010,7 +1010,7 @@
                       KOSPI Quant Terminal
                     </div>
                     <div className="text-xs font-mono text-slate-300">
-                      v56 • 8×8 Industry • Meta Learner + 6개월 운영 • Firebase
+                      v60 • 8×8 Industry • China Proxy + DART + Regime + Retrain • 6개월 운영 • Firebase
                       Live{liveCount > 0 ? ` • ${liveCount}개` : ""}
                     </div>
                   </div>
@@ -2800,7 +2800,7 @@
                       <div className="flex items-center justify-between">
                         <div>
                           <h3 className="text-base font-extrabold tracking-tight">
-                            🔬 메타 모델 - 어떤 팩터가 지금 유효한가? v56
+                            🔬 메타 모델 - 어떤 팩터가 지금 유효한가? v60
                           </h3>
                           <div className="mt-1 text-xs text-emerald-100 font-mono">
                             Meta Learner: P(factor_valid | regime) - 6개월 운영
@@ -3033,23 +3033,23 @@
                           }}
                         >
                           <div className="text-xs font-bold tracking-widest opacity-80">
-                            메타 모델 로드맵 v56
+                            메타 모델 로드맵 v60
                           </div>
                           <div className="mt-3 space-y-2 text-xs font-mono">
                             <div className="flex justify-between">
                               <span className="text-slate-400">현재</span>
                               <span className="font-bold text-white">
-                                v56 카드 해석
+                                v60 카드 해석
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-slate-400">v56</span>
+                              <span className="text-slate-400">v60</span>
                               <span className="font-bold text-emerald-300">
                                 메타 유효성 + 체제 감지
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-slate-400">v56</span>
+                              <span className="text-slate-400">v60</span>
                               <span className="font-bold text-amber-300">
                                 Kalman β + WTI_vol
                               </span>
@@ -3250,7 +3250,7 @@
                       Today's Factor Z-Scores
                     </h3>
                     <span className="text-xs font-mono px-2.5 py-1 rounded-full bg-emerald-600 text-white font-bold">
-                      {selectedDate} • v56 REAL • yfinance 95%
+                      {selectedDate} • v60 REAL • yfinance 100%
                     </span>
                   </div>
                   <div className="mt-4">
@@ -3366,7 +3366,7 @@
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
                     <div className="text-xs font-bold tracking-widest">
-                      DATA PIPELINE • PRODUCTION • v56 REAL yfinance 95%
+                      DATA PIPELINE • PRODUCTION • v60 REAL yfinance 100% + DART + Regime
                     </div>
                   </div>
                   <div className="mt-4 space-y-2.5 text-xs font-mono">
@@ -3415,7 +3415,7 @@
                       3σ Winsorize
                       <br />
                       Output: β matrix (8x9), Z-scores, Score = β·Z + Alpha •
-                      Quant Terminal v56 - Meta Model
+                      Quant Terminal v60 - China Proxy + DART + Regime + Retrain
                       <br />
                       Firebase Live: {liveCount}개 스냅샷 • {selectedDate} •
                       onSnapshot
@@ -3444,7 +3444,7 @@
                 </div>
 
                 <div className="text-center text-xs font-mono text-slate-500 py-2">
-                  KOSPI Quant Terminal v52 - Filter Separate + DART • 2-Stage
+                  KOSPI Quant Terminal v60 - 10 Factors China Proxy + DART + 64 Picks + Regime + Retrain • 2-Stage
                   8×8 Industry • 6개월 재학습 • 1단계 필터 • © 2026 Quant Lab
                 </div>
               </aside>

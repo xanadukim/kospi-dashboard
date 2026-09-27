@@ -1,4 +1,4 @@
-// js/data.js - Industries & Factor Meta - v59 China Proxy (구리+상해)
+// js/data.js - Industries & Factor Meta - v60 China Proxy + DART + Regime (구리+상해)
 // 분리된 데이터 파일 - 베타 수정 시 여기만 수정
 
 var industries = [
