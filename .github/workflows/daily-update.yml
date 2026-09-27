@@ -1,4 +1,4 @@
-name: KOSPI Quant Terminal v60 - Daily Update + QC Gate 100% REAL
+name: KOSPI Quant Terminal v60.1 - Daily Update + QC Gate + Regime REAL
 
 on:
   schedule:
@@ -17,7 +17,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install deps v60 China Proxy
+      - name: Install deps v60.1 Regime Dashboard
         run: |
           pip install firebase-admin yfinance requests lxml pandas numpy pykrx beautifulsoup4
 
@@ -31,7 +31,7 @@ jobs:
           python scripts/data_quality_check_v60.py
           echo "QC Gate passed - proceeding to daily update"
 
-      - name: Run daily update - v60 REAL 10 Factors + 64 Picks + DART
+      - name: Run daily update - v60.1 REAL 10 Factors + 64 Picks + DART + Regime
         if: steps.qc_gate.outcome == 'success'
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
@@ -40,13 +40,17 @@ jobs:
           KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
           PRICE_SOURCE: yfinance
         run: |
-          echo "=== Daily Update v60 China Proxy 100% REAL ==="
+          echo "=== Daily Update v60.1 Regime Dashboard REAL ==="
+          echo "- Regime Detector: VIX/OVX/DXY/WTI/KOSPI REAL"
+          echo "- Meta Tracker: P(valid|regime) + bonus"
           python scripts/daily_update.py
 
       - name: Summary
         if: always()
         run: |
-          echo "v60 Daily pipeline with QC Gate completed"
+          echo "v60.1 Daily pipeline with QC Gate + Regime completed"
           echo "- QC: data_quality_logs/{today} - NaN/0.85 fallback 체크"
-          echo "- Factors: factor_snapshots/{today} - 10 Factors REAL"
+          echo "- Factors: factor_snapshots/{today} - 10 Factors REAL + regime"
+          echo "- Regime: regime_history/{today} - VIX/OVX/DXY REAL + 8 indicators"
+          echo "- Meta: meta_history/{today} - P(valid|regime) regime aware"
           echo "QC가 FAIL이면 daily_update는 실행 안 됨 (안전 장치)"
