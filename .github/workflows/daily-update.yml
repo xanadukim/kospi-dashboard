@@ -1,4 +1,4 @@
-name: KOSPI Quant Terminal v59 - China Proxy 10 Factors 100% REAL
+name: KOSPI Quant Terminal v60 - 10 Factors China Proxy 100% REAL + DART + 64 Picks
 on:
   schedule:
     - cron: '30 22 * * 0-4'  # UTC 22:30 = KST 07:30 평일
@@ -10,20 +10,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
       - name: Install deps
         run: |
           pip install firebase-admin yfinance requests lxml pandas numpy scikit-learn pykrx
-
-      - name: Run daily update - China Proxy 10 Factors REAL
+      - name: Run daily update - v60 China Proxy 10 Factors + DART + 64 Picks REAL
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
+          PRICE_SOURCE: yfinance
         run: python scripts/daily_update.py

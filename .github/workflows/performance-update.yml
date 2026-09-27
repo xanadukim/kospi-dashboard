@@ -1,4 +1,4 @@
-name: KOSPI Quant Terminal v56 - Performance REAL yfinance
+name: KOSPI Quant Terminal v60 - Performance + Regime + Meta 100% REAL
 on:
   schedule:
     - cron: '0 7 * * 1-5'  # UTC 07:00 = KST 16:00 평일 (장 마감 후)
@@ -10,29 +10,24 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
       - name: Install deps
         run: |
-          pip install firebase-admin yfinance requests lxml pandas numpy scikit-learn
-
-      - name: Run regime detector - REAL yfinance 100%
+          pip install firebase-admin yfinance requests lxml pandas numpy scikit-learn pykrx
+      - name: Run regime detector - v60 REAL yfinance 100%
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: python scripts/regime_detector_v56.py
-
-      - name: Run performance tracking - REAL yfinance 95%
+      - name: Run performance tracking - v60 REAL yfinance 95% + KRX
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
           PRICE_SOURCE: yfinance
         run: python scripts/track_performance_v56.py
-
-      - name: Run meta factor tracker - REAL IC 100%
+      - name: Run meta factor tracker - v60 REAL IC 100%
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: python scripts/meta_factor_tracker_v56.py
