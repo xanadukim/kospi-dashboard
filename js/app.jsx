@@ -2946,10 +2946,21 @@
                     date: "2026-09-27",
                     factor_adjustment: { "반도체팩터": 0.92, "원달러": 0.88, "WTI_vol": 0.45, "GPR": 0.35, "정제마진": 0.50, "구리": 0.78, "상해종합": 0.72 }
                   };
-                  const currentRegime = history[0]?.regime || fallbackRegime;
+                  const rawRegime = history[0]?.regime;
+                  const currentRegime = rawRegime ? {
+                    ...fallbackRegime,
+                    ...rawRegime,
+                    indicators: { ...fallbackRegime.indicators, ...(rawRegime.indicators || {}) },
+                    factor_adjustment: { ...fallbackRegime.factor_adjustment, ...(rawRegime.factor_adjustment || {}) },
+                    triggers: rawRegime.triggers && rawRegime.triggers.length > 0 ? rawRegime.triggers : fallbackRegime.triggers,
+                    confidence: rawRegime.confidence ?? fallbackRegime.confidence,
+                    window: rawRegime.window ?? fallbackRegime.window,
+                    color: rawRegime.color || fallbackRegime.color,
+                    regime: rawRegime.regime || fallbackRegime.regime
+                  } : fallbackRegime;
                   const currentMeta = history[0]?.meta || null;
                   const regimeColor = currentRegime.color || (currentRegime.regime === "전시" ? "#dc2626" : currentRegime.regime === "고변동" ? "#f59e0b" : "#10b981");
-                  const isLive = history.length > 0 && history[0]?.regime?.indicators;
+                  const isLive = history.length > 0 && history[0]?.regime?.indicators && Object.keys(history[0]?.regime?.indicators || {}).length > 0;
                   
                   return (
                   <div className="mt-4 space-y-4">
@@ -3247,17 +3258,27 @@
                             <span className="text-xs font-mono px-2 py-1 rounded-full bg-slate-900 text-white">regime_history</span>
                           </h4>
                           <div className="mt-3 flex items-end gap-1 h-20">
-                            {(history.slice(0,12).reverse().map(h => h.regime) || [
-                              {regime: "평시", confidence: 0.85}, {regime: "평시", confidence: 0.82}, {regime: "고변동", confidence: 0.75}, {regime: "평시", confidence: 0.88}, {regime: "평시", confidence: 0.90}, {regime: "고변동", confidence: 0.72}, {regime: "평시", confidence: 0.86}, {regime: "평시", confidence: 0.84}, {regime: "평시", confidence: 0.87}, {regime: "고변동", confidence: 0.78}, {regime: "평시", confidence: 0.85}, currentRegime
-                            ]).map((r, i) => (
-                              <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                                <div className="w-full rounded-t-md" style={{
-                                  height: `${(r.confidence||0.7)*60}px`,
-                                  background: r.regime === "전시" ? "#dc2626" : r.regime === "고변동" ? "#f59e0b" : "#10b981"
-                                }} title={`${r.regime} ${((r.confidence||0.7)*100).toFixed(0)}%`}></div>
-                                <span className="text-[9px] font-mono text-slate-400">{r.regime[0]}</span>
-                              </div>
-                            ))}
+                            {(() => {
+                              const demoHistory = [
+                                {regime: "평시", confidence: 0.85}, {regime: "평시", confidence: 0.82}, {regime: "고변동", confidence: 0.75}, {regime: "평시", confidence: 0.88}, {regime: "평시", confidence: 0.90}, {regime: "고변동", confidence: 0.72}, {regime: "평시", confidence: 0.86}, {regime: "평시", confidence: 0.84}, {regime: "평시", confidence: 0.87}, {regime: "고변동", confidence: 0.78}, {regime: "평시", confidence: 0.85}, currentRegime
+                              ];
+                              const realHistory = history.filter(h => h && h.regime).slice(0,12).reverse().map(h => h.regime);
+                              const displayHistory = realHistory.length >= 3 ? realHistory : demoHistory;
+                              return displayHistory.map((r, i) => {
+                                const safeR = r || {regime: "평시", confidence: 0.75};
+                                const conf = safeR.confidence || 0.75;
+                                const reg = safeR.regime || "평시";
+                                return (
+                                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                                    <div className="w-full rounded-t-md" style={{
+                                      height: `${conf*60}px`,
+                                      background: reg === "전시" ? "#dc2626" : reg === "고변동" ? "#f59e0b" : "#10b981"
+                                    }} title={`${reg} ${(conf*100).toFixed(0)}%`}></div>
+                                    <span className="text-[9px] font-mono text-slate-400">{reg[0] || "평"[0]}</span>
+                                  </div>
+                                );
+                              });
+                            })()}
                           </div>
                           <div className="mt-3 flex items-center justify-center gap-3 text-xs font-mono">
                             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500"></span>평시</span>
