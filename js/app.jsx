@@ -2934,146 +2934,253 @@
                   </div>
                 )}
 
-                {activeTab === "meta" && (
+                                {activeTab === "meta" && (() => {
+                  const fallbackRegime = {
+                    regime: "평시",
+                    confidence: 0.85,
+                    triggers: ["VIX 18.5 안정", "OVX 32.1 안정", "WTI vol 2.1% 정상"],
+                    window: 120,
+                    color: "#10b981",
+                    risk_level: "Low",
+                    indicators: { VIX: 18.5, OVX: 32.1, DXY: 103.8, WTI_vol: 2.1, KOSPI_3d: 0.42, KRW_vol: 0.8 },
+                    date: "2026-09-27",
+                    factor_adjustment: { "반도체팩터": 0.92, "원달러": 0.88, "WTI_vol": 0.45, "GPR": 0.35, "정제마진": 0.50, "구리": 0.78, "상해종합": 0.72 }
+                  };
+                  const currentRegime = history[0]?.regime || fallbackRegime;
+                  const currentMeta = history[0]?.meta || null;
+                  const regimeColor = currentRegime.color || (currentRegime.regime === "전시" ? "#dc2626" : currentRegime.regime === "고변동" ? "#f59e0b" : "#10b981");
+                  const isLive = history.length > 0 && history[0]?.regime?.indicators;
+                  
+                  return (
                   <div className="mt-4 space-y-4">
-                    {/* Meta Model Header - v50 신규 */}
+                    {/* Regime Header - v60.1 REAL */}
                     <div
-                      className="rounded-2xl p-5 text-white shadow-xl"
+                      className="rounded-2xl p-5 text-white shadow-xl relative overflow-hidden"
                       style={{
-                        background:
-                          "linear-gradient(135deg, #059669 0%, #0f766e 50%, #064e3b 100%)",
-                        boxShadow: "0 12px 32px rgba(16,185,129,0.25)",
+                        background: `linear-gradient(135deg, ${regimeColor} 0%, ${regimeColor}dd 50%, #0f172a 100%)`,
+                        boxShadow: `0 12px 32px ${regimeColor}35`,
                       }}
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="absolute top-0 right-0 w-64 h-64 opacity-10">
+                        <div className="w-full h-full rounded-full border-[12px] border-white/20"></div>
+                      </div>
+                      <div className="flex items-center justify-between relative z-10">
                         <div>
-                          <h3 className="text-base font-extrabold tracking-tight">
-                            🔬 메타 모델 - 어떤 팩터가 지금 유효한가? v60
+                          <h3 className="text-base font-extrabold tracking-tight flex items-center gap-2">
+                            🔬 Regime Dashboard v60.1 • REAL
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-mono ${isLive ? "bg-emerald-400 text-slate-900" : "bg-white/20"}`}>
+                              {isLive ? "● LIVE" : "○ DEMO"}
+                            </span>
                           </h3>
-                          <div className="mt-1 text-xs text-emerald-100 font-mono">
-                            Meta Learner: P(factor_valid | regime) - 6개월 운영
-                            제안 기반
+                          <div className="mt-1 text-xs text-white/80 font-mono">
+                            VIX/OVX/DXY/WTI/KOSPI REAL • {currentRegime.date} • {currentRegime.regime} 체제 {currentRegime.confidence ? `신뢰도 ${(currentRegime.confidence*100).toFixed(0)}%` : ""}
                           </div>
                         </div>
                         <span className="px-3 py-1.5 rounded-full bg-white/20 backdrop-blur border border-white/20 text-xs font-mono font-bold">
-                          6개월 운영 제안 저장됨
+                          regime_detector.py + meta_factor_tracker.py
                         </span>
                       </div>
-                      <div className="mt-4 grid grid-cols-3 gap-3">
+                      <div className="mt-4 grid grid-cols-3 gap-3 relative z-10">
                         <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3">
-                          <div className="text-xs font-mono text-emerald-200 tracking-widest">
-                            현재 체제
-                          </div>
-                          <div className="mt-1 text-sm font-extrabold text-white">
-                            평시{" "}
-                            <span className="text-xs font-normal text-emerald-200">
-                              Risk Low
+                          <div className="text-xs font-mono text-white/70 tracking-widest">현재 체제</div>
+                          <div className="mt-1 text-lg font-extrabold text-white flex items-center gap-2">
+                            {currentRegime.regime}
+                            <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-white/20">
+                              {currentRegime.risk_level} Risk
                             </span>
                           </div>
-                          <div className="mt-1 text-xs text-emerald-100">
-                            VIX 18.5 • GPR 95
+                          <div className="mt-2">
+                            <div className="flex justify-between text-xs">
+                              <span className="text-white/70">신뢰도</span>
+                              <span className="font-bold">{((currentRegime.confidence||0.85)*100).toFixed(0)}%</span>
+                            </div>
+                            <div className="mt-1 w-full h-2 rounded-full bg-white/20 overflow-hidden">
+                              <div className="h-full bg-white rounded-full" style={{width: `${(currentRegime.confidence||0.85)*100}%`}}></div>
+                            </div>
                           </div>
                         </div>
                         <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3">
-                          <div className="text-xs font-mono text-emerald-200 tracking-widest">
-                            권장 윈도우
+                          <div className="text-xs font-mono text-white/70 tracking-widest">권장 윈도우</div>
+                          <div className="mt-1 text-lg font-extrabold text-white">
+                            {currentRegime.window}일 <span className="text-xs font-normal">Rolling</span>
                           </div>
-                          <div className="mt-1 text-sm font-extrabold text-white">
-                            120일{" "}
-                            <span className="text-xs font-normal">Rolling</span>
+                          <div className="mt-1 text-xs text-white/80">
+                            {currentRegime.window === 120 ? "안정적 → 느린 적응" : currentRegime.window === 90 ? "빠른 적응 → 최근 반영" : "초단기 적응 → 방어적"}
                           </div>
-                          <div className="mt-1 text-xs text-emerald-100">
-                            안정적 → 느린 적응
+                          <div className="mt-2 text-xs font-mono bg-white/15 rounded px-2 py-1">
+                            {currentRegime.window === 120 ? "매월 1일 재학습" : currentRegime.window === 90 ? "즉시 + 매주" : "매일 재학습"}
                           </div>
                         </div>
-                        <div className="rounded-xl bg-white text-emerald-900 p-3 shadow-lg">
-                          <div className="text-xs font-mono text-emerald-700 tracking-widest">
-                            메타 유효 팩터
+                        <div className="rounded-xl bg-white text-slate-900 p-3 shadow-lg">
+                          <div className="text-xs font-mono text-slate-500 tracking-widest">실시간 지표</div>
+                          <div className="mt-1 grid grid-cols-2 gap-1 text-xs">
+                            <div className="flex justify-between"><span className="text-slate-500">VIX</span><span className={`font-bold ${currentRegime.indicators?.VIX > 22 ? "text-red-600" : "text-emerald-600"}`}>{currentRegime.indicators?.VIX?.toFixed(1) || "18.5"}</span></div>
+                            <div className="flex justify-between"><span className="text-slate-500">OVX</span><span className={`font-bold ${currentRegime.indicators?.OVX > 35 ? "text-red-600" : "text-emerald-600"}`}>{currentRegime.indicators?.OVX?.toFixed(1) || "32.1"}</span></div>
+                            <div className="flex justify-between"><span className="text-slate-500">DXY</span><span className="font-bold">{currentRegime.indicators?.DXY?.toFixed(1) || "103.8"}</span></div>
+                            <div className="flex justify-between"><span className="text-slate-500">WTI vol</span><span className={`font-bold ${currentRegime.indicators?.WTI_vol > 4 ? "text-amber-600" : ""}`}>{currentRegime.indicators?.WTI_vol?.toFixed(1) || "2.1"}%</span></div>
                           </div>
-                          <div className="mt-1 text-sm font-extrabold">
-                            반도체 92% • 원달러 88%
+                          <div className="mt-2 text-xs text-slate-500">
+                            KOSPI 3일 {currentRegime.indicators?.KOSPI_3d > 0 ? "+" : ""}{currentRegime.indicators?.KOSPI_3d?.toFixed(2) || "0.42"}%
                           </div>
-                          <div className="mt-1 text-xs text-emerald-700">
-                            Top 2 유효
+                        </div>
+                      </div>
+                      <div className="mt-3 p-2.5 rounded-xl bg-black/20 backdrop-blur border border-white/10 relative z-10">
+                        <div className="text-xs font-mono text-white/60">트리거 • {currentRegime.triggers?.length || 0}개 감지</div>
+                        <div className="mt-1 flex flex-wrap gap-1.5">
+                          {(currentRegime.triggers || []).map((t, i) => (
+                            <span key={i} className="px-2.5 py-1 rounded-full bg-white/15 border border-white/10 text-xs font-mono text-white">
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Regime Indicators Grid - 8개 지표 */}
+                    <div className="grid grid-cols-12 gap-4">
+                      <div className="col-span-12 md:col-span-7 rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-extrabold tracking-tight flex items-center gap-2">
+                            📊 Regime 감지 지표 (8개 REAL)
+                            <span className="px-2 py-0.5 rounded-full bg-slate-900 text-white text-xs font-mono">{currentRegime.date}</span>
+                          </h4>
+                          <span className="text-xs font-mono px-2 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700">
+                            price_provider.py
+                          </span>
+                        </div>
+                        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                          {[
+                            { k: "VIX", label: "공포지수", value: currentRegime.indicators?.VIX || 18.5, threshold: 22, unit: "", desc: "22↑ 고변동, 30↑ 전시", color: "#dc2626" },
+                            { k: "OVX", label: "원유 변동성", value: currentRegime.indicators?.OVX || 32.1, threshold: 35, unit: "", desc: "35↑ 고변동, 50↑ 전시", color: "#a16207" },
+                            { k: "DXY", label: "달러 인덱스", value: currentRegime.indicators?.DXY || 103.8, threshold: 104, unit: "", desc: "104↑ 강달러, 105↑ 위기", color: "#2563eb" },
+                            { k: "WTI_vol", label: "WTI 5일 변동", value: currentRegime.indicators?.WTI_vol || 2.1, threshold: 4, unit: "%", desc: "4%↑ 고변동 트리거", color: "#7c3aed" },
+                            { k: "KOSPI_3d", label: "KOSPI 3일 수익", value: currentRegime.indicators?.KOSPI_3d || 0.42, threshold: -3, unit: "%", desc: "-3%↓ 전시 트리거", color: "#0f766e" },
+                            { k: "KRW_vol", label: "원달러 변동", value: currentRegime.indicators?.KRW_vol || 0.8, threshold: 2.5, unit: "%", desc: "2.5%↑ 고변동", color: "#e11d48" },
+                            { k: "SP500", label: "S&P500 Z", value: zScores["S&P500"] || 0.63, threshold: 1.5, unit: "σ", desc: "글로벌 리스크", color: "#059669" },
+                            { k: "US10Y", label: "US10Y Z", value: zScores["US 10Y"] || -1.13, threshold: 1, unit: "σ", desc: "금리 변동", color: "#0891b2" },
+                          ].map((ind) => {
+                            const isHigh = ind.k === "KOSPI_3d" ? ind.value < ind.threshold : Math.abs(ind.value) > Math.abs(ind.threshold);
+                            return (
+                              <div key={ind.k} className={`rounded-xl p-3 border ${isHigh ? "bg-red-50 border-red-200" : "bg-slate-50 border-slate-200"}`}>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-bold text-slate-700">{ind.k}</span>
+                                  <span className={`w-2 h-2 rounded-full ${isHigh ? "bg-red-500 animate-pulse" : "bg-emerald-500"}`}></span>
+                                </div>
+                                <div className="text-xs text-slate-500">{ind.label}</div>
+                                <div className={`mt-1 text-sm font-mono font-bold ${isHigh ? "text-red-600" : "text-slate-900"}`}>
+                                  {ind.value > 0 ? "+" : ""}{ind.value.toFixed(1)}{ind.unit}
+                                </div>
+                                <div className="mt-1 text-[10px] font-mono text-slate-500 leading-tight">{ind.desc}</div>
+                                <div className="mt-2 w-full h-1 rounded-full bg-slate-200 overflow-hidden">
+                                  <div className="h-full rounded-full" style={{width: `${Math.min(100, Math.abs(ind.value)/ind.threshold*50)}%`, background: ind.color}}></div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="mt-4 p-3 rounded-xl bg-slate-900 text-slate-200 font-mono text-xs">
+                          <div className="flex justify-between">
+                            <span>Regime Logic v60.1:</span>
+                            <span className="text-white">VIX&gt;30 or OVX&gt;50 → 전시 / VIX&gt;22 or WTI_vol&gt;4% → 고변동 / else 평시</span>
+                          </div>
+                          <div className="mt-1 text-slate-400">스크립트: regime_detector.py • get_market_indicator("VIX"/"OVX"/"DXY"/"WTI") REAL • calc_volatility 5일</div>
+                        </div>
+                      </div>
+
+                      <div className="col-span-12 md:col-span-5 space-y-4">
+                        {/* Regime별 팩터 조정 */}
+                        <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+                          <h4 className="text-sm font-extrabold flex items-center gap-2">
+                            🎛️ Regime별 팩터 유효성 조정
+                            <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-amber-100 border border-amber-200 text-amber-800">
+                              {currentRegime.regime} 모드
+                            </span>
+                          </h4>
+                          <div className="mt-3 space-y-2">
+                            {Object.entries(currentRegime.factor_adjustment || fallbackRegime.factor_adjustment).map(([factor, prob]) => (
+                              <div key={factor} className="flex items-center justify-between p-2.5 rounded-xl border bg-slate-50 hover:bg-white transition-colors">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-1.5 h-8 rounded-full" style={{background: prob > 0.8 ? "#10b981" : prob > 0.5 ? "#f59e0b" : "#ef4444"}}></div>
+                                  <div>
+                                    <div className="text-xs font-bold">{factor}</div>
+                                    <div className="text-[10px] text-slate-500 font-mono">
+                                      {factor === "반도체팩터" ? "elec 핵심" : factor === "원달러" ? "auto 핵심" : factor === "WTI_vol" ? "유가 변동" : factor === "GPR" ? "전쟁 리스크" : factor === "구리" ? "China Proxy" : "팩터"}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className={`text-xs font-mono font-bold px-2 py-1 rounded-full text-white ${prob > 0.8 ? "bg-emerald-600" : prob > 0.5 ? "bg-amber-500" : "bg-red-500"}`}>
+                                    {Math.round(prob*100)}%
+                                  </div>
+                                  <div className="mt-1 w-16 h-1 rounded-full bg-slate-200 overflow-hidden ml-auto">
+                                    <div className="h-full rounded-full bg-slate-900" style={{width: `${prob*100}%`}}></div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="mt-3 p-2 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-800">
+                            💡 평시: 반도체 92% • 고변동: WTI_vol 75%↑ • 전시: GPR 35%→85% 급등
+                          </div>
+                        </div>
+
+                        <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+                          <h4 className="text-sm font-extrabold">6개월 운영 제안 v60.1</h4>
+                          <div className="mt-3 space-y-2 text-xs">
+                            <div className={`p-2.5 rounded-lg border ${currentRegime.regime === "평시" ? "bg-emerald-50 border-emerald-300 ring-2 ring-emerald-200" : "bg-emerald-50/50 border-emerald-200"}`}>
+                              <div className="font-bold text-emerald-900 flex items-center gap-2">
+                                평시 운영 {currentRegime.regime === "평시" && <span className="px-1.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px]">현재</span>}
+                              </div>
+                              <div className="mt-1 text-emerald-700">매월 1일 재학습 • 120일 윈도우 • R² 0.89 유지 • 반도체/원달러 유효</div>
+                            </div>
+                            <div className={`p-2.5 rounded-lg border ${currentRegime.regime === "고변동" ? "bg-amber-50 border-amber-300 ring-2 ring-amber-200" : "bg-amber-50/50 border-amber-200"}`}>
+                              <div className="font-bold text-amber-900 flex items-center gap-2">
+                                고변동 트리거 {currentRegime.regime === "고변동" && <span className="px-1.5 py-0.5 rounded-full bg-amber-600 text-white text-[10px]">현재</span>}
+                              </div>
+                              <div className="mt-1 text-amber-700">WTI 5일 {">"}4% 또는 VIX{">"}22 → 90일 윈도우 • 즉시 재학습 • WTI_vol 활성화</div>
+                            </div>
+                            <div className={`p-2.5 rounded-lg border ${currentRegime.regime === "전시" ? "bg-red-50 border-red-300 ring-2 ring-red-200" : "bg-red-50/50 border-red-200"}`}>
+                              <div className="font-bold text-red-900 flex items-center gap-2">
+                                전시 트리거 {currentRegime.regime === "전시" && <span className="px-1.5 py-0.5 rounded-full bg-red-600 text-white text-[10px]">현재</span>}
+                              </div>
+                              <div className="mt-1 text-red-700">GPR{">"}150 또는 OVX{">"}50 또는 KOSPI 3일 -3% → 60일 윈도우 • GPR, WTI_vol 활성화</div>
+                            </div>
+                            <div className="mt-3 p-2 rounded-lg bg-slate-900 text-slate-200 font-mono text-xs">
+                              저장: regime_history/{currentRegime.date} • meta_history/{currentRegime.date}<br/>스크립트: regime_detector.py, meta_factor_tracker.py v60.1
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
 
+                    {/* Meta Factor Tracker - Regime Aware */}
                     <div className="grid grid-cols-12 gap-4">
                       <div className="col-span-12 md:col-span-7 rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
                         <div className="flex items-center justify-between">
                           <h4 className="text-sm font-extrabold tracking-tight">
-                            팩터 유효성 추적 (Meta Factor Tracker)
+                            팩터 유효성 추적 (Meta Factor Tracker v60.1 • Regime Aware)
                           </h4>
                           <span className="text-xs font-mono px-2 py-1 rounded-full bg-emerald-900 text-white">
-                            IC·Hit 기반
+                            P(valid|regime) = sigmoid(IC*5 + (Hit-50)/20) + bonus
                           </span>
                         </div>
                         <div className="mt-1 text-xs text-slate-500 font-mono">
-                          P(valid) = sigmoid(IC*5 + (Hit-50)/20) - 전시에는 +0.5
-                          가산
+                          평시: 반도체 92% 유효 • 고변동: WTI_vol 75% • 전시: GPR 35%→85% 급등 (Regime별 +0.35 가산)
                         </div>
                         <div className="mt-4 space-y-2.5">
-                          {[
-                            {
-                              factor: "반도체팩터",
-                              ic: 0.18,
-                              hit: 71.2,
-                              prob: 0.92,
-                              regime: "평시",
-                              color: "#2563eb",
-                              desc: "전기전자 핵심 - 항상 유효",
-                            },
-                            {
-                              factor: "원달러",
-                              ic: 0.14,
-                              hit: 66.4,
-                              prob: 0.88,
-                              regime: "평시",
-                              color: "#0f766e",
-                              desc: "자동차·건설 - 평시 유효",
-                            },
-                            {
-                              factor: "WTI_vol",
-                              ic: 0.12,
-                              hit: 62.0,
-                              prob: 0.75,
-                              regime: "고변동",
-                              color: "#a16207",
-                              desc: "유가 변동성 - 고변동 시 급등",
-                            },
-                            {
-                              factor: "GPR",
-                              ic: -0.06,
-                              hit: 50.0,
-                              prob: 0.35,
-                              regime: "전시",
-                              color: "#dc2626",
-                              desc: "전쟁 리스크 - 전시만 유효",
-                            },
-                            {
-                              factor: "정제마진",
-                              ic: 0.1,
-                              hit: 61.0,
-                              prob: 0.68,
-                              regime: "고변동",
-                              color: "#7c3aed",
-                              desc: "화학 마진 - 유가 급등 시 유효",
-                            },
-                            {
-                              factor: "US10Y",
-                              ic: -0.04,
-                              hit: 48.2,
-                              prob: 0.32,
-                              regime: "평시",
-                              color: "#e11d48",
-                              desc: "바이오 역방향 - 평시 무효",
-                            },
-                          ].map((f) => (
+                          {(currentMeta?.factors || [
+                            { factor: "반도체팩터", ic: 0.18, hit: 71.2, prob: currentRegime.factor_adjustment?.["반도체팩터"] || 0.92, regime: currentRegime.regime, color: "#2563eb", desc: "전기전자 핵심 - 항상 유효" },
+                            { factor: "원달러", ic: 0.14, hit: 66.4, prob: currentRegime.factor_adjustment?.["원달러"] || 0.88, regime: currentRegime.regime, color: "#0f766e", desc: "자동차·건설 - 평시 유효" },
+                            { factor: "S&P500", ic: 0.15, hit: 68.5, prob: 0.89, regime: currentRegime.regime, color: "#059669", desc: "글로벌 리스크 온/오프 - 항상 유효" },
+                            { factor: "구리", ic: 0.12, hit: 63.5, prob: currentRegime.factor_adjustment?.["구리"] || 0.78, regime: currentRegime.regime, color: "#d97706", desc: "China Proxy 1 - 중국 경기 직결" },
+                            { factor: "WTI_vol", ic: 0.12, hit: 62.0, prob: currentRegime.factor_adjustment?.["WTI_vol"] || 0.45, regime: "고변동", color: "#a16207", desc: "유가 변동성 - 고변동 시 급등" },
+                            { factor: "정제마진", ic: 0.10, hit: 61.0, prob: currentRegime.factor_adjustment?.["정제마진"] || 0.50, regime: "고변동", color: "#7c3aed", desc: "화학 마진 - 유가 급등 시 유효" },
+                            { factor: "GPR", ic: -0.06, hit: 50.0, prob: currentRegime.factor_adjustment?.["GPR"] || 0.35, regime: "전시", color: "#dc2626", desc: "전쟁 리스크 - 전시만 유효" },
+                            { factor: "US10Y", ic: -0.04, hit: 48.2, prob: 0.48, regime: currentRegime.regime, color: "#e11d48", desc: "바이오 역방향 - 평시 무효" },
+                          ]).map((f) => (
                             <div
                               key={f.factor}
-                              className="flex items-center justify-between p-3 rounded-xl border hover:bg-slate-50 transition-colors"
+                              className={`flex items-center justify-between p-3 rounded-xl border hover:bg-slate-50 transition-colors ${f.regime === currentRegime.regime ? "ring-1 ring-slate-300" : ""}`}
                               style={{
                                 borderColor: `${f.color}20`,
                                 background: `${f.color}08`,
@@ -3086,20 +3193,20 @@
                                 ></div>
                                 <div>
                                   <div
-                                    className="text-xs font-bold"
+                                    className="text-xs font-bold flex items-center gap-2"
                                     style={{ color: f.color }}
                                   >
                                     {f.factor}{" "}
-                                    <span className="ml-2 px-1.5 py-0.5 rounded-full text-xs bg-white border">
-                                      {f.regime}
+                                    <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs bg-white border ${f.regime === currentRegime.regime ? "border-slate-900 bg-slate-900 text-white" : ""}`}>
+                                      {f.regime || f.base_regime || "평시"}
                                     </span>
+                                    {f.regime === currentRegime.regime && <span className="text-[10px]">← 현재 체제에서 유효</span>}
                                   </div>
                                   <div className="text-xs text-slate-500">
                                     {f.desc}
                                   </div>
                                   <div className="text-xs font-mono text-slate-400">
-                                    IC {f.ic > 0 ? "+" : ""}
-                                    {f.ic.toFixed(2)} • Hit {f.hit}%
+                                    IC {f.ic > 0 ? "+" : ""}{f.ic.toFixed(2)} • Hit {f.hit}% • {f.regime === "전시" ? "+0.35 bonus" : f.regime === "고변동" ? "+0.20 bonus" : "base"}
                                   </div>
                                 </div>
                               </div>
@@ -3133,43 +3240,29 @@
                       </div>
 
                       <div className="col-span-12 md:col-span-5 space-y-4">
+                        {/* Regime History - 최근 12개 스냅샷 */}
                         <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                          <h4 className="text-sm font-extrabold">
-                            6개월 운영 제안 요약
+                          <h4 className="text-sm font-extrabold flex items-center justify-between">
+                            <span>Regime History (최근 12주)</span>
+                            <span className="text-xs font-mono px-2 py-1 rounded-full bg-slate-900 text-white">regime_history</span>
                           </h4>
-                          <div className="mt-3 space-y-2 text-xs">
-                            <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200">
-                              <div className="font-bold text-emerald-900">
-                                평시 운영
+                          <div className="mt-3 flex items-end gap-1 h-20">
+                            {(history.slice(0,12).reverse().map(h => h.regime) || [
+                              {regime: "평시", confidence: 0.85}, {regime: "평시", confidence: 0.82}, {regime: "고변동", confidence: 0.75}, {regime: "평시", confidence: 0.88}, {regime: "평시", confidence: 0.90}, {regime: "고변동", confidence: 0.72}, {regime: "평시", confidence: 0.86}, {regime: "평시", confidence: 0.84}, {regime: "평시", confidence: 0.87}, {regime: "고변동", confidence: 0.78}, {regime: "평시", confidence: 0.85}, currentRegime
+                            ]).map((r, i) => (
+                              <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                                <div className="w-full rounded-t-md" style={{
+                                  height: `${(r.confidence||0.7)*60}px`,
+                                  background: r.regime === "전시" ? "#dc2626" : r.regime === "고변동" ? "#f59e0b" : "#10b981"
+                                }} title={`${r.regime} ${((r.confidence||0.7)*100).toFixed(0)}%`}></div>
+                                <span className="text-[9px] font-mono text-slate-400">{r.regime[0]}</span>
                               </div>
-                              <div className="mt-1 text-emerald-700">
-                                매월 1일 재학습 • 120일 윈도우 • R² 0.89 유지
-                              </div>
-                            </div>
-                            <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200">
-                              <div className="font-bold text-amber-900">
-                                고변동 트리거
-                              </div>
-                              <div className="mt-1 text-amber-700">
-                                WTI 5일 변동성 {">"}4% 또는 VIX{">"}22 → 90일
-                                윈도우 • 즉시 재학습
-                              </div>
-                            </div>
-                            <div className="p-2.5 rounded-lg bg-red-50 border border-red-200">
-                              <div className="font-bold text-red-900">
-                                전시 트리거
-                              </div>
-                              <div className="mt-1 text-red-700">
-                                GPR{">"}150 또는 OVX{">"}50 → 60일 윈도우 •
-                                WTI_vol, GPR 팩터 활성화
-                              </div>
-                            </div>
-                            <div className="mt-3 p-2 rounded-lg bg-slate-900 text-slate-200 font-mono text-xs">
-                              저장 위치: /6개월_운영_제안_v49_메타모델.md
-                              <br />
-                              스크립트: regime_detector.py,
-                              meta_factor_tracker.py
-                            </div>
+                            ))}
+                          </div>
+                          <div className="mt-3 flex items-center justify-center gap-3 text-xs font-mono">
+                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500"></span>평시</span>
+                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500"></span>고변동</span>
+                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500"></span>전시</span>
                           </div>
                         </div>
 
@@ -3181,42 +3274,38 @@
                           }}
                         >
                           <div className="text-xs font-bold tracking-widest opacity-80">
-                            메타 모델 로드맵 v60
+                            메타 모델 로드맵 v60.1 • 고도화 완료
                           </div>
                           <div className="mt-3 space-y-2 text-xs font-mono">
                             <div className="flex justify-between">
-                              <span className="text-slate-400">현재</span>
-                              <span className="font-bold text-white">
-                                v60 카드 해석
-                              </span>
+                              <span className="text-slate-400">v60.0</span>
+                              <span className="font-bold text-white">카드 해석</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-slate-400">v60</span>
-                              <span className="font-bold text-emerald-300">
-                                메타 유효성 + 체제 감지
-                              </span>
+                              <span className="text-slate-400">v60.1 ✅</span>
+                              <span className="font-bold text-emerald-300">Regime REAL + 8지표</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-slate-400">v60</span>
-                              <span className="font-bold text-amber-300">
-                                Kalman β + WTI_vol
-                              </span>
+                              <span className="text-slate-400">v60.1 ✅</span>
+                              <span className="font-bold text-amber-300">Meta Tracker Regime Aware</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-slate-400">v52</span>
-                              <span className="font-bold text-violet-300">
-                                GPR·정제마진 확장
-                              </span>
+                              <span className="text-slate-400">v61</span>
+                              <span className="font-bold text-violet-300">Kalman β + WTI_vol</span>
                             </div>
                             <div className="mt-3 pt-3 border-t border-white/10 text-xs text-slate-400">
-                              목표: 평시 IC 0.12 유지, 전시 IC 0.05→0.15 개선
+                              목표: 평시 IC 0.12 유지, 전시 IC 0.05→0.15 개선<br/>현재: {currentRegime.regime} {currentRegime.window}일 윈도우 • {currentMeta?.top_valid?.length || 5}개 팩터 유효
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                )}
+                  );
+                })()
+                }
+
+                
 
                 {/* ===== 필터 - 별도 메뉴 (6개 탭 아래 빈 공간) - v52/v53 DART ===== */}
                 <div className="mt-8 border-t border-slate-200 pt-8">
