@@ -264,3 +264,39 @@
         color: #64748b;
         border: 1px solid #e2e8f0;
       }
+      /* Trader Centric v61 - Left-Right Filter + 5 Tabs */
+      .trader-left {
+        position: sticky;
+        top: 5rem;
+        max-height: calc(100vh - 6rem);
+        overflow-y: auto;
+      }
+      .trader-right {
+        position: sticky;
+        top: 5rem;
+        max-height: calc(100vh - 6rem);
+        overflow-y: auto;
+      }
+      .trader-center {
+        min-height: 600px;
+      }
+      .filter-chip {
+        transition: all 0.2s cubic-bezier(0.22,1,0.36,1);
+      }
+      .filter-chip:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      }
+      .filter-chip.active {
+        background: #0f172a;
+        color: white;
+        border-color: #0f172a;
+        box-shadow: 0 4px 12px rgba(15,23,42,0.2);
+      }
+      /* Factor filter selected */
+      .factor-selected {
+        background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+        color: white !important;
+        border-color: #059669 !important;
+        box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+      }
