@@ -1,0 +1,37 @@
+name: KOSPI Quant Terminal v60 - Data Quality Gate Only
+
+on:
+  schedule:
+    - cron: '20 22 * * 0-4'  # UTC 22:20 = KST 07:20 - daily-update 10분 전에 먼저 체크
+  workflow_dispatch:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: |
+          pip install firebase-admin yfinance requests lxml pandas numpy pykrx beautifulsoup4
+
+      - name: Run Data Quality Check v60
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        run: |
+          echo "=== Data Quality Check v60 China Proxy ==="
+          echo "10 Factors 중 NaN 1개면 FAIL -> GitHub Actions 빨간불 + 이메일 알림"
+          echo "외국인 0.85 fallback 탐지 -> WARN"
+          python scripts/data_quality_check_v60.py
+
+      - name: Upload QC Log
+        if: always()
+        run: |
+          echo "QC completed - check data_quality_logs collection in Firebase"
