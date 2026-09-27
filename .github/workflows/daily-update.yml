@@ -1,4 +1,4 @@
-name: KOSPI Quant Terminal v54 - DART Real Filter RELAXED v54 RELAXED
+name: KOSPI Quant Terminal v55 - REAL DATA FULL
 on:
   schedule:
     - cron: '30 22 * * 0-4'  # UTC 22:30 = KST 07:30 평일
@@ -20,8 +20,9 @@ jobs:
         run: |
           pip install firebase-admin yfinance requests lxml pandas numpy scikit-learn pykrx
 
-      - name: Run daily update - DART Real Filter RELAXED v54
+      - name: Run daily update - REAL DATA FULL
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python scripts/daily_update.py
