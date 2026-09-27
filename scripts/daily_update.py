@@ -41,6 +41,35 @@ except ImportError:
         FILTER_ENABLED = False
         print(f"[v60] Fundamental filter not available: {e}")
 
+# Regime Detector + Meta Tracker import (v60.1 고도화)
+try:
+    from regime_detector import build_regime_snapshot
+    REGIME_ENABLED = True
+    print("[v60.1] Regime detector loaded - VIX/OVX/DXY REAL")
+except ImportError:
+    try:
+        from scripts.regime_detector import build_regime_snapshot
+        REGIME_ENABLED = True
+        print("[v60.1] Regime detector loaded from scripts - VIX/OVX/DXY REAL")
+    except Exception as e:
+        REGIME_ENABLED = False
+        build_regime_snapshot = None
+        print(f"[v60.1] Regime detector not available: {e}")
+
+try:
+    from meta_factor_tracker import build_meta_tracker
+    META_ENABLED = True
+    print("[v60.1] Meta tracker loaded - Regime aware")
+except ImportError:
+    try:
+        from scripts.meta_factor_tracker import build_meta_tracker
+        META_ENABLED = True
+        print("[v60.1] Meta tracker loaded from scripts - Regime aware")
+    except Exception as e:
+        META_ENABLED = False
+        build_meta_tracker = None
+        print(f"[v60.1] Meta tracker not available: {e}")
+
 FRED_API_KEY = os.environ.get("FRED_API_KEY", "")
 DART_API_KEY = os.environ.get("DART_API_KEY", "")
 
@@ -239,10 +268,10 @@ def generate_64_picks(z_scores, details):
     print(f"[v60] Generated {len(all_picks_sorted)} picks (64선) - Top score {all_picks_sorted[0]['score'] if all_picks_sorted else 0}")
     return all_picks_sorted
 
-def save_to_firebase(z_scores, details, weekly_picks):
+def save_to_firebase(z_scores, details, weekly_picks, regime_snapshot=None, meta_snapshot=None):
     if not db:
         with open("latest_factors.json","w",encoding="utf-8") as f:
-            json.dump({"date": datetime.now().strftime("%Y-%m-%d"), "zScores": z_scores, "details": details, "weeklyPicks": weekly_picks}, f, ensure_ascii=False, indent=2)
+            json.dump({"date": datetime.now().strftime("%Y-%m-%d"), "zScores": z_scores, "details": details, "weeklyPicks": weekly_picks, "regime": regime_snapshot, "meta": meta_snapshot}, f, ensure_ascii=False, indent=2)
         print("[Firebase] local save")
         return
     date_str = datetime.now().strftime("%Y-%m-%d")
@@ -252,35 +281,83 @@ def save_to_firebase(z_scores, details, weekly_picks):
         "zScores": z_scores,
         "details": details,
         "weeklyPicks": weekly_picks,
-        "source": "yfinance (5) + FRED (3) + KRX + China Proxy (구리+상해) + DART v54 + 64 Picks - v60 REAL",
-        "version": "v60-10factors-china-proxy-DART-64Picks-REAL",
+        "regime": regime_snapshot,
+        "meta": meta_snapshot,
+        "source": "yfinance (5) + FRED (3) + KRX + China Proxy (구리+상해) + DART v54 + 64 Picks + Regime v60.1 REAL",
+        "version": "v60.1-10factors-china-proxy-DART-64Picks-Regime-REAL",
         "factors_count": 10,
         "picks_count": len(weekly_picks),
         "china_proxy": "구리(HG=F) + 상해종합(000001.SS) - PMI 대체",
-        "real_data_ratio": "100% REAL (yfinance+FRED+pykrx) + DART filter",
+        "real_data_ratio": "100% REAL (yfinance+FRED+pykrx) + DART filter + Regime detector",
         "filter_applied": FILTER_ENABLED,
+        "regime_enabled": REGIME_ENABLED,
+        "meta_enabled": META_ENABLED,
+        "regime_summary": f"{regime_snapshot.get('regime')} {regime_snapshot.get('confidence')} window {regime_snapshot.get('window')}" if regime_snapshot else "N/A",
     }
     try:
         db.collection("factor_snapshots").document(date_str).set(doc, merge=True)
-        print(f"[Firebase] saved factor_snapshots/{date_str} - v60 64Picks REAL DART")
+        print(f"[Firebase] saved factor_snapshots/{date_str} - v60.1 Regime {regime_snapshot.get('regime') if regime_snapshot else 'N/A'} + DART")
+        # Regime history 별도 저장 (추이 분석용)
+        if regime_snapshot:
+            db.collection("regime_history").document(date_str).set(regime_snapshot, merge=True)
+            print(f"[Firebase] saved regime_history/{date_str} - {regime_snapshot.get('regime')} conf {regime_snapshot.get('confidence')}")
+        if meta_snapshot:
+            db.collection("meta_history").document(date_str).set(meta_snapshot, merge=True)
+            print(f"[Firebase] saved meta_history/{date_str} - top valid {len(meta_snapshot.get('top_valid', []))}")
     except Exception as e:
         print(f"[Firebase] save error: {e}")
 
 if __name__ == "__main__":
-    print("=== KOSPI Quant Terminal v60 - 10 Factors China Proxy + DART + 64 Picks 100% REAL ===")
+    print("=== KOSPI Quant Terminal v60.1 - 10 Factors China Proxy + DART + 64 Picks + Regime Dashboard REAL ===")
     z_scores, details = fetch_10_factors_china_proxy()
     weekly_picks = generate_64_picks(z_scores, details)
     if FILTER_ENABLED and DART_API_KEY and weekly_picks:
         try:
-            print(f"[v60] Applying DART filter to {len(weekly_picks)} picks...")
+            print(f"[v60.1] Applying DART filter to {len(weekly_picks)} picks...")
             filtered = apply_fundamental_filter(weekly_picks, use_real_data=True)
-            print(f"[v60] DART Filter: {len(weekly_picks)} -> {len(filtered)} picks")
+            print(f"[v60.1] DART Filter: {len(weekly_picks)} -> {len(filtered)} picks")
             weekly_picks = filtered
         except Exception as e:
-            print(f"[v60] DART filter failed: {e}, using unfiltered")
+            print(f"[v60.1] DART filter failed: {e}, using unfiltered")
             import traceback
             traceback.print_exc()
     else:
-        print(f"[v60] DART filter skipped (key={bool(DART_API_KEY)} enabled={FILTER_ENABLED})")
-    save_to_firebase(z_scores, details, weekly_picks)
-    print(json.dumps({"zScores": z_scores, "picksCount": len(weekly_picks), "top3": weekly_picks[:3]}, ensure_ascii=False, indent=2))
+        print(f"[v60.1] DART filter skipped (key={bool(DART_API_KEY)} enabled={FILTER_ENABLED})")
+    
+    # Regime Detection (v60.1 고도화)
+    regime_snapshot = None
+    if REGIME_ENABLED and build_regime_snapshot:
+        try:
+            print(f"[v60.1] Building Regime snapshot - VIX/OVX/DXY REAL...")
+            regime_snapshot = build_regime_snapshot()
+            print(f"[v60.1] Regime: {regime_snapshot.get('regime')} conf {regime_snapshot.get('confidence')} window {regime_snapshot.get('window')} triggers {regime_snapshot.get('triggers')[:2]}")
+        except Exception as e:
+            print(f"[v60.1] Regime detection failed: {e}, using fallback 평시")
+            import traceback
+            traceback.print_exc()
+            regime_snapshot = {
+                "regime": "평시",
+                "confidence": 0.70,
+                "triggers": ["regime fallback - error"],
+                "window": 120,
+                "color": "#10b981",
+                "risk_level": "Low",
+                "date": datetime.now().strftime("%Y-%m-%d")
+            }
+    else:
+        print(f"[v60.1] Regime detector skipped (enabled={REGIME_ENABLED})")
+    
+    # Meta Tracker (Regime aware)
+    meta_snapshot = None
+    if META_ENABLED and build_meta_tracker and regime_snapshot:
+        try:
+            print(f"[v60.1] Building Meta tracker - regime {regime_snapshot.get('regime')} aware...")
+            meta_snapshot = build_meta_tracker(regime_snapshot)
+            print(f"[v60.1] Meta: top valid {len(meta_snapshot.get('top_valid', []))} strong {len(meta_snapshot.get('top_strong', []))}")
+        except Exception as e:
+            print(f"[v60.1] Meta tracker failed: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    save_to_firebase(z_scores, details, weekly_picks, regime_snapshot, meta_snapshot)
+    print(json.dumps({"zScores": z_scores, "picksCount": len(weekly_picks), "regime": regime_snapshot.get('regime') if regime_snapshot else 'N/A', "top3": weekly_picks[:3]}, ensure_ascii=False, indent=2))
