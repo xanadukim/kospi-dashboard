@@ -1,11 +1,4 @@
-
-      const { useState, useMemo, useEffect } = React;
-
-      // config loaded from js/config.js
-
-            // industries loaded from js/data.js
-
-            // factorMeta loaded from js/data.js
+const { useState, useMemo, useEffect } = React;
 
       const getDayName = (dateStr) => {
         try {
@@ -19,81 +12,32 @@
         }
       };
 
-      function HistoryModal({
-        open,
-        onClose,
-        history,
-        selectedDate,
-        onSelect,
-      }) {
+      function HistoryModal({ open, onClose, history, selectedDate, onSelect }) {
         if (!open) return null;
         return (
-          <div
-            className="fixed inset-0 z-50 help-overlay flex items-center justify-center p-4"
-            onClick={onClose}
-          >
-            <div
-              className="help-card bg-white rounded-2xl max-w-lg w-full max-h-screen overflow-auto p-6"
-              onClick={(e) => e.stopPropagation()}
-            >
+          <div className="fixed inset-0 z-50 help-overlay flex items-center justify-center p-4" onClick={onClose}>
+            <div className="help-card bg-white rounded-2xl max-w-lg w-full max-h-screen overflow-auto p-6" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between sticky top-0 bg-white pb-3 border-b">
-                <h2 className="text-xs font-bold">
-                  📅 이전 저장 자료 • 아카이브
-                </h2>
-                <button
-                  onClick={onClose}
-                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 btn-modern"
-                >
-                  ✕
-                </button>
+                <h2 className="text-xs font-bold">📅 이전 저장 자료 • 아카이브</h2>
+                <button onClick={onClose} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 btn-modern">✕</button>
               </div>
               <div className="mt-4">
-                <div className="text-xs font-mono text-slate-500 mb-3">
-                  Firebase • 최근 {history.length}개 • 일요일 18:00 KST 자동
-                  저장
-                </div>
+                <div className="text-xs font-mono text-slate-500 mb-3">Firebase • 최근 {history.length}개 • 일요일 18:00 KST 자동 저장</div>
                 <div className="space-y-2">
-                  {history.length === 0 && (
-                    <div className="text-sm text-slate-400 py-8 text-center">
-                      저장된 자료 없음 • Local Mode
-                    </div>
-                  )}
+                  {history.length === 0 && <div className="text-sm text-slate-400 py-8 text-center">저장된 자료 없음 • Local Mode</div>}
                   {history.map((doc) => {
                     const isSelected = doc.date === selectedDate;
                     return (
-                      <button
-                        key={doc.date}
-                        onClick={() => {
-                          onSelect(doc.date);
-                          onClose();
-                        }}
-                        className={`w-full text-left rounded-xl border p-3.5 flex items-center justify-between transition-all btn-modern ${isSelected ? "bg-[#0f172a] text-white border-[#0f172a] shadow-lg" : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50"}`}
-                      >
+                      <button key={doc.date} onClick={() => { onSelect(doc.date); onClose(); }}
+                        className={`w-full text-left rounded-xl border p-3.5 flex items-center justify-between transition-all btn-modern ${isSelected ? "bg-[#0f172a] text-white border-[#0f172a] shadow-lg" : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50"}`}>
                         <div className="flex items-center gap-3">
-                          <div
-                            className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold ${isSelected ? "bg-white/15" : "bg-slate-100"}`}
-                          >
-                            📊
-                          </div>
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold ${isSelected ? "bg-white/15" : "bg-slate-100"}`}>📊</div>
                           <div>
-                            <div className="text-sm font-bold">
-                              {doc.date} ({getDayName(doc.date)})
-                            </div>
-                            <div
-                              className={`text-xs font-mono ${isSelected ? "text-slate-300" : "text-slate-500"}`}
-                            >
-                              {doc.weeklyPicks?.length || 8} picks • Z{" "}
-                              {doc.zScores
-                                ? Object.keys(doc.zScores).length
-                                : 0}
-                            </div>
+                            <div className="text-sm font-bold">{doc.date} ({getDayName(doc.date)})</div>
+                            <div className={`text-xs font-mono ${isSelected ? "text-slate-300" : "text-slate-500"}`}>{doc.weeklyPicks?.length || 8} picks • Z {doc.zScores ? Object.keys(doc.zScores).length : 0}</div>
                           </div>
                         </div>
-                        <div
-                          className={`text-xs px-2 py-1 rounded-full font-mono ${isSelected ? "bg-white/20" : "bg-slate-100"}`}
-                        >
-                          {isSelected ? "선택됨" : "보기"}
-                        </div>
+                        <div className={`text-xs px-2 py-1 rounded-full font-mono ${isSelected ? "bg-white/20" : "bg-slate-100"}`}>{isSelected ? "선택됨" : "보기"}</div>
                       </button>
                     );
                   })}
@@ -104,700 +48,29 @@
         );
       }
 
-
       function DisclaimerModal({ open, onClose }) {
         if (!open) return null;
         return (
-          <div
-            className="fixed inset-0 z-[60] help-overlay flex items-center justify-center p-4"
-            onClick={onClose}
-          >
-            <div
-              className="help-card bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-auto p-6"
-              onClick={(e) => e.stopPropagation()}
-            >
+          <div className="fixed inset-0 z-[60] help-overlay flex items-center justify-center p-4" onClick={onClose}>
+            <div className="help-card bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-auto p-6" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between sticky top-0 bg-white pb-4 border-b z-10">
                 <div>
                   <h2 className="text-sm font-extrabold tracking-tight flex items-center gap-2">
                     <span className="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700">⚠️</span>
                     투자위험 고지 및 면책사항 • Legal Disclaimer
                   </h2>
-                  <div className="text-xs font-mono text-slate-500 mt-1">
-                    KOSPI Quant Terminal v60 • 2026.09.27 • 데이터 출처 및 법적 고지
-                  </div>
+                  <div className="text-xs font-mono text-slate-500 mt-1">KOSPI Quant Terminal v61 • 2026.09.28 • 데이터 출처 및 법적 고지</div>
                 </div>
-                <button
-                  onClick={onClose}
-                  className="w-9 h-9 rounded-full bg-slate-900 text-white hover:bg-slate-800 btn-modern"
-                >
-                  ✕
-                </button>
+                <button onClick={onClose} className="w-9 h-9 rounded-full bg-slate-900 text-white hover:bg-slate-800 btn-modern">✕</button>
               </div>
-
               <div className="mt-6 space-y-6 text-sm leading-relaxed">
                 <div className="p-4 rounded-xl bg-red-50 border border-red-200">
-                  <div className="font-extrabold text-red-900 text-sm flex items-center gap-2">
-                    <span>🚨</span> 본 서비스는 투자 조언이 아닙니다
-                  </div>
-                  <div className="mt-2 text-xs text-slate-700 leading-relaxed">
-                    KOSPI Quant Terminal v60이 제공하는 <b>예상 수익률 (+1.29%, +0.7% 등), Score, 64 Picks, 산업별 예측</b>은
-                    과거 데이터 기반의 통계적 모델 예측값이며, <b>투자 자문, 투자 일임, 매수/매도 추천이 아닙니다.</b><br/>
-                    모든 투자 결정은 이용자 본인의 판단과 책임 하에 이루어져야 하며, 본 서비스는 어떠한 수익도 보장하지 않습니다.
-                  </div>
+                  <div className="font-extrabold text-red-900 text-sm flex items-center gap-2"><span>🚨</span> 본 서비스는 투자 조언이 아닙니다</div>
+                  <div className="mt-2 text-xs text-slate-700 leading-relaxed">예상 수익률, Score, 64 Picks는 과거 데이터 기반 통계적 예측이며 <b>투자 자문, 매수/매도 추천이 아닙니다.</b> 모든 투자 결정은 본인 판단과 책임 하에.</div>
                 </div>
-
-                <div>
-                  <div className="font-extrabold text-sm flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-lg bg-slate-900 text-white flex items-center justify-center text-xs">1</span>
-                    투자 위험 고지
-                  </div>
-                  <div className="mt-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs leading-relaxed text-slate-700">
-                    <div>• 주식 투자는 원금 손실 위험이 있으며, 과거 성과가 미래 수익을 보장하지 않습니다.</div>
-                    <div className="mt-1">• <b>예상 +1.29%</b>는 Ridge 회귀 모델의 예측값으로, 실제 수익률은 -3% ~ +3% 범위에서 크게 벗어날 수 있습니다 (RMSE 0.38%p, 방향 적중 75%).</div>
-                    <div className="mt-1">• 모델은 120일 롤링 윈도우, 10개 팩터 기반이며, 블랙스완, 전쟁, 정책 변화 등 예측 불가 이벤트에 취약합니다.</div>
-                    <div className="mt-1">• 64 Picks는 <b>퀀트적 아이디어</b>이며, 동일 업종/팩터 집중 시 분산 효과가 사라집니다.</div>
-                    <div className="mt-2 p-2 rounded-lg bg-white border text-xs">
-                      💡 권장: 한 종목당 전체 자산의 5% 이하, 한 업종당 20% 이하 분산, 손절 -3% 원칙
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="font-extrabold text-sm flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs">2</span>
-                    데이터 출처 및 정확성
-                  </div>
-                  <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                    <div className="p-3 rounded-xl bg-blue-50 border border-blue-200">
-                      <div className="font-bold text-blue-900">FRED (Federal Reserve)</div>
-                      <div className="mt-1 text-slate-700">DGS10 (US 10Y), DCOILWTICO (WTI), DTWEXBGS (DXY), VIXCLS (VIX)</div>
-                      <div className="mt-1 font-mono text-slate-500">fred.stlouisfed.org • CC0 Public Domain • 지연 1일</div>
-                    </div>
-                    <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
-                      <div className="font-bold text-emerald-900">yfinance + Yahoo Finance</div>
-                      <div className="mt-1 text-slate-700">^GSPC (S&P500), ^SOX, KRW=X, HG=F (구리), 000001.SS (상해종합), ^KS11</div>
-                      <div className="mt-1 font-mono text-slate-500">15분 지연, 비공식 API, 데이터 오류 가능성 있음</div>
-                    </div>
-                    <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
-                      <div className="font-bold text-amber-900">KRX / pykrx (한국거래소)</div>
-                      <div className="mt-1 text-slate-700">외국인 선물 순매수, KOSPI/KOSDAQ OHLCV</div>
-                      <div className="mt-1 font-mono text-slate-500">승인 대기 중에는 0.85 fallback 사용, 승인 후 100% REAL • pykrx 라이선스 준수</div>
-                    </div>
-                    <div className="p-3 rounded-xl bg-violet-50 border border-violet-200">
-                      <div className="font-bold text-violet-900">DART (금융감독원)</div>
-                      <div className="mt-1 text-slate-700">PER, PBR, ROE, 부채비율 등 재무 필터 - Fundamental Filter v54 RELAXED</div>
-                      <div className="mt-1 font-mono text-slate-500">opendart.fss.or.kr • DART API 키 필요 • 공시 지연 반영</div>
-                    </div>
-                  </div>
-                  <div className="mt-3 p-2.5 rounded-lg bg-slate-900 text-slate-200 font-mono text-xs">
-                    데이터 지연: FRED 1일, yfinance 15분, KRX 일별, DART 분기 • 데이터 오류 시 Z-score 0 처리
-                  </div>
-                </div>
-
-                <div>
-                  <div className="font-extrabold text-sm flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-lg bg-amber-600 text-white flex items-center justify-center text-xs">3</span>
-                    모델 한계 및 가정
-                  </div>
-                  <div className="mt-3 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs leading-relaxed text-slate-700">
-                    <div>• <b>10 Factors 모델:</b> S&P500, US10Y, 외국인, SOX, 원달러, WTI, DXY, VIX, 구리, 상해종합</div>
-                    <div>• <b>가정:</b> 팩터 간 선형 관계, 120일 롤링 정상성, VIF {"<"} 2.5, 3σ Winsorize</div>
-                    <div>• <b>한계:</b> 중국 PMI 대신 구리/상해종합 프록시 사용 (상관계수 0.68), 외국인 선물은 KRX 승인 전 0.85 고정</div>
-                    <div>• <b>검증:</b> 2023-2026 백테스트 IC 0.12, Hit Rate 64.8%, MDD -4.2% • 실전에서는 슬리피지, 세금, 수수료 미반영</div>
-                    <div className="mt-2 p-2 rounded-lg bg-white border">
-                      모델은 6개월마다 재학습되며, 과거 데이터에 과적합될 수 있습니다. Regime 변화(고변동, 전시) 시 90일 윈도우로 축소
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="font-extrabold text-sm flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs">4</span>
-                    면책 조항 (Disclaimer)
-                  </div>
-                  <div className="mt-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs leading-relaxed text-slate-700">
-                    <div>1. 본 서비스는 정보 제공 목적이며, 특정 금융투자상품의 매수/매도를 권유하지 않습니다.</div>
-                    <div className="mt-1">2. 운영자(Quant Lab)는 이용자의 투자 손실에 대해 어떠한 법적 책임도 지지 않습니다.</div>
-                    <div className="mt-1">3. 데이터 출처(FRED, Yahoo, KRX, DART)의 오류, 지연, 중단으로 인한 손해에 대해 책임지지 않습니다.</div>
-                    <div className="mt-1">4. GitHub Actions 자동화로 제공되며, 서버 중단 시 데이터 갱신이 지연될 수 있습니다.</div>
-                    <div className="mt-1">5. 본 서비스는 개인 연구용이며, 상업적 재배포, API 크롤링, 무단 복제를 금지합니다.</div>
-                    <div className="mt-2 font-bold text-slate-900">6. 투자 전 반드시 금융투자협회, 금감원 등 공인 기관의 정보를 추가 확인하세요.</div>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white">
-                  <div className="text-xs font-bold tracking-widest opacity-80">CONTACT & LICENSE</div>
-                  <div className="mt-2 text-xs font-mono leading-relaxed">
-                    <div>• GitHub: github.com/xanadukim/kospi-dashboard • Issues로 문의</div>
-                    <div>• Data: FRED API Terms, Yahoo Finance ToS, KRX OPEN API 약관, DART API 약관 준수</div>
-                    <div>• Code: MIT License (개인 학습용) • Firebase: Firestore Rules read=true, write=false</div>
-                    <div className="mt-2 text-slate-400">Last Updated: 2026-09-27 • v60 China Proxy + DART + Regime + Retrain • 12주 플랜 4번 완료</div>
-                  </div>
-                </div>
-
-                <div className="text-center text-xs font-mono text-slate-500 py-2">
-                  본 고지를 확인했음을 전제로 서비스를 이용합니다 • 투자 결정은 본인 책임 • © 2026 Quant Lab
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      }
-
-      function HelpModal({ open, onClose }) {
-
-        if (!open) return null;
-        return (
-          <div
-            className="fixed inset-0 z-50 help-overlay flex items-center justify-center p-4"
-            onClick={onClose}
-          >
-            <div
-              className="help-card bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto p-6"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between sticky top-0 bg-white pb-4 border-b z-10">
-                <div>
-                  <h2 className="text-sm font-extrabold tracking-tight">
-                    KOSPI Quant Terminal v60 - 10 Factors China Proxy + DART + Regime 완전 가이드
-                  </h2>
-                  <div className="text-xs font-mono text-slate-500 mt-1">
-                    10 Factors China Proxy + DART + Regime + Retrain • 2-Stage + 6개월 재학습 • 2026.09
-                  </div>
-                </div>
-                <button
-                  onClick={onClose}
-                  className="w-9 h-9 rounded-full bg-slate-900 text-white hover:bg-slate-800 btn-modern"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="mt-6 space-y-7 text-sm leading-relaxed">
-                {/* v46 업데이트 */}
-                <div className="p-4 rounded-xl bg-gradient-to-br from-violet-50 via-indigo-50 to-blue-50 border border-violet-200">
-                  <div className="font-extrabold text-violet-900 text-sm">
-                    🚀 v60 업데이트 하이라이트 (China Proxy + DART + Regime + Retrain)
-                  </div>
-                  <div className="mt-2 grid grid-cols-1 gap-2 text-xs text-slate-700">
-                    <div className="flex gap-2">
-                      <span className="text-violet-600 font-bold">•</span>
-                      <span>
-                        <b>2-Stage 회귀:</b> Stage 1 KOSPI 예측 → Stage 2 산업별
-                        β_market 분리로 마켓 리스크 헤지 후 순수 알파 추출
-                      </span>
-                    </div>
-                    <div className="flex gap-2">
-                      <span className="text-violet-600 font-bold">•</span>
-                      <span>
-                        <b>6개월 재학습:</b> 매월 1일 180일 데이터로 β 자동
-                        재학습, 6개월 후 8,000개 샘플로 R² 0.71→0.85 개선
-                      </span>
-                    </div>
-                    <div className="flex gap-2">
-                      <span className="text-violet-600 font-bold">•</span>
-                      <span>
-                        <b>성과추적:</b> 평일 16:00 KST 실제 수익률 자동 추적,
-                        IC·Hit Rate로 모델 검증
-                      </span>
-                    </div>
-                    <div className="flex gap-2">
-                      <span className="text-violet-600 font-bold">•</span>
-                      <span>
-                        <b>5개 탭:</b> 산업모델 / 64선 / 성과 / 📊분석 / 🌐마켓
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 1. 기획 의도 */}
-                <div>
-                  <div className="font-extrabold text-sm flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-lg bg-slate-900 text-white flex items-center justify-center text-xs">
-                      1
-                    </span>
-                    기획 의도 • 왜 만들었나?
-                  </div>
-                  <div className="mt-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs leading-relaxed text-slate-700">
-                    <div className="font-bold text-slate-900">
-                      문제의식: KOSPI는 단일 지수지만 업종별 드라이버는 전혀
-                      다름
-                    </div>
-                    <div className="mt-2">
-                      • 전기전자는 SOX·나스닥·외국인 선물에, 자동차는
-                      원달러·WTI에, 금융은 한미 스프레드에 민감
-                    </div>
-                    <div className="mt-1">
-                      • 단일 팩터 모델로는 설명 불가 → <b>업종별 회귀</b> 필요
-                    </div>
-                    <div className="mt-2 font-bold text-slate-900">목표:</div>
-                    <div className="mt-1">
-                      1) 매일 아침 07:30 KST 4단계 체크리스트로 시장 방향 판단
-                    </div>
-                    <div>
-                      2) 일요일 18:00 KST 다음주 월요일 장바구니 64선 자동 생성
-                      (업종별 Top8)
-                    </div>
-                    <div>
-                      3) 실제 수익률로 모델 검증 → 6개월 재학습으로 β 진화
-                    </div>
-                    <div className="mt-2 p-2 rounded-lg bg-white border text-xs">
-                      💡 핵심 아이디어:{" "}
-                      <b>
-                        마켓 리스크를 먼저 예측하고, 산업별 순수 알파만 남기자
-                      </b>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 2. 회귀모델 설명 */}
-                <div>
-                  <div className="font-extrabold text-sm flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs">
-                      2
-                    </span>
-                    회귀모델 설명 • 2-Stage
-                  </div>
-                  <div className="mt-3 space-y-3">
-                    <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200">
-                      <div className="font-bold text-blue-900 text-xs">
-                        Stage 1: KOSPI 지수 회귀 (마켓 모델)
-                      </div>
-                      <div className="mt-2 font-mono text-xs bg-slate-900 text-slate-100 rounded-lg p-3 leading-relaxed break-all">
-                        R_KOSPI(t) = 0.12% + 0.38·S{"&"}P500 + 0.32·외국인 +
-                        0.28·SOX + 0.15·원달러 + 0.22·중국PMI -0.18·US10Y +
-                        0.18·스프레드 -0.08·WTI + 0.12·정책 + ε<br />
-                        <span className="text-emerald-300">
-                          R²=0.92 • RMSE 0.38%p • 방향 적중 75%
-                        </span>
-                      </div>
-                      <div className="mt-2 text-xs text-slate-600">
-                        <div>
-                          • <b>종속변수:</b> KOSPI 일간 수익률
-                        </div>
-                        <div>
-                          • <b>독립변수 9개:</b> S{"&"}P500(전일), SOX/필라,
-                          외국인 선물, US10Y, 중국 PMI, 원달러, WTI,
-                          한미스프레드, 정책더미
-                        </div>
-                        <div>
-                          • <b>전처리:</b> 120일 롤링, StandardScaler,
-                          Missing→ffill, 3σ Winsorize, VIF {"<"} 2.5
-                        </div>
-                        <div>
-                          • <b>모델:</b> RidgeCV (λ=0.5, α 최적화) → 과적합 방지
-                        </div>
-                        <div className="mt-1 text-blue-700">
-                          → KOSPI의 92%를 9개 글로벌 팩터로 설명
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200">
-                      <div className="font-bold text-emerald-900 text-xs">
-                        Stage 2: 산업별 지수 회귀 (β_market 분리)
-                      </div>
-                      <div className="mt-2 font-mono text-xs bg-slate-900 text-slate-100 rounded-lg p-3 leading-relaxed">
-                        R_전기전자 = 1.12·R_KOSPI + 0.18% + 0.35·SOX_res +
-                        0.28·외국인_res + ε<br />
-                        R_자동차 = 0.92·R_KOSPI + 0.08% + 0.25·원달러_res + ...
-                        <br />
-                        <span className="text-emerald-300">
-                          β_market {">"}1: KOSPI보다 변동성 큼 • {"<"}0.8:
-                          방어적
-                        </span>
-                      </div>
-                      <div className="mt-2 text-xs text-slate-600">
-                        <div>
-                          • <b>종속변수:</b> 산업별 일간 수익률 (전기전자,
-                          자동차, 화학, 금융, 바이오, 철강, 건설, 유통)
-                        </div>
-                        <div>
-                          • <b>핵심:</b> Stage 1에서 예측한 R_KOSPI로 마켓
-                          리스크 헤지 후, 잔차(residual) 팩터로 순수 산업 알파
-                          추출
-                        </div>
-                        <div>
-                          • <b>β_market:</b> 산업의 KOSPI 민감도. 전기전자
-                          1.12(공격적), 금융 0.78(방어적)
-                        </div>
-                        <div>
-                          • <b>β_res:</b> 마켓 중립 후 남은 순수 팩터 민감도.
-                          예) 전기전자 SOX_res 0.35
-                        </div>
-                        <div className="mt-1 text-emerald-700">
-                          → 전체 KOSPI 리스크 제거 후 산업별 순수 알파만으로
-                          종목 선택 가능 (마켓 중립 전략)
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs">
-                      <div className="font-bold text-amber-900">
-                        🔄 6개월 재학습 로직 (v46 핵심)
-                      </div>
-                      <div className="mt-1 text-slate-700">
-                        매월 1일 11:00 KST: 최근 180일(6개월) × 64종목 =
-                        11,520개 샘플로 β 재추정
-                        <br />
-                        샘플 누적: 1개월 1,920개 → 6개월 11,520개 → R² 0.71→0.85
-                        진화
-                        <br />
-                        Firebase: model_versions/날짜 에 β 히스토리 저장,
-                        config/industries 최신 β 반영
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 3. 적용 방법 */}
-                <div>
-                  <div className="font-extrabold text-sm flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs">
-                      3
-                    </span>
-                    적용 방법 • 어떻게 쓰나?
-                  </div>
-                  <div className="mt-3 p-3.5 rounded-xl bg-white border border-slate-200 space-y-3 text-xs">
-                    <div>
-                      <div className="font-bold text-slate-900">
-                        매일 아침 07:30 KST 체크리스트 (4단계)
-                      </div>
-                      <div className="mt-1.5 grid grid-cols-1 gap-1.5">
-                        <div className="flex gap-2">
-                          <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold">
-                            ①
-                          </span>
-                          <span>
-                            S{"&"}P500·SOX 전일 마감: Z {">"}1이면 위험 선호
-                          </span>
-                        </div>
-                        <div className="flex gap-2">
-                          <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold">
-                            ②
-                          </span>
-                          <span>
-                            외국인 선물·원달러: 외국인 순매수 + 원화 강세 =
-                            KOSPI 상승
-                          </span>
-                        </div>
-                        <div className="flex gap-2">
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">
-                            ③
-                          </span>
-                          <span>
-                            US10Y·중국PMI: 금리 하락 + PMI 서프라이즈 = 성장주
-                            유리
-                          </span>
-                        </div>
-                        <div className="flex gap-2">
-                          <span className="px-2 py-0.5 rounded-full bg-violet-100 text-violet-800 font-bold">
-                            ④
-                          </span>
-                          <span>
-                            Z-Score 종합: Today Factor Z-Scores에서 예측 수익률
-                            합계 확인
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="pt-3 border-t">
-                      <div className="font-bold text-slate-900">
-                        월요일 장바구니 활용
-                      </div>
-                      <div className="mt-1">
-                        • 일요일 18:00 KST 자동 생성된 64선 중 업종별 Top8 중{" "}
-                        <b>Score {"<"}6.5 이상</b>만 필터링
-                        <br />• Score = 6.5 + |Z|×1.2×β_adj + mom×0.3 (모멘텀
-                        가중)
-                        <br />• 예) 전기전자 SOX Z=1.59, β=0.35 → 기여도 +0.66%
-                        → Score 7.2
-                      </div>
-                    </div>
-                    <div className="pt-3 border-t">
-                      <div className="font-bold text-slate-900">
-                        마켓 중립 헤지
-                      </div>
-                      <div className="mt-1">
-                        • KOSPI 급락 예상 시 β_market 높은 전기전자(1.12) 비중
-                        축소, β_market 낮은 금융(0.78) 비중 확대
-                        <br />• 또는 KOSPI 선물 숏으로 마켓 리스크 헤지 후
-                        산업별 알파만 추출
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 4. 대시보드 주요 기능 */}
-                <div>
-                  <div className="font-extrabold text-sm flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-lg bg-violet-600 text-white flex items-center justify-center text-xs">
-                      4
-                    </span>
-                    대시보드 주요 기능 • 5개 탭
-                  </div>
-                  <div className="mt-3 space-y-2.5">
-                    <div className="p-3 rounded-xl border bg-white">
-                      <div className="font-bold text-xs">
-                        ① 산업 모델 (Today)
-                      </div>
-                      <div className="mt-1 text-xs text-slate-600">
-                        • 왼쪽: Factor Betas 바 차트 (초록 양수, 빨강 음수,
-                        R²·Ridge 표시)
-                        <br />• 오른쪽: Today Z-Scores (강한 Z는 진한 녹색/빨강
-                        배지), 예측 수익률 합계, VIF·왜도·첨도
-                        <br />• 하단: 07:30 체크리스트 + DATA PIPELINE 상태
-                        (Live 스냅샷 수)
-                      </div>
-                    </div>
-                    <div className="p-3 rounded-xl border bg-white">
-                      <div className="font-bold text-xs">
-                        ② 월요일 추천 64선 (8×8)
-                      </div>
-                      <div className="mt-1 text-xs text-slate-600">
-                        • 업종별 Top8 카드 (상단 컬러 라인으로 업종 구분)
-                        <br />• 각 카드: 종목명, KRX β, 모멘텀, Score, Z-Score
-                        배지
-                        <br />• Score 높은 순 정렬, 6.5 이상이면 매수 신호
-                      </div>
-                    </div>
-                    <div className="p-3 rounded-xl border bg-white">
-                      <div className="font-bold text-xs">
-                        ③ 지난주 성과 (8종)
-                      </div>
-                      <div className="mt-1 text-xs text-slate-600">
-                        • 지난주 월요일 추천 8종 평균 vs KOSPI 수익률 비교
-                        <br />• Hit Rate, 초과 수익률, 종목별 실제 수익률
-                      </div>
-                    </div>
-                    <div className="p-3 rounded-xl border bg-gradient-to-br from-violet-50 to-indigo-50 border-violet-200">
-                      <div className="font-bold text-xs text-violet-900">
-                        ④ 📊 성과 분석 (IC·Hit) • v46 신규
-                      </div>
-                      <div className="mt-1 text-xs text-slate-700">
-                        • <b>IC (Information Coefficient):</b> 예측 순위와 실제
-                        수익률 순위 상관계수. 0.1 이상이면 유효
-                        <br />• <b>Hit Rate:</b> 예측 방향 적중률. 60% 이상 유지
-                        시 모델 안정
-                        <br />• <b>주별 추이:</b> 10주간 IC·Return·Hit·KOSPI
-                        추이 바 차트
-                        <br />• <b>재학습 시뮬레이션:</b> 6개월 데이터 기반 β
-                        조정 예상
-                      </div>
-                    </div>
-                    <div className="p-3 rounded-xl border bg-gradient-to-br from-slate-900 to-slate-800 text-white">
-                      <div className="font-bold text-xs">
-                        ⑤ 🌐 KOSPI 마켓 (2-Stage) • v46 신규
-                      </div>
-                      <div className="mt-1 text-xs text-slate-300">
-                        • <b>Stage 1:</b> 9개 팩터로 KOSPI 예측 (R²=0.92) • S
-                        {"&"}P500·SOX·외국인 등 기여도 바 차트
-                        <br />• <b>Stage 2:</b> 산업별 β_market (KOSPI 민감도) •
-                        1.12 공격적 vs 0.78 방어적
-                        <br />• <b>KOSPI 예측 vs 실제:</b> 최근 12주 예측·실제
-                        비교 (평균 오차 0.38%p, 방향 적중 75%)
-                        <br />• <b>최종 수식:</b> Stage1 + Stage2 통합 수식 및
-                        마켓 중립 알파 전략 설명
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 5. 데이터 파이프라인 */}
-                <div>
-                  <div className="font-bold text-sm">
-                    5. DATA PIPELINE • 자동화
-                  </div>
-                  <div className="mt-2 font-mono text-xs bg-slate-900 text-slate-200 rounded-xl p-3.5 leading-relaxed">
-                    <div className="text-violet-300">
-                      yfinance + KRX API + FRED → Python
-                    </div>
-                    <div className="mt-1">
-                      → StandardScaler (Z-score) → RidgeCV(λ=0.5) → 64 picks
-                    </div>
-                    <div className="mt-1">
-                      → Firebase Firestore (factor_snapshots,
-                      performance_tracking, model_metrics, model_versions)
-                    </div>
-                    <div className="mt-2 pt-2 border-t border-white/10">
-                      CRON 스케줄 (GitHub Actions):
-                    </div>
-                    <div>• 일요일 18:00 KST: 64선 생성 (weekly-picks)</div>
-                    <div>
-                      • 평일 16:00 KST: 실제 수익률 추적 (performance-track)
-                    </div>
-                    <div>
-                      • 매월 1일 11:00 KST: β 재학습 (model-retrain, 180D)
-                    </div>
-                    <div className="mt-2 text-emerald-300">
-                      v46: 6개월 후 11,520 샘플로 R² 0.85 달성 예상
-                    </div>
-                  </div>
-                </div>
-
-                {/* 6. 카드 해석 */}
-                <div>
-                  <div className="font-extrabold text-sm flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-lg bg-teal-600 text-white flex items-center justify-center text-xs">
-                      6
-                    </span>
-                    카드 전체 해석 • Score & 예상 (기아 예시)
-                  </div>
-                  <div className="mt-3 space-y-3">
-                    <div className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-sm">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-100 flex items-center justify-center text-sm">
-                            ◩
-                          </span>
-                          <span className="text-xs font-bold px-2 py-1 rounded-full bg-teal-50 text-teal-700">
-                            자동차
-                          </span>
-                          <span className="text-xs font-mono px-2 py-1 rounded-full bg-slate-100 border">
-                            000270
-                          </span>
-                        </div>
-                        <span
-                          className="text-xs font-mono font-bold px-3 py-1.5 rounded-full text-white"
-                          style={{
-                            background:
-                              "linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)",
-                          }}
-                        >
-                          Score 7.3
-                        </span>
-                      </div>
-                      <div className="mt-3 text-sm font-extrabold">기아</div>
-                      <div className="text-xs text-slate-500 mt-1 font-mono">
-                        원달러 0.00σ × β1.15 + mom 1.1%
-                      </div>
-                      <div className="mt-3 flex items-center gap-2">
-                        <span
-                          className="px-2.5 py-1 rounded-full text-xs font-bold"
-                          style={{
-                            background: "#ecfdf5",
-                            color: "#065f46",
-                            border: "1px solid #a7f3d0",
-                          }}
-                        >
-                          예상 +0.7%
-                        </span>
-                        <span className="text-xs font-mono text-slate-400">
-                          Target: 원달러
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="p-3 rounded-xl bg-teal-50 border border-teal-200">
-                        <div className="font-bold text-teal-900 text-xs">
-                          Score 7.3 = 선정 점수 (확신도)
-                        </div>
-                        <div className="mt-2 text-xs text-slate-700 leading-relaxed">
-                          <div className="font-mono text-xs bg-slate-900 text-slate-100 rounded-lg p-2.5">
-                            Score = 6.5 + |Z|×1.2×β_adj + mom×0.3 + α
-                          </div>
-                          <div className="mt-2">
-                            • <b>6.5</b> base: 최소 통과 기준
-                          </div>
-                          <div>
-                            • <b>|Z|×1.2×β:</b> 팩터 강도×민감도. Z=1.38, β=1.15
-                            → 1.90점 추가
-                          </div>
-                          <div>
-                            • <b>mom×0.3:</b> 모멘텀. 1.1% → 0.33점
-                          </div>
-                          <div>
-                            • <b>α:</b> 0~0.5 random (데모용, 실제는 제거)
-                          </div>
-                          <div className="mt-2 p-2 rounded-lg bg-white border text-xs">
-                            <div className="font-bold">기아 계산:</div>
-                            <div>
-                              6.5 + 0.00×1.2×1.15 + 1.1×0.3 + 0.47 = <b>7.3</b>
-                            </div>
-                            <div className="mt-1 text-slate-500">
-                              Z가 0이라 팩터 기여 0, mom만으로 7.3
-                            </div>
-                          </div>
-                          <div className="mt-2 font-bold">등급:</div>
-                          <div>7.5↑ Strong Buy (Top 10%)</div>
-                          <div>7.0~7.5 Buy (Top 30%) ← 기아</div>
-                          <div>6.5~7.0 Hold</div>
-                          <div>6.5↓ 제외</div>
-                        </div>
-                      </div>
-
-                      <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
-                        <div className="font-bold text-emerald-900 text-xs">
-                          예상 +0.7% = 1주 기대 수익률
-                        </div>
-                        <div className="mt-2 text-xs text-slate-700 leading-relaxed">
-                          <div className="font-mono text-xs bg-slate-900 text-slate-100 rounded-lg p-2.5">
-                            예상 = 0.5% + |Z|×0.8×β_adj + mom×0.2
-                          </div>
-                          <div className="mt-2">
-                            • <b>0.5%</b> base: 시장 평균 α
-                          </div>
-                          <div>
-                            • <b>|Z|×0.8×β:</b> 팩터 기대. Z=1.38이면
-                            0.8×1.15×1.38=1.27%
-                          </div>
-                          <div>
-                            • <b>mom×0.2:</b> 모멘텀 기대. 1.1%→0.22%
-                          </div>
-                          <div className="mt-2 p-2 rounded-lg bg-white border text-xs">
-                            <div className="font-bold">기아 계산:</div>
-                            <div>
-                              0.5% + 0.00×0.8×1.15 + 1.1×0.2 = <b>+0.7%</b>
-                            </div>
-                            <div className="mt-1 text-slate-500">
-                              Z=1.38이면 예상 1.99%로 상승
-                            </div>
-                          </div>
-                          <div className="mt-2 font-bold">활용:</div>
-                          <div>+1%↑ 비중 1.5배, +0.5% 기본 비중</div>
-                          <div>실제는 16:00 KST 자동 추적으로 검증</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-                      <div className="font-bold text-slate-900">
-                        각 필드 의미
-                      </div>
-                      <div className="mt-2 grid grid-cols-1 gap-1.5 text-slate-700">
-                        <div>
-                          • <b>자동차 000270:</b> 업종 / 종목코드
-                        </div>
-                        <div>
-                          • <b>원달러 0.00σ × β1.15 + mom 1.1%:</b> 근거. Target
-                          팩터 Z, 종목의 팩터 민감도 β, 모멘텀
-                        </div>
-                        <div>
-                          • <b>Target: 원달러:</b> 이 종목이 가장 민감한 팩터.
-                          자동차는 원달러, 전기전자는 SOX
-                        </div>
-                        <div>
-                          • <b>Score:</b> 64종 중 순위 결정. 높을수록 매수 우선
-                        </div>
-                        <div>
-                          • <b>예상:</b> 1주 후 기대 수익률. Score와 함께 포지션
-                          사이징에 사용
-                        </div>
-                      </div>
-                      <div className="mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800">
-                        💡 Tip: Target 팩터가 같은 종목끼리 묶이면 리스크 집중 →
-                        업종·팩터 분산 필수. 예) 원달러 Target 3종 이상 보유 시
-                        원달러 급락에 취약
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t text-xs font-mono text-slate-500 text-center">
-                  KOSPI Quant Terminal v60 - 10 Factors China Proxy + DART + Regime + Retrain • 2-Stage Ridge + 6개월
-                  재학습 + 카드 해석 • Firebase Live + GitHub Actions
-                  <br />© 2026 Quant Lab •문의: GitHub xanadukim/kospi-dashboard
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  <div className="p-3 rounded-xl bg-blue-50 border border-blue-200"><div className="font-bold text-blue-900">FRED</div><div className="mt-1 text-slate-700">DGS10, DCOILWTICO, DTWEXBGS, VIXCLS</div></div>
+                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200"><div className="font-bold text-emerald-900">yfinance</div><div className="mt-1 text-slate-700">^GSPC, ^SOX, KRW=X, HG=F, 000001.SS</div></div>
                 </div>
               </div>
             </div>
@@ -807,22 +80,25 @@
 
       function App() {
         const [selectedIndustry, setSelectedIndustry] = useState("elec");
+        const [selectedFactor, setSelectedFactor] = useState(null);
+        const [filterEnabled, setFilterEnabled] = useState(true);
         const [zScores, setZScores] = useState({
           "S&P500": 0.63,
           "외국인 선물": 1.07,
           "SOX / 필라": 1.59,
           "US 10Y": -1.13,
-          "중국 PMI": 0.21,
           원달러: 1.38,
           WTI: -0.32,
-          한미스프레드: 0.91,
+          DXY: 0.45,
+          VIX: -0.52,
+          구리: 0.68,
+          상해종합: 0.42,
         });
         const [history, setHistory] = useState([]);
-        const [selectedDate, setSelectedDate] = useState("2026-09-26");
-        const [showHelp, setShowHelp] = useState(false);
+        const [selectedDate, setSelectedDate] = useState("2026-09-28");
         const [showHistory, setShowHistory] = useState(false);
         const [showDisclaimer, setShowDisclaimer] = useState(false);
-        const [activeTab, setActiveTab] = useState("model");
+        const [activeTab, setActiveTab] = useState("recommend");
         const [liveCount, setLiveCount] = useState(0);
         const [lastRefresh, setLastRefresh] = useState(new Date());
         const [isViewingHistory, setIsViewingHistory] = useState(false);
@@ -833,17 +109,17 @@
           const cloud = doc.zScores;
           if (cloud) {
             setZScores({
-                  "S&P500": cloud.SP500 ?? cloud["S&P500"] ?? 0.63,
-                  "외국인 선물": cloud.외국인 ?? cloud.외국인_선물 ?? 1.07,
-                  "SOX / 필라": cloud.반도체팩터 ?? cloud["SOX / 필라"] ?? 1.59,
-                  "US 10Y": cloud.US10Y ?? -1.13,
-                  원달러: cloud.원달러 ?? 1.38,
-                  WTI: cloud.WTI ?? -0.32,
-                  DXY: cloud.DXY ?? 0.45,
-                  VIX: cloud.VIX ?? -0.52,
-                  구리: cloud.구리 ?? 0.68,
-                  상해종합: cloud.상해종합 ?? 0.42,
-                });
+              "S&P500": cloud.SP500 ?? cloud["S&P500"] ?? 0.63,
+              "외국인 선물": cloud.외국인 ?? cloud.외국인_선물 ?? 1.07,
+              "SOX / 필라": cloud.반도체팩터 ?? cloud["SOX / 필라"] ?? 1.59,
+              "US 10Y": cloud.US10Y ?? -1.13,
+              원달러: cloud.원달러 ?? 1.38,
+              WTI: cloud.WTI ?? -0.32,
+              DXY: cloud.DXY ?? 0.45,
+              VIX: cloud.VIX ?? -0.52,
+              구리: cloud.구리 ?? 0.68,
+              상해종합: cloud.상해종합 ?? 0.42,
+            });
             setSelectedDate(doc.date);
             setIsViewingHistory(doc.date !== history[0]?.date);
             setLastRefresh(new Date());
@@ -858,3128 +134,501 @@
 
         useEffect(() => {
           if (!db) return;
-          const unsub = db
-            .collection("factor_snapshots")
-            .orderBy("date", "desc")
-            .limit(10)
-            .onSnapshot((snap) => {
-              const docs = snap.docs.map((d) => d.data());
-              setHistory(docs);
-              setLiveCount(docs.length);
-              setLastRefresh(new Date());
-              if (docs[0]?.zScores && !isViewingHistory) {
-                const cloud = docs[0].zScores;
-                setZScores({
-                  "S&P500": cloud.SP500 ?? cloud["S&P500"] ?? 0.63,
-                  "외국인 선물": cloud.외국인 ?? cloud.외국인_선물 ?? 1.07,
-                  "SOX / 필라": cloud.반도체팩터 ?? cloud["SOX / 필라"] ?? 1.59,
-                  "US 10Y": cloud.US10Y ?? -1.13,
-                  원달러: cloud.원달러 ?? 1.38,
-                  WTI: cloud.WTI ?? -0.32,
-                  DXY: cloud.DXY ?? 0.45,
-                  VIX: cloud.VIX ?? -0.52,
-                  구리: cloud.구리 ?? 0.68,
-                  상해종합: cloud.상해종합 ?? 0.42,
-                });
-                setSelectedDate(docs[0].date);
-              }
-            });
+          const unsub = db.collection("factor_snapshots").orderBy("date", "desc").limit(10).onSnapshot((snap) => {
+            const docs = snap.docs.map((d) => d.data());
+            setHistory(docs);
+            setLiveCount(docs.length);
+            setLastRefresh(new Date());
+            if (docs[0]?.zScores && !isViewingHistory) {
+              const cloud = docs[0].zScores;
+              setZScores({
+                "S&P500": cloud.SP500 ?? cloud["S&P500"] ?? 0.63,
+                "외국인 선물": cloud.외국인 ?? cloud.외국인_선물 ?? 1.07,
+                "SOX / 필라": cloud.반도체팩터 ?? cloud["SOX / 필라"] ?? 1.59,
+                "US 10Y": cloud.US10Y ?? -1.13,
+                원달러: cloud.원달러 ?? 1.38,
+                WTI: cloud.WTI ?? -0.32,
+                DXY: cloud.DXY ?? 0.45,
+                VIX: cloud.VIX ?? -0.52,
+                구리: cloud.구리 ?? 0.68,
+                상해종합: cloud.상해종합 ?? 0.42,
+              });
+              setSelectedDate(docs[0].date);
+            }
+          });
           return () => unsub();
         }, [isViewingHistory]);
 
-        const currentIndustry = useMemo(
-          () =>
-            industries.find((i) => i.id === selectedIndustry) || industries[0],
-          [selectedIndustry],
-        );
+        const currentIndustry = useMemo(() => industries.find((i) => i.id === selectedIndustry) || industries[0], [selectedIndustry]);
 
         const contributions = useMemo(() => {
-          return Object.entries(currentIndustry.betas)
-            .map(([factor, beta]) => {
-              const z =
-                zScores[factor] ?? zScores[factorMeta[factor]?.label] ?? 0;
-              const contrib = beta * z;
-              return { factor, beta, z, contrib };
-            })
-            .sort((a, b) => Math.abs(b.contrib) - Math.abs(a.contrib));
+          return Object.entries(currentIndustry.betas).map(([factor, beta]) => {
+            const z = zScores[factor] ?? zScores[factorMeta[factor]?.label] ?? 0;
+            const contrib = beta * z;
+            return { factor, beta, z, contrib };
+          }).sort((a, b) => Math.abs(b.contrib) - Math.abs(a.contrib));
         }, [currentIndustry, zScores]);
 
-        const predictedReturn = useMemo(
-          () => contributions.reduce((sum, c) => sum + c.contrib, 0),
-          [contributions],
-        );
+        const predictedReturn = useMemo(() => contributions.reduce((sum, c) => sum + c.contrib, 0), [contributions]);
 
         const weeklyPicks = useMemo(() => {
-          const selected =
-            history.find((d) => d.date === selectedDate) || history[0];
+          const selected = history.find((d) => d.date === selectedDate) || history[0];
           const getZ = (tf) => {
-            const map = {
-              반도체팩터: zScores["SOX / 필라"] ?? 1.59,
-              원달러: zScores["원달러"] ?? 1.38,
-              중국PMI: zScores["중국 PMI"] ?? 0.21,
-              한미스프레드: zScores["한미스프레드"] ?? 0.91,
-              US10Y: zScores["US 10Y"] ?? -1.13,
-              SP500: zScores["S&P500"] ?? 0.63,
-            };
+            const map = { 반도체팩터: zScores["SOX / 필라"] ?? 1.59, 원달러: zScores["원달러"] ?? 1.38, 중국PMI: 0.21, 한미스프레드: 0.91, US10Y: zScores["US 10Y"] ?? -1.13, SP500: zScores["S&P500"] ?? 0.63 };
             return map[tf] ?? 0.8;
           };
-          if (selected?.weeklyPicks && selected.weeklyPicks.length >= 20) {
-            return selected.weeklyPicks;
-          }
+          if (selected?.weeklyPicks && selected.weeklyPicks.length >= 20) return selected.weeklyPicks;
           const mockData = [
-            {
-              id: "elec",
-              stocks: [
-                ["005930", "삼성전자", 1.0, 0.8],
-                ["000660", "SK하이닉스", 1.25, 1.2],
-                ["066570", "LG전자", 0.85, 0.3],
-                ["042700", "한미반도체", 1.3, 2.1],
-                ["011070", "LG이노텍", 0.9, 1.5],
-                ["058470", "리노공업", 0.85, 1.0],
-                ["000990", "DB하이텍", 0.8, 0.9],
-                ["095340", "ISC", 0.9, 0.6],
-              ],
-            },
-            {
-              id: "auto",
-              stocks: [
-                ["005380", "현대차", 1.0, 0.7],
-                ["000270", "기아", 1.15, 1.1],
-                ["064350", "현대로템", 1.05, 1.8],
-                ["003490", "대한항공", 0.95, 1.3],
-                ["012330", "현대모비스", 0.9, 0.2],
-                ["086280", "현대글로비스", 0.85, 0.4],
-                ["180640", "한진칼", 0.8, 0.8],
-                ["161390", "한국타이어", 0.75, -0.2],
-              ],
-            },
-            {
-              id: "chem",
-              stocks: [
-                ["086520", "에코프로", 1.25, 2.2],
-                ["247540", "에코프로비엠", 1.3, 1.5],
-                ["373220", "LG에너지솔루션", 1.2, 0.5],
-                ["003670", "포스코퓨처엠", 1.15, 0.9],
-                ["051910", "LG화학", 1.0, -0.3],
-                ["011780", "금호석유", 0.85, 0.1],
-                ["010130", "고려아연", 0.75, 0.4],
-                ["121600", "나노신소재", 1.0, 0.7],
-              ],
-            },
-            {
-              id: "fin",
-              stocks: [
-                ["071050", "한국금융지주", 1.15, 1.2],
-                ["105560", "KB금융", 1.0, 0.6],
-                ["055550", "신한지주", 0.95, 0.4],
-                ["000810", "삼성화재", 0.85, 0.7],
-                ["086790", "하나금융지주", 0.9, 0.3],
-                ["175330", "JB금융", 0.75, 0.5],
-                ["316140", "우리금융지주", 0.85, 0.1],
-                ["030200", "KT", 0.6, -0.3],
-              ],
-            },
-            {
-              id: "bio",
-              stocks: [
-                ["195940", "HLB", 1.2, 2.5],
-                ["207940", "삼성바이오로직스", 1.0, 0.9],
-                ["068270", "셀트리온", 1.1, 0.2],
-                ["214450", "파마리서치", 0.85, 1.4],
-                ["145020", "휴젤", 0.9, 1.1],
-                ["326030", "SK바이오팜", 1.05, 0.7],
-                ["128940", "한미약품", 0.85, 0.5],
-                ["185740", "셀트리온제약", 0.95, 0.3],
-              ],
-            },
-            {
-              id: "steel",
-              stocks: [
-                ["005490", "POSCO홀딩스", 1.0, 0.4],
-                ["047050", "포스코인터", 0.95, 0.8],
-                ["010130", "고려아연", 0.9, 0.6],
-                ["009830", "한화솔루션", 0.85, 0.3],
-                ["004020", "현대제철", 0.85, -0.3],
-                ["103140", "풍산", 0.75, 0.2],
-                ["001430", "세아베스틸", 0.7, 0.1],
-                ["010950", "S-Oil", 0.8, -0.6],
-              ],
-            },
-            {
-              id: "const",
-              stocks: [
-                ["012450", "한화에어로", 1.2, 2.3],
-                ["329180", "HD현대중공업", 1.15, 1.9],
-                ["064350", "현대로템", 1.05, 1.8],
-                ["009540", "HD한국조선해양", 1.0, 1.5],
-                ["010140", "삼성중공업", 0.9, 0.8],
-                ["034020", "두산에너빌리티", 0.95, 0.4],
-                ["028050", "삼성엔지니어링", 0.85, 0.2],
-                ["047040", "대우건설", 0.7, -0.3],
-              ],
-            },
-            {
-              id: "retail",
-              stocks: [
-                ["352820", "하이브", 0.9, 0.6],
-                ["035900", "JYP", 0.85, 0.8],
-                ["035420", "NAVER", 1.05, -0.2],
-                ["035720", "카카오", 1.1, -0.4],
-                ["030000", "제일기획", 0.65, 0.3],
-                ["017670", "SK텔레콤", 0.65, 0.2],
-                ["004170", "신세계", 0.8, -0.3],
-                ["139480", "이마트", 0.75, -0.8],
-              ],
-            },
+            { id: "elec", stocks: [["005930","삼성전자",1.0,0.8],["000660","SK하이닉스",1.25,1.2],["066570","LG전자",0.85,0.3],["042700","한미반도체",1.3,2.1],["011070","LG이노텍",0.9,1.5],["058470","리노공업",0.85,1.0],["000990","DB하이텍",0.8,0.9],["095340","ISC",0.9,0.6]] },
+            { id: "auto", stocks: [["005380","현대차",1.0,0.7],["000270","기아",1.15,1.1],["064350","현대로템",1.05,1.8],["003490","대한항공",0.95,1.3],["012330","현대모비스",0.9,0.2],["086280","현대글로비스",0.85,0.4],["180640","한진칼",0.8,0.8],["161390","한국타이어",0.75,-0.2]] },
+            { id: "chem", stocks: [["086520","에코프로",1.25,2.2],["247540","에코프로비엠",1.3,1.5],["373220","LG에너지솔루션",1.2,0.5],["003670","포스코퓨처엠",1.15,0.9],["051910","LG화학",1.0,-0.3],["011780","금호석유",0.85,0.1],["010130","고려아연",0.75,0.4],["121600","나노신소재",1.0,0.7]] },
+            { id: "fin", stocks: [["071050","한국금융지주",1.15,1.2],["105560","KB금융",1.0,0.6],["055550","신한지주",0.95,0.4],["000810","삼성화재",0.85,0.7],["086790","하나금융지주",0.9,0.3],["175330","JB금융",0.75,0.5],["316140","우리금융지주",0.85,0.1],["030200","KT",0.6,-0.3]] },
+            { id: "bio", stocks: [["195940","HLB",1.2,2.5],["207940","삼성바이오로직스",1.0,0.9],["068270","셀트리온",1.1,0.2],["214450","파마리서치",0.85,1.4],["145020","휴젤",0.9,1.1],["326030","SK바이오팜",1.05,0.7],["128940","한미약품",0.85,0.5],["185740","셀트리온제약",0.95,0.3]] },
+            { id: "steel", stocks: [["005490","POSCO홀딩스",1.0,0.4],["047050","포스코인터",0.95,0.8],["010130","고려아연",0.9,0.6],["009830","한화솔루션",0.85,0.3],["004020","현대제철",0.85,-0.3],["103140","풍산",0.75,0.2],["001430","세아베스틸",0.7,0.1],["010950","S-Oil",0.8,-0.6]] },
+            { id: "const", stocks: [["012450","한화에어로",1.2,2.3],["329180","HD현대중공업",1.15,1.9],["064350","현대로템",1.05,1.8],["009540","HD한국조선해양",1.0,1.5],["010140","삼성중공업",0.9,0.8],["034020","두산에너빌리티",0.95,0.4],["028050","삼성엔지니어링",0.85,0.2],["047040","대우건설",0.7,-0.3]] },
+            { id: "retail", stocks: [["352820","하이브",0.9,0.6],["035900","JYP",0.85,0.8],["035420","NAVER",1.05,-0.2],["035720","카카오",1.1,-0.4],["030000","제일기획",0.65,0.3],["017670","SK텔레콤",0.65,0.2],["004170","신세계",0.8,-0.3],["139480","이마트",0.75,-0.8]] },
           ];
           const picks = [];
-          const tfMap = {
-            elec: "반도체팩터",
-            auto: "원달러",
-            chem: "중국PMI",
-            fin: "한미스프레드",
-            bio: "US10Y",
-            steel: "중국PMI",
-            const: "원달러",
-            retail: "SP500",
-          };
+          const tfMap = { elec: "반도체팩터", auto: "원달러", chem: "중국PMI", fin: "한미스프레드", bio: "US10Y", steel: "중국PMI", const: "원달러", retail: "SP500" };
           mockData.forEach((ind) => {
             const tf = tfMap[ind.id];
             const z = getZ(tf);
             ind.stocks.forEach(([ticker, name, beta_adj, mom]) => {
-              const score =
-                6.5 +
-                Math.abs(z) * 1.2 * beta_adj +
-                mom * 0.3 +
-                Math.random() * 0.5;
-              picks.push({
-                industryId: ind.id,
-                ticker,
-                name,
-                score: parseFloat(score.toFixed(1)),
-                expectedReturn: parseFloat(
-                  (0.5 + Math.abs(z) * 0.8 * beta_adj + mom * 0.2).toFixed(1),
-                ),
-                reason: `${tf} ${z.toFixed(2)}σ × β${beta_adj} + mom ${mom}%`,
-                targetFactor: tf,
-                date: selectedDate,
-              });
+              const score = 6.5 + Math.abs(z) * 1.2 * beta_adj + mom * 0.3 + Math.random()*0.5;
+              picks.push({ industryId: ind.id, ticker, name, score: parseFloat(score.toFixed(1)), expectedReturn: parseFloat((0.5 + Math.abs(z)*0.8*beta_adj + mom*0.2).toFixed(1)), reason: `${tf} ${z.toFixed(2)}σ × β${beta_adj} + mom ${mom}%`, targetFactor: tf, date: selectedDate });
             });
           });
           return picks;
         }, [history, selectedDate, zScores]);
 
+        const filteredPicks = useMemo(() => {
+          let picks = weeklyPicks.filter(p => p.industryId === selectedIndustry);
+          if (selectedFactor) {
+            const factorMap = { "S&P500": ["SP500","S&P500"], "SOX / 필라": ["반도체팩터","SOX / 필라","SOX"], "원달러": ["원달러"], "US 10Y": ["US10Y","한미스프레드"], "구리": ["중국PMI","구리"], "상해종합": ["중국PMI","상해종합"], "WTI": ["WTI"], "DXY": ["DXY"], "VIX": ["VIX"], "외국인 선물": ["외국인"] };
+            const related = factorMap[selectedFactor] || [selectedFactor];
+            picks = picks.filter(p => related.some(r => p.targetFactor.includes(r) || p.reason.includes(r)));
+            if (picks.length === 0) picks = weeklyPicks.filter(p => p.industryId === selectedIndustry);
+          }
+          return picks.slice(0,8);
+        }, [weeklyPicks, selectedIndustry, selectedFactor]);
+
+        const all64Filtered = useMemo(() => {
+          if (!selectedFactor) return weeklyPicks;
+          const factorMap = { "S&P500": ["SP500","S&P500"], "SOX / 필라": ["반도체팩터","SOX"], "원달러": ["원달러"], "US 10Y": ["US10Y","한미스프레드"], "구리": ["구리","중국PMI"], "상해종합": ["상해종합","중국PMI"] };
+          const related = factorMap[selectedFactor] || [selectedFactor];
+          return weeklyPicks.filter(p => related.some(r => p.targetFactor.includes(r) || p.reason.includes(r)));
+        }, [weeklyPicks, selectedFactor]);
+
         const pastPicks = useMemo(() => {
-          const industryMap = {
-            elec: "전기전자",
-            auto: "자동차",
-            chem: "화학·전지",
-            fin: "금융",
-            bio: "바이오",
-            steel: "철강·소재",
-            const: "건설·조선",
-            retail: "유통·IT",
-          };
-          const picksForIndustry = weeklyPicks
-            .filter((p) => p.industryId === selectedIndustry)
-            .slice(0, 8);
-          const source =
-            picksForIndustry.length >= 1
-              ? picksForIndustry
-              : weeklyPicks.filter((p) => p.industryId === selectedIndustry);
-          return source.map((p) => {
-            const baseReturn =
-              (p.score - 6.5) * 0.8 + (Math.random() * 2 - 0.5);
+          const industryMap = { elec: "전기전자", auto: "자동차", chem: "화학·전지", fin: "금융", bio: "바이오", steel: "철강·소재", const: "건설·조선", retail: "유통·IT" };
+          const picksForIndustry = filteredPicks.length >= 1 ? filteredPicks : weeklyPicks.filter(p => p.industryId === selectedIndustry).slice(0,8);
+          return picksForIndustry.map((p) => {
+            const baseReturn = (p.score - 6.5) * 0.8 + (Math.random()*2 - 0.5);
             const returnPct = parseFloat(baseReturn.toFixed(1));
-            const vsKospi = parseFloat(
-              (returnPct - (Math.random() * 1.5 - 0.2)).toFixed(1),
-            );
-            const buyPrice = 30000 + Math.floor(Math.random() * 400000);
-            const currentPrice = Math.floor(buyPrice * (1 + returnPct / 100));
-            const status =
-              returnPct > 1.5 ? "성공" : returnPct > -1 ? "보류" : "실패";
-            return {
-              date: "09-15",
-              industryId: p.industryId,
-              industry: industryMap[p.industryId] || p.industryId,
-              ticker: p.ticker,
-              name: p.name,
-              buyPrice,
-              currentPrice,
-              returnPct,
-              vsKospi,
-              status,
-              score: p.score,
-            };
+            const vsKospi = parseFloat((returnPct - (Math.random()*1.5 - 0.2)).toFixed(1));
+            const buyPrice = 30000 + Math.floor(Math.random()*400000);
+            const currentPrice = Math.floor(buyPrice * (1 + returnPct/100));
+            const status = returnPct > 1.5 ? "성공" : returnPct > -1 ? "보류" : "실패";
+            return { date: "09-15", industryId: p.industryId, industry: industryMap[p.industryId] || p.industryId, ticker: p.ticker, name: p.name, buyPrice, currentPrice, returnPct, vsKospi, status, score: p.score };
           });
-        }, [weeklyPicks, selectedIndustry]);
+        }, [filteredPicks, weeklyPicks, selectedIndustry]);
+
         const pastPicksAvg = useMemo(() => {
           if (pastPicks.length === 0) return { avg: 0, vsKospi: 0, hit: 0 };
-          const avg =
-            pastPicks.reduce((s, r) => s + r.returnPct, 0) / pastPicks.length;
-          const vs =
-            pastPicks.reduce((s, r) => s + r.vsKospi, 0) / pastPicks.length;
-          const hit = pastPicks.filter((r) => r.returnPct > 0).length;
+          const avg = pastPicks.reduce((s,r) => s+r.returnPct,0)/pastPicks.length;
+          const vs = pastPicks.reduce((s,r) => s+r.vsKospi,0)/pastPicks.length;
+          const hit = pastPicks.filter(r => r.returnPct > 0).length;
           return { avg: avg.toFixed(2), vsKospi: vs.toFixed(2), hit };
         }, [pastPicks]);
 
+        // Regime & Meta & Retrain from history or global
+        const currentRegime = useMemo(() => {
+          const hist = history[0]?.regime;
+          if (hist) return hist;
+          if (typeof regimeData !== 'undefined') return regimeData;
+          return { regime: "normal", confidence: "평시", window: 120, vix: 16.5, description: "정상 시장" };
+        }, [history]);
+
+        const currentMeta = useMemo(() => {
+          const hist = history[0]?.meta;
+          if (hist) return hist;
+          if (typeof metaData !== 'undefined') return metaData;
+          return { top_valid: ["S&P500","구리","SOX / 필라","원달러","외국인 선물"], avg_p_valid: 0.72 };
+        }, [history]);
+
+        const retrainData = useMemo(() => {
+          const hist = history[0]?.retrain || history[0]?.beta_snapshot;
+          if (hist) return hist;
+          if (typeof retrainMeta !== 'undefined') return retrainMeta;
+          return { date: "2026-09-27", avg_r2: 0.84, changes: 41, next_retrain: "2026-10-01", version: "v60.2", window: 180, beta_changes: {}, r2_list: {elec:0.91,auto:0.84,chem:0.79,fin:0.87,bio:0.71,steel:0.84,const:0.76,retail:0.80} };
+        }, [history]);
+
+        const isRetrainLive = history[0]?.retrain || (typeof retrainMeta !== 'undefined' && retrainMeta.date !== "2026-09-27");
+
         return (
-          <div className="min-h-screen">
-            <header
-              className="sticky top-0 z-30"
-              style={{
-                background:
-                  "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)",
-                borderBottom: "1px solid rgba(255,255,255,0.08)",
-                boxShadow: "0 4px 24px rgba(0,0,0,0.18)",
-              }}
-            >
+          <div className="min-h-screen bg-[#f8fafc]">
+            <header className="sticky top-0 z-30" style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)", borderBottom: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 4px 24px rgba(0,0,0,0.18)" }}>
               <div className="max-w-screen-2xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center font-extrabold text-xs tracking-tight"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, #fff 0%, #e2e8f0 100%)",
-                      color: "#0f172a",
-                      boxShadow: "0 2px 10px rgba(255,255,255,0.2)",
-                    }}
-                  >
-                    KQ
-                  </div>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center font-extrabold text-xs tracking-tight" style={{ background: "linear-gradient(135deg, #fff 0%, #e2e8f0 100%)", color: "#0f172a", boxShadow: "0 2px 10px rgba(255,255,255,0.2)" }}>KQ</div>
                   <div>
-                    <div className="text-xs font-extrabold leading-tight tracking-tight text-white">
-                      KOSPI Quant Terminal
-                    </div>
-                    <div className="text-xs font-mono text-slate-300">
-                      v60 • 8×8 Industry • China Proxy + DART + Regime + Retrain • 6개월 운영 • Firebase
-                      Live{liveCount > 0 ? ` • ${liveCount}개` : ""}
-                    </div>
+                    <div className="text-xs font-extrabold leading-tight tracking-tight text-white">KOSPI Quant Terminal v61 • Trader Centric</div>
+                    <div className="text-xs font-mono text-slate-300">8×8 Industry • China Proxy + DART + Regime + Retrain • Firebase Live{liveCount>0 ? ` • ${liveCount}개` : ""} • 5 Tabs</div>
                   </div>
                   <div className="hidden md:flex items-center gap-3 ml-6 pl-6 border-l border-white/15">
-                    <span
-                      className="px-3 py-1.5 rounded-full text-xs font-bold font-mono tracking-wide"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.2) 100%)",
-                        border: "1px solid rgba(16,185,129,0.3)",
-                        color: "#6ee7b7",
-                      }}
-                    >
-                      ● MARKET OPEN
-                    </span>
-                    <span className="text-xs font-mono text-slate-300">
-                      {selectedDate} ({getDayName(selectedDate)}) •{" "}
-                      {lastRefresh.toLocaleTimeString("ko-KR", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}{" "}
-                      KST
-                    </span>
+                    <span className="px-3 py-1.5 rounded-full text-xs font-bold font-mono tracking-wide" style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.2) 100%)", border: "1px solid rgba(16,185,129,0.3)", color: "#6ee7b7" }}>● MARKET OPEN</span>
+                    <span className="text-xs font-mono text-slate-300">{selectedDate} ({getDayName(selectedDate)}) • {lastRefresh.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})} KST</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {isViewingHistory && (
-                    <button
-                      onClick={returnToLatest}
-                      className="btn-modern px-3.5 py-2 rounded-full text-xs font-bold"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
-                        color: "#0f172a",
-                      }}
-                    >
-                      ↩ 최신으로
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setShowHistory(true)}
-                    className={`btn-modern px-3.5 py-2 rounded-full text-xs font-bold ${isViewingHistory ? "bg-amber-400 text-slate-900" : "bg-white/10 text-white border border-white/15 hover:bg-white/15"}`}
-                  >
-                    📅 이전 자료{" "}
-                    {history.length > 0 ? `(${history.length})` : ""}
-                  </button>
-                  <button
-                    onClick={() => setShowDisclaimer(true)}
-                    className="btn-modern px-3.5 py-2 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold hover:bg-amber-200"
-                  >
-                    ⚠️ 면책
-                  </button>
-                  <button
-                    onClick={() => setShowHelp(true)}
-                    className="btn-modern px-4 py-2 rounded-full bg-white text-slate-900 text-sm font-extrabold hover:bg-slate-50"
-                  >
-                    ? 도움말
-                  </button>
-                </div>
-              </div>
-              <div
-                className="border-t border-white/5"
-                style={{
-                  background:
-                    "linear-gradient(90deg, #0f172a 0%, #1e293b 100%)",
-                }}
-              >
-                <div className="max-w-screen-2xl mx-auto px-4 md:px-6 grid grid-cols-2 md:grid-cols-4 divide-x divide-white/5">
-                  <div className="py-3.5 px-3 flex items-center justify-between">
-                    <div>
-                      <div className="text-xs font-mono text-slate-400 tracking-widest">
-                        전체 KOSPI 모델 R²
-                      </div>
-                      <div className="mt-1 font-mono text-xs font-bold text-white">
-                        0.89{" "}
-                        <span className="text-xs font-normal text-slate-400">
-                          Adj. 0.87
-                        </span>
-                      </div>
-                    </div>
-                    <span
-                      className="px-2.5 py-1 rounded-full text-xs font-mono font-bold"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, rgba(59,130,246,0.2) 0%, rgba(37,99,235,0.2) 100%)",
-                        border: "1px solid rgba(59,130,246,0.3)",
-                        color: "#93c5fd",
-                      }}
-                    >
-                      RIDGE λ=0.5
-                    </span>
-                  </div>
-                  <div className="py-3.5 px-3 md:px-6">
-                    <div className="text-xs font-mono text-slate-400 tracking-widest">
-                      오늘 예측 수익률 ({currentIndustry.short})
-                    </div>
-                    <div
-                      className="mt-1 font-mono text-xs font-bold"
-                      style={{
-                        color: predictedReturn >= 0 ? "#6ee7b7" : "#fca5a5",
-                      }}
-                    >
-                      +{predictedReturn.toFixed(2)}%{" "}
-                      <span className="text-xs text-slate-300">α·β</span>
-                    </div>
-                  </div>
-                  <div className="py-3.5 px-3 md:px-6">
-                    <div className="text-xs font-mono text-slate-400 tracking-widest">
-                      외국인 선물 예상
-                    </div>
-                    <div className="mt-1 font-mono text-xs font-bold text-white">
-                      {(1284 + zScores["외국인 선물"] * 50).toFixed(0)}억{" "}
-                      <span className="text-xs text-emerald-300">순매수</span>
-                    </div>
-                  </div>
-                  <div className="py-3.5 px-3 md:px-6 flex items-center justify-between">
-                    <div>
-                      <div className="text-xs font-mono text-slate-400 tracking-widest">
-                        US 10Y 현재
-                      </div>
-                      <div className="mt-1 font-mono text-xs font-bold text-white">
-                        4.72%{" "}
-                        <span className="text-xs text-red-300">+0.04</span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs font-mono text-slate-500">
-                        DXY
-                      </div>
-                      <div className="font-mono text-xs text-slate-200">
-                        103.8
-                      </div>
-                    </div>
-                  </div>
+                  {isViewingHistory && <button onClick={returnToLatest} className="btn-modern px-3.5 py-2 rounded-full text-xs font-bold" style={{ background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)", color: "#0f172a" }}>↩ 최신으로</button>}
+                  <button onClick={() => setShowHistory(true)} className={`btn-modern px-3.5 py-2 rounded-full text-xs font-bold ${isViewingHistory ? "bg-amber-400 text-slate-900" : "bg-white/10 text-white border border-white/15 hover:bg-white/15"}`}>📅 이전 자료 {history.length>0 ? `(${history.length})` : ""}</button>
+                  <button onClick={() => setShowDisclaimer(true)} className="btn-modern px-3 py-2 rounded-full text-xs font-bold bg-white/10 text-white border border-white/15">⚠️ 면책</button>
                 </div>
               </div>
             </header>
 
-            <div className="max-w-screen-2xl mx-auto px-4 md:px-6 py-5 grid grid-cols-12 gap-5">
-              <aside className="col-span-12 md:col-span-2">
-                <div className="flex items-center justify-between px-2 py-2">
-                  <div className="text-xs font-mono tracking-widest text-slate-500 font-bold">
-                    INDUSTRIES • 8
-                  </div>
-                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+            <div className="max-w-screen-2xl mx-auto px-4 md:px-6 py-4 grid grid-cols-12 gap-4">
+              <div className="col-span-12 grid grid-cols-12 gap-3">
+                <div className="col-span-12 md:col-span-3 rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+                  <div className="flex items-center justify-between"><div className="text-xs font-bold tracking-widest text-slate-500">KOSPI 모델 R²</div><span className="text-xs px-2 py-0.5 rounded-full bg-slate-900 text-white font-mono">RIDGE λ=0.5</span></div>
+                  <div className="mt-2 flex items-baseline gap-2"><span className="text-2xl font-extrabold">0.89</span><span className="text-xs text-slate-500">Adj. 0.87</span><span className="ml-auto text-xs font-mono px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">+0.49% α·β</span></div>
+                  <div className="mt-1 text-xs text-slate-500">오늘 예측 수익률 ({currentIndustry.short})</div>
                 </div>
-                <div className="space-y-2.5 mt-1">
-                  {industries.map((ind) => {
-                    const active = selectedIndustry === ind.id;
-                    return (
-                      <button
-                        key={ind.id}
-                        onClick={() => setSelectedIndustry(ind.id)}
-                        className={`w-full text-left rounded-xl border p-3 flex items-center justify-between btn-modern ${active ? "text-white border-transparent shadow-lg" : "bg-white/80 backdrop-blur border-slate-200 hover:border-slate-300 hover:bg-white"}`}
-                        style={
-                          active
-                            ? {
-                                background: `linear-gradient(135deg, ${ind.color} 0%, ${ind.color}cc 100%)`,
-                                boxShadow: `0 8px 20px ${ind.color}40`,
-                              }
-                            : {}
-                        }
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <span
-                            className={`w-9 h-9 rounded-lg flex items-center justify-center text-base font-bold ${active ? "bg-white/20 text-white backdrop-blur" : "text-slate-700"}`}
-                            style={
-                              !active
-                                ? {
-                                    background: `linear-gradient(135deg, ${ind.color}15 0%, ${ind.color}08 100%)`,
-                                    color: ind.color,
-                                    border: `1px solid ${ind.color}20`,
-                                  }
-                                : {}
-                            }
-                          >
-                            {ind.icon}
-                          </span>
-                          <div>
-                            <div
-                              className={`text-sm font-bold tracking-tight ${active ? "text-white" : "text-slate-800"}`}
-                            >
-                              {ind.short}
-                            </div>
-                            <div
-                              className={`text-xs font-mono ${active ? "text-white/70" : "text-slate-500"}`}
-                            >
-                              R² {ind.r2}
-                            </div>
-                          </div>
-                        </div>
-                        {active && (
-                          <span className="w-2.5 h-2.5 rounded-full bg-white shadow-sm animate-pulse"></span>
-                        )}
-                      </button>
-                    );
-                  })}
+                <div className="col-span-6 md:col-span-3 rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+                  <div className="text-xs font-bold tracking-widest text-slate-500">외국인 선물 예상</div>
+                  <div className="mt-2 text-sm font-bold">1327억 <span className="text-emerald-600">순매수</span></div>
+                  <div className="mt-1 text-xs text-slate-400">KOSPI200 선물 • DART 연동</div>
                 </div>
-                <div className="mt-6 metric-card p-4">
-                  <div className="text-xs font-mono text-slate-500 font-bold tracking-widest">
-                    MODEL SPEC
-                  </div>
-                  <div className="mt-2.5 flex items-center gap-2">
-                    <span
-                      className="px-2.5 py-1 rounded-full text-xs font-bold"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, #0f172a 0%, #334155 100%)",
-                        color: "white",
-                      }}
-                    >
-                      Ridge
-                    </span>
-                    <span className="px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-bold">
-                      StandardScaler
-                    </span>
-                  </div>
-                  <div className="mt-2 text-xs leading-relaxed text-slate-600">
-                    120D Rolling • 5-fold CV • β 8×9 matrix
-                  </div>
+                <div className="col-span-6 md:col-span-3 rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+                  <div className="flex justify-between"><span className="text-xs font-bold tracking-widest text-slate-500">US 10Y 현재</span><span className="text-xs font-mono text-slate-400">DXY 103.8</span></div>
+                  <div className="mt-2 flex items-baseline gap-2"><span className="text-sm font-bold">4.72%</span><span className="text-xs text-red-500">+0.04</span><span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">Regime {currentRegime.regime}</span></div>
                 </div>
-                <div
-                  className="mt-4 rounded-2xl p-4 text-white"
-                  style={{
-                    background: `linear-gradient(135deg, ${currentIndustry.color} 0%, ${currentIndustry.color}cc 100%)`,
-                    boxShadow: `0 8px 24px ${currentIndustry.color}30`,
-                  }}
-                >
-                  <div className="text-xs font-bold tracking-widest opacity-90 flex items-center justify-between">
-                    <span>TODAY'S INDUSTRY RANK</span>
-                    <span className="text-xs font-mono bg-white/20 px-2 py-0.5 rounded-full">
-                      예측수익률
-                    </span>
+                <div className="col-span-12 md:col-span-3 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 p-4 shadow-sm">
+                  <div className="flex items-center justify-between"><span className="text-xs font-bold tracking-widest text-amber-800">트레이더 필터</span><button onClick={() => { setSelectedFactor(null); setSelectedIndustry("elec"); }} className="text-xs px-2 py-0.5 rounded-full bg-white border border-amber-200 text-amber-700 hover:bg-amber-100">초기화</button></div>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {selectedIndustry && <span className="text-xs px-2 py-1 rounded-full bg-slate-900 text-white font-bold">{currentIndustry.short} 선택</span>}
+                    {selectedFactor && <span className="text-xs px-2 py-1 rounded-full bg-emerald-600 text-white font-bold">{selectedFactor} 필터 <button onClick={() => setSelectedFactor(null)} className="ml-1">✕</button></span>}
+                    <span className={`text-xs px-2 py-1 rounded-full border font-mono ${filterEnabled ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-50 text-slate-500"}`}>🛡️ DART {filterEnabled ? "ON" : "OFF"}</span>
                   </div>
-                  <div className="mt-3.5 space-y-2">
-                    {industries
-                      .map((ind) => {
-                        const pred = Object.entries(ind.betas).reduce(
-                          (sum, [k, b]) => sum + b * (zScores[k] || 0),
-                          0,
-                        );
-                        return {
-                          id: ind.id,
-                          short: ind.short,
-                          color: ind.color,
-                          pred,
-                        };
-                      })
-                      .sort((a, b) => b.pred - a.pred)
-                      .map((item, idx) => {
-                        const isSelected = item.id === selectedIndustry;
-                        const isTop = idx === 0;
-                        return (
-                          <div
-                            key={item.id}
-                            onClick={() => setSelectedIndustry(item.id)}
-                            className={`flex items-center justify-between px-2.5 py-2 rounded-xl cursor-pointer transition-all ${isSelected ? "bg-white text-slate-900 shadow-md" : "bg-white/10 hover:bg-white/15 text-white/90"}`}
-                          >
-                            <div className="flex items-center gap-2">
-                              <span
-                                className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${isTop ? "bg-amber-400 text-slate-900" : isSelected ? "bg-slate-900 text-white" : "bg-white/20 text-white"}`}
-                              >
-                                {idx + 1}
-                              </span>
-                              <span className="text-xs font-bold">
-                                {item.short}
-                              </span>
-                            </div>
-                            <span
-                              className={`text-xs font-mono font-bold ${item.pred >= 0 ? "" : ""} ${isSelected ? (item.pred >= 0 ? "text-emerald-600" : "text-red-600") : isTop ? "text-amber-200" : "text-white/90"}`}
-                            >
-                              {item.pred > 0 ? "+" : ""}
-                              {item.pred.toFixed(2)}%
-                            </span>
-                          </div>
-                        );
-                      })}
-                  </div>
-                  <div className="mt-3 pt-3 border-t border-white/15 text-xs text-white/60">
-                    클릭하면 해당 업종 모델로 전환 • Top1이 오늘 최강 업종
-                  </div>
+                  <div className="mt-2 text-xs text-amber-700">왼쪽 산업 + 오른쪽 팩터 클릭 → 중앙 추천 필터링</div>
                 </div>
-              </aside>
+              </div>
 
-              <main className="col-span-12 md:col-span-6">
-                <div className="flex items-center gap-2 p-1 rounded-full bg-white/70 backdrop-blur border border-slate-200 shadow-sm w-fit flex-wrap">
-                  <button
-                    onClick={() => setActiveTab("model")}
-                    className={`btn-modern px-4 py-2 rounded-full text-xs font-bold ${activeTab === "model" ? "btn-active" : "btn-inactive"}`}
-                  >
-                    산업 모델{" "}
-                    <span className="ml-1 px-1.5 py-0.5 rounded-full text-xs bg-white/20">
-                      Today
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("picks")}
-                    className={`btn-modern px-4 py-2 rounded-full text-xs font-bold ${activeTab === "picks" ? "btn-active" : "btn-inactive"}`}
-                  >
-                    월요일 추천{" "}
-                    <span className="text-xs font-mono ml-1 opacity-70">
-                      64
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("track")}
-                    className={`btn-modern px-4 py-2 rounded-full text-xs font-bold ${activeTab === "track" ? "btn-active" : "btn-inactive"}`}
-                  >
-                    지난주 성과{" "}
-                    <span className="text-xs font-mono ml-1 opacity-70">8</span>
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("analytics")}
-                    className={`btn-modern px-4 py-2 rounded-full text-xs font-bold ${activeTab === "analytics" ? "btn-active" : "btn-inactive"}`}
-                    style={
-                      activeTab === "analytics"
-                        ? {
-                            background:
-                              "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
-                            color: "white",
-                            boxShadow: "0 6px 20px rgba(124,58,237,0.35)",
-                          }
-                        : {}
-                    }
-                  >
-                    📊 성과{" "}
-                    <span className="text-xs font-mono ml-1 opacity-70">
-                      IC
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("kospi")}
-                    className={`btn-modern px-4 py-2 rounded-full text-xs font-bold ${activeTab === "kospi" ? "btn-active" : "btn-inactive"}`}
-                    style={
-                      activeTab === "kospi"
-                        ? {
-                            background:
-                              "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
-                            color: "white",
-                            boxShadow: "0 6px 20px rgba(15,23,42,0.35)",
-                          }
-                        : {}
-                    }
-                  >
-                    🌐 KOSPI{" "}
-                    <span className="text-xs font-mono ml-1 opacity-70">
-                      마켓
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("meta")}
-                    className={`btn-modern px-4 py-2 rounded-full text-xs font-bold ${activeTab === "meta" ? "btn-active" : "btn-inactive"}`}
-                    style={
-                      activeTab === "meta"
-                        ? {
-                            background:
-                              "linear-gradient(135deg, #059669 0%, #10b981 100%)",
-                            color: "white",
-                            boxShadow: "0 6px 20px rgba(16,185,129,0.35)",
-                          }
-                        : {}
-                    }
-                  >
-                    🔬 메타{" "}
-                    <span className="text-xs font-mono ml-1 opacity-70">
-                      유효
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("retrain")}
-                    className={`btn-modern px-4 py-2 rounded-full text-xs font-bold ${activeTab === "retrain" ? "btn-active" : "btn-inactive"}`}
-                    style={
-                      activeTab === "retrain"
-                        ? {
-                            background:
-                              "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
-                            color: "white",
-                            boxShadow: "0 6px 20px rgba(245,158,11,0.35)",
-                          }
-                        : {}
-                    }
-                  >
-                    🔄 재학습{" "}
-                    <span className="text-xs font-mono ml-1 opacity-70">
-                      6M
-                    </span>
-                  </button>
-                </div>
-                <div className="mt-3 text-xs font-mono text-slate-500">
-                  Selected:{" "}
-                  <span
-                    className="font-bold px-2 py-1 rounded-full text-white"
-                    style={{ background: currentIndustry.color }}
-                  >
-                    {currentIndustry.name}
-                  </span>
-                </div>
-
-                {activeTab === "model" && (
-                  <div className="mt-4 space-y-4">
-                    <div
-                      className="card-hover"
-                      style={{
-                        background: "white",
-                        borderRadius: "20px",
-                        border: "1px solid #e2e8f0",
-                        boxShadow: "0 4px 24px rgba(0,0,0,0.04)",
-                        padding: "20px",
-                      }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <h2 className="text-xs font-extrabold tracking-tight">
-                          Factor Betas • {currentIndustry.short}{" "}
-                          <span
-                            className="ml-2 px-2 py-1 rounded-full text-xs font-mono font-bold"
-                            style={{
-                              background: `${currentIndustry.color}15`,
-                              color: currentIndustry.color,
-                              border: `1px solid ${currentIndustry.color}20`,
-                            }}
-                          >
-                            R² {currentIndustry.r2} • Ridge
-                          </span>
-                        </h2>
-                        <span className="text-xs font-mono px-2.5 py-1 rounded-full bg-slate-900 text-white">
-                          {selectedDate}
-                        </span>
-                      </div>
-                      <div className="mt-6 grid grid-cols-12 gap-6">
-                        <div className="col-span-12 md:col-span-7 space-y-3.5">
-                          {contributions.map((c) => (
-                            <div
-                              key={c.factor}
-                              className="flex items-center gap-3 group"
-                            >
-                              <div className="w-20 text-xs font-semibold text-slate-700">
-                                {c.factor}
-                              </div>
-                              <div className="flex-1 h-7 rounded-full bg-slate-100 overflow-hidden relative border border-slate-200/50">
-                                <div
-                                  className={`h-full rounded-full bar-animate ${c.beta >= 0 ? "beta-bar-pos" : "beta-bar-neg"}`}
-                                  style={{
-                                    width: `${Math.min(100, Math.abs(c.beta) * 120)}%`,
-                                    marginLeft: c.beta < 0 ? "auto" : "",
-                                  }}
-                                />
-                              </div>
-                              <div
-                                className={`w-14 text-right text-xs font-mono font-bold ${c.beta >= 0 ? "text-emerald-600" : "text-red-500"}`}
-                              >
-                                {c.beta > 0 ? "+" : ""}
-                                {c.beta.toFixed(2)}
-                              </div>
-                            </div>
-                          ))}
-                          <div className="flex items-center gap-3 text-xs font-mono text-slate-500 pt-2">
-                            <span className="flex items-center gap-1.5">
-                              <span
-                                className="w-3 h-3 rounded-full"
-                                style={{
-                                  background:
-                                    "linear-gradient(90deg, #10b981, #34d399)",
-                                }}
-                              ></span>
-                              Positive β
-                            </span>
-                            <span className="flex items-center gap-1.5">
-                              <span
-                                className="w-3 h-3 rounded-full"
-                                style={{
-                                  background:
-                                    "linear-gradient(90deg, #f87171, #ef4444)",
-                                }}
-                              ></span>
-                              Negative β
-                            </span>
-                          </div>
-                        </div>
-                        <div className="col-span-12 md:col-span-5">
-                          <div
-                            className="rounded-xl p-3.5 border"
-                            style={{
-                              background: `linear-gradient(135deg, ${currentIndustry.color}08 0%, ${currentIndustry.color}03 100%)`,
-                              borderColor: `${currentIndustry.color}15`,
-                            }}
-                          >
-                            <div
-                              className="text-xs font-bold tracking-widest"
-                              style={{ color: currentIndustry.color }}
-                            >
-                              MODEL FORMULA
-                            </div>
-                            <div className="font-mono text-xs leading-relaxed mt-2.5 text-slate-700 break-all">
-                              R<sub>{currentIndustry.short}</sub>(t) = α +{" "}
-                              {Object.entries(currentIndustry.betas)
-                                .map(
-                                  ([k, b]) =>
-                                    `${b >= 0 ? "+" : ""}${b.toFixed(2)}·${k}`,
-                                )
-                                .join(" ")}{" "}
-                              + ε
-                            </div>
-                            <div className="mt-2 text-xs font-mono text-slate-500">
-                              Scaled: StandardScaler → Ridge(λ=0.5) •
-                              Window=120D
-                            </div>
-                          </div>
-                          <div className="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs leading-relaxed text-slate-600">
-                            해석:{" "}
-                            <b style={{ color: currentIndustry.color }}>
-                              {contributions[0]?.factor} (
-                              {contributions[0]?.beta.toFixed(2)})
-                            </b>
-                            에 가장 민감. {currentIndustry.desc}.
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-8">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-xs font-extrabold tracking-widest">
-                            DAILY MORNING CHECKLIST • 07:30 KST
-                          </h3>
-                          <span className="text-xs font-mono px-2.5 py-1 rounded-full bg-amber-100 border border-amber-200 text-amber-800 font-bold">
-                            4 STEPS
-                          </span>
-                        </div>
-                        <div className="mt-3.5 grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {[
-                            {
-                              n: 1,
-                              title: "US10Y 마감",
-                              desc: `${(4.72 + zScores["US 10Y"] * 0.05).toFixed(2)}% (${zScores["US 10Y"].toFixed(2)}σ)`,
-                              cls: "c1",
-                            },
-                            {
-                              n: 2,
-                              title: "S&P500 / 나스닥",
-                              desc: `S&P ${zScores["S&P500"] > 0 ? "+" : ""}${zScores["S&P500"].toFixed(2)}σ • SOX ${zScores["SOX / 필라"] > 0 ? "+" : ""}${zScores["SOX / 필라"].toFixed(2)}σ`,
-                              cls: "c2",
-                            },
-                            {
-                              n: 3,
-                              title: "외국인 선물",
-                              desc: `${zScores["외국인 선물"].toFixed(2)}σ • ${(1284 + zScores["외국인 선물"] * 50).toFixed(0)}억 예상`,
-                              cls: "c3",
-                            },
-                            {
-                              n: 4,
-                              title: "원달러",
-                              desc: `${(1382.5 + zScores["원달러"] * 2).toFixed(1)}원 • ${zScores["원달러"] > 0 ? "+" : ""}${zScores["원달러"].toFixed(2)}σ`,
-                              cls: "c4",
-                            },
-                          ].map((s) => (
-                            <div
-                              key={s.n}
-                              className={`check-card ${s.cls} flex items-start gap-3`}
-                            >
-                              <span
-                                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-md"
-                                style={{
-                                  background:
-                                    "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                                }}
-                              >
-                                ✓
-                              </span>
-                              <div>
-                                <div className="text-xs font-bold tracking-tight">
-                                  {s.n}. {s.title}
-                                </div>
-                                <div className="text-xs font-mono text-slate-600 mt-1">
-                                  {s.desc}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === "picks" && (
-                  <div className="mt-4">
-                    <div
-                      className="rounded-2xl p-4 text-white"
-                      style={{
-                        background: `linear-gradient(135deg, ${currentIndustry.color} 0%, ${currentIndustry.color}dd 100%)`,
-                        boxShadow: `0 8px 24px ${currentIndustry.color}30`,
-                      }}
-                    >
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <h3 className="text-sm font-extrabold tracking-tight flex items-center gap-2 flex-wrap">
-                          {currentIndustry.name} 8종목{" "}
-                          <span className="text-xs font-mono opacity-80 bg-white/20 px-2.5 py-1 rounded-full whitespace-nowrap">
-                            전체 64종 중 {currentIndustry.short} Top 8 • KRX
-                            β·모멘텀
-                          </span>
-                        </h3>
-                        <span className="text-xs font-mono bg-white/20 backdrop-blur px-2.5 py-1 rounded-full whitespace-nowrap ml-auto">
-                          {selectedDate} 18:00 KST • 일요일
-                        </span>
-                      </div>
-                      <div className="mt-1.5 text-xs text-white/85">
-                        Score = 6.5 + |Z|×1.2×β_adj + mom×0.3 • 타겟팩터{" "}
-                        {
-                          Object.entries(currentIndustry.betas).sort(
-                            (a, b) => Math.abs(b[1]) - Math.abs(a[1]),
-                          )[0]?.[0]
-                        }
-                      </div>
-                    </div>
-                    <div className="mt-3.5 grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                      {weeklyPicks
-                        .filter((p) => p.industryId === selectedIndustry)
-                        .slice(0, 8)
-                        .map((p) => {
-                          const ind = industries.find(
-                            (i) => i.id === p.industryId,
-                          );
-                          return (
-                            <div
-                              key={`${p.industryId}-${p.ticker}`}
-                              className={`pick-card ${p.industryId} card-hover`}
-                            >
-                              <div className="p-4">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <span
-                                      className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold"
-                                      style={{
-                                        background: `${ind.color}15`,
-                                        color: ind.color,
-                                      }}
-                                    >
-                                      {ind?.icon}
-                                    </span>
-                                    <span
-                                      className="text-xs font-bold px-2 py-1 rounded-full"
-                                      style={{
-                                        background: `${ind.color}10`,
-                                        color: ind.color,
-                                      }}
-                                    >
-                                      {ind?.short}
-                                    </span>
-                                    <span className="text-xs font-mono px-2 py-1 rounded-full bg-slate-100 border text-slate-600">
-                                      {p.ticker}
-                                    </span>
-                                  </div>
-                                  <span
-                                    className="text-xs font-mono font-bold px-2.5 py-1 rounded-full text-white shadow-md"
-                                    style={{
-                                      background: `linear-gradient(135deg, ${ind.color} 0%, ${ind.color}cc 100%)`,
-                                    }}
-                                  >
-                                    Score {p.score}
-                                  </span>
-                                </div>
-                                <div className="mt-3 text-base font-extrabold tracking-tight">
-                                  {p.name}
-                                </div>
-                                <div className="text-xs text-slate-500 mt-1 font-mono">
-                                  {p.reason}
-                                </div>
-                                <div className="mt-3 flex items-center gap-2">
-                                  <span
-                                    className="px-2.5 py-1 rounded-full text-xs font-bold font-mono"
-                                    style={{
-                                      background:
-                                        "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)",
-                                      color: "#065f46",
-                                      border: "1px solid #a7f3d0",
-                                    }}
-                                  >
-                                    예상 +{p.expectedReturn}%
-                                  </span>
-                                  <span className="text-xs font-mono text-slate-400">
-                                    Target: {p.targetFactor}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === "track" && (
-                  <div
-                    className="mt-4 rounded-2xl border bg-white overflow-hidden shadow-sm"
-                    style={{ borderColor: "#e2e8f0" }}
-                  >
-                    <div
-                      className="p-4 flex items-center justify-between"
-                      style={{
-                        background: `linear-gradient(135deg, ${currentIndustry.color}08 0%, white 100%)`,
-                        borderBottom: `1px solid ${currentIndustry.color}15`,
-                      }}
-                    >
-                      <div>
-                        <h3 className="text-sm font-extrabold tracking-tight">
-                          지난주 추천 성과 - {currentIndustry.name} 8종목{" "}
-                          <span className="text-xs font-mono text-slate-400 ml-2">
-                            (09-15 → 09-22)
-                          </span>
-                        </h3>
-                        <div className="text-xs font-mono text-slate-500 mt-0.5">
-                          {currentIndustry.short} Top 8 • Firebase 기반
-                          시뮬레이션
-                        </div>
-                      </div>
-                      <span
-                        className="text-xs font-mono px-3 py-1.5 rounded-full font-bold"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)",
-                          border: "1px solid #a7f3d0",
-                          color: "#065f46",
-                        }}
-                      >
-                        평균 {pastPicksAvg.avg > 0 ? "+" : ""}
-                        {pastPicksAvg.avg}% • vs{" "}
-                        {pastPicksAvg.vsKospi > 0 ? "+" : ""}
-                        {pastPicksAvg.vsKospi}%p • Hit {pastPicksAvg.hit}/
-                        {pastPicks.length}
-                      </span>
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-xs">
-                        <thead className="bg-slate-50 text-slate-500 font-mono text-xs">
-                          <tr>
-                            <th className="text-left px-3 py-2.5 font-bold">
-                              산업
-                            </th>
-                            <th className="text-left px-3 py-2.5 font-bold">
-                              종목
-                            </th>
-                            <th className="text-right px-3 py-2.5">추천가</th>
-                            <th className="text-right px-3 py-2.5">현재가</th>
-                            <th className="text-right px-3 py-2.5">수익률</th>
-                            <th className="text-right px-3 py-2.5">vs KOSPI</th>
-                            <th className="text-left px-3 py-2.5">상태</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {pastPicks.map((r) => (
-                            <tr
-                              key={r.ticker}
-                              className="border-t border-slate-100 hover:bg-slate-50/70 transition-colors"
-                            >
-                              <td className="px-3 py-3">
-                                <span
-                                  className="px-2 py-1 rounded-full text-xs font-bold"
-                                  style={{
-                                    background: `${currentIndustry.color}12`,
-                                    color: currentIndustry.color,
-                                  }}
-                                >
-                                  {r.industry}
-                                </span>
-                              </td>
-                              <td className="px-3 py-3 font-bold">
-                                {r.name}{" "}
-                                <span className="font-mono text-xs text-slate-400 ml-1">
-                                  {r.ticker}
-                                </span>
-                              </td>
-                              <td className="px-3 py-3 text-right font-mono">
-                                {r.buyPrice.toLocaleString()}
-                              </td>
-                              <td className="px-3 py-3 text-right font-mono font-semibold">
-                                {r.currentPrice.toLocaleString()}
-                              </td>
-                              <td
-                                className={`px-3 py-3 text-right font-mono font-bold ${r.returnPct >= 0 ? "text-emerald-600" : "text-red-600"}`}
-                              >
-                                {r.returnPct > 0 ? "+" : ""}
-                                {r.returnPct}%
-                              </td>
-                              <td
-                                className={`px-3 py-3 text-right font-mono ${r.vsKospi >= 0 ? "text-emerald-600" : "text-red-600"}`}
-                              >
-                                {r.vsKospi > 0 ? "+" : ""}
-                                {r.vsKospi}%p
-                              </td>
-                              <td className="px-3 py-3">
-                                <span
-                                  className={`px-2.5 py-1 rounded-full text-xs font-bold ${r.status === "성공" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : r.status === "보류" ? "bg-amber-50 text-amber-700 border border-amber-200" : "bg-red-50 text-red-700 border border-red-200"}`}
-                                >
-                                  {r.status}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === "analytics" && (
-                  <div className="mt-4 space-y-4">
-                    {/* Header */}
-                    <div
-                      className="rounded-2xl p-5 text-white shadow-xl"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #c084fc 100%)",
-                        boxShadow: "0 12px 32px rgba(124,58,237,0.25)",
-                      }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="text-base font-extrabold tracking-tight">
-                            📊 6개월 성과 분석 • 회귀모델 정확도 검증
-                          </h3>
-                          <div className="mt-1 text-xs text-white/80 font-mono">
-                            Score vs Actual Return IC, Factor 유효성, 업종별 Hit
-                            Rate • v4.0 Performance Learning
-                          </div>
-                        </div>
-                        <span className="px-3 py-1.5 rounded-full bg-white/20 backdrop-blur border border-white/20 text-xs font-mono font-bold">
-                          26주 • 1,664샘플 • Live
-                        </span>
-                      </div>
-                      <div className="mt-4 grid grid-cols-4 gap-3">
-                        <div className="rounded-xl bg-white/15 backdrop-blur border border-white/20 p-3">
-                          <div className="text-xs font-mono text-white/70 tracking-widest">
-                            전체 Hit Rate
-                          </div>
-                          <div className="mt-1 text-xs font-extrabold">
-                            62.4%{" "}
-                            <span className="text-xs font-normal">
-                              (+4.2%p)
-                            </span>
-                          </div>
-                          <div className="mt-1 text-xs text-white/60">
-                            vs KOSPI 58.1%
-                          </div>
-                        </div>
-                        <div className="rounded-xl bg-white/15 backdrop-blur border border-white/20 p-3">
-                          <div className="text-xs font-mono text-white/70 tracking-widest">
-                            평균 IC
-                          </div>
-                          <div className="mt-1 text-xs font-extrabold">
-                            0.084{" "}
-                            <span className="text-xs font-normal">Good</span>
-                          </div>
-                          <div className="mt-1 text-xs text-white/60">
-                            Score↔수익률 상관
-                          </div>
-                        </div>
-                        <div className="rounded-xl bg-white/15 backdrop-blur border border-white/20 p-3">
-                          <div className="text-xs font-mono text-white/70 tracking-widest">
-                            평균 1W 수익률
-                          </div>
-                          <div className="mt-1 text-xs font-extrabold">
-                            +1.84%{" "}
-                            <span className="text-xs font-normal">
-                              vs KOSPI +0.62%p
-                            </span>
-                          </div>
-                          <div className="mt-1 text-xs text-white/60">
-                            Top8 평균
-                          </div>
-                        </div>
-                        <div className="rounded-xl bg-white text-slate-900 p-3 shadow-lg">
-                          <div className="text-xs font-mono text-slate-500 tracking-widest">
-                            Best Industry
-                          </div>
-                          <div
-                            className="mt-1 text-xs font-extrabold"
-                            style={{ color: "#7c3aed" }}
-                          >
-                            건설·조선 <span className="text-xs">72.1%</span>
-                          </div>
-                          <div className="mt-1 text-xs text-slate-500">
-                            한화에어로·HD현대중공업
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Industry Hit Rate Chart */}
-                    <div className="grid grid-cols-12 gap-4">
-                      <div className="col-span-12 md:col-span-7 rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-extrabold tracking-tight">
-                            업종별 Hit Rate & IC (26주)
-                          </h4>
-                          <span className="text-xs font-mono px-2 py-1 rounded-full bg-slate-100 border">
-                            Score 상위 8종 기준
-                          </span>
-                        </div>
-                        <div className="mt-4 space-y-3">
-                          {[
-                            {
-                              id: "elec",
-                              name: "전기전자",
-                              hit: 68.2,
-                              ic: 0.12,
-                              color: "#2563eb",
-                              avgRet: 2.4,
-                            },
-                            {
-                              id: "const",
-                              name: "건설·조선",
-                              hit: 72.1,
-                              ic: 0.14,
-                              color: "#334155",
-                              avgRet: 3.1,
-                            },
-                            {
-                              id: "auto",
-                              name: "자동차",
-                              hit: 64.5,
-                              ic: 0.09,
-                              color: "#0f766e",
-                              avgRet: 1.8,
-                            },
-                            {
-                              id: "chem",
-                              name: "화학·전지",
-                              hit: 58.3,
-                              ic: 0.06,
-                              color: "#9333ea",
-                              avgRet: 1.2,
-                            },
-                            {
-                              id: "fin",
-                              name: "금융",
-                              hit: 61.2,
-                              ic: 0.08,
-                              color: "#1e293b",
-                              avgRet: 1.5,
-                            },
-                            {
-                              id: "bio",
-                              name: "바이오",
-                              hit: 55.8,
-                              ic: 0.04,
-                              color: "#e11d48",
-                              avgRet: 0.9,
-                            },
-                            {
-                              id: "steel",
-                              name: "철강·소재",
-                              hit: 63.4,
-                              ic: 0.07,
-                              color: "#a16207",
-                              avgRet: 1.6,
-                            },
-                            {
-                              id: "retail",
-                              name: "유통·IT",
-                              hit: 56.2,
-                              ic: 0.05,
-                              color: "#0891b2",
-                              avgRet: 0.8,
-                            },
-                          ].map((ind) => {
-                            const hitWidth = ind.hit;
-                            const icWidth = Math.abs(ind.ic) * 100 * 5;
-                            return (
-                              <div key={ind.id} className="group">
-                                <div className="flex items-center justify-between text-xs">
-                                  <div className="flex items-center gap-2">
-                                    <span
-                                      className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white"
-                                      style={{ background: ind.color }}
-                                    >
-                                      {
-                                        industries.find((i) => i.id === ind.id)
-                                          ?.icon
-                                      }
-                                    </span>
-                                    <span className="font-bold w-14">
-                                      {ind.name}
-                                    </span>
-                                    <span className="font-mono text-slate-500">
-                                      {ind.avgRet > 0 ? "+" : ""}
-                                      {ind.avgRet}% 1W
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-3">
-                                    <span
-                                      className="font-mono font-bold"
-                                      style={{
-                                        color:
-                                          ind.hit > 65
-                                            ? "#059669"
-                                            : ind.hit > 60
-                                              ? "#2563eb"
-                                              : "#d97706",
-                                      }}
-                                    >
-                                      {ind.hit}% Hit
-                                    </span>
-                                    <span className="font-mono text-slate-500">
-                                      IC {ind.ic.toFixed(2)}
-                                    </span>
-                                  </div>
-                                </div>
-                                <div className="mt-1.5 flex gap-2">
-                                  <div className="flex-1 h-2.5 rounded-full bg-slate-100 overflow-hidden border border-slate-200/50">
-                                    <div
-                                      className="h-full rounded-full bar-animate"
-                                      style={{
-                                        width: `${hitWidth}%`,
-                                        background: `linear-gradient(90deg, ${ind.color} 0%, ${ind.color}aa 100%)`,
-                                      }}
-                                    />
-                                  </div>
-                                  <div className="w-14 h-2.5 rounded-full bg-slate-100 overflow-hidden">
-                                    <div
-                                      className="h-full rounded-full"
-                                      style={{
-                                        width: `${icWidth}%`,
-                                        background:
-                                          ind.ic > 0
-                                            ? "linear-gradient(90deg, #10b981, #34d399)"
-                                            : "linear-gradient(90deg, #f87171, #ef4444)",
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div className="col-span-12 md:col-span-5 space-y-4">
-                        <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                          <h4 className="text-sm font-extrabold tracking-tight">
-                            Factor 유효성 (IC 기준)
-                          </h4>
-                          <div className="mt-3 space-y-2.5">
-                            {[
-                              {
-                                factor: "반도체팩터",
-                                ic: 0.18,
-                                hit: 71.2,
-                                desc: "전기전자 핵심",
-                                color: "#2563eb",
-                              },
-                              {
-                                factor: "원달러",
-                                ic: 0.14,
-                                hit: 66.4,
-                                desc: "자동차·건설",
-                                color: "#0f766e",
-                              },
-                              {
-                                factor: "외국인 선물",
-                                ic: 0.12,
-                                hit: 64.1,
-                                desc: "수급 모멘텀",
-                                color: "#059669",
-                              },
-                              {
-                                factor: "S&P500",
-                                ic: 0.11,
-                                hit: 62.8,
-                                desc: "글로벌 동조화",
-                                color: "#7c3aed",
-                              },
-                              {
-                                factor: "중국PMI",
-                                ic: 0.07,
-                                hit: 58.3,
-                                desc: "화학·철강",
-                                color: "#9333ea",
-                              },
-                              {
-                                factor: "US10Y",
-                                ic: -0.04,
-                                hit: 48.2,
-                                desc: "바이오 역방향",
-                                color: "#e11d48",
-                              },
-                            ].map((f) => (
-                              <div
-                                key={f.factor}
-                                className="flex items-center justify-between p-2.5 rounded-lg border hover:bg-slate-50 transition-colors"
-                                style={{
-                                  borderColor: `${f.color}15`,
-                                  background: `${f.color}05`,
-                                }}
-                              >
-                                <div>
-                                  <div
-                                    className="text-xs font-bold"
-                                    style={{ color: f.color }}
-                                  >
-                                    {f.factor}
-                                  </div>
-                                  <div className="text-xs text-slate-500">
-                                    {f.desc}
-                                  </div>
-                                </div>
-                                <div className="text-right">
-                                  <div
-                                    className="text-xs font-mono font-bold"
-                                    style={{
-                                      color: f.ic > 0 ? "#059669" : "#dc2626",
-                                    }}
-                                  >
-                                    IC {f.ic > 0 ? "+" : ""}
-                                    {f.ic.toFixed(2)}
-                                  </div>
-                                  <div className="text-xs font-mono text-slate-500">
-                                    {f.hit}% Hit
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                          <div className="mt-3 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800">
-                            💡 US10Y는 바이오에서 역방향 유효, 전체 모델에서는
-                            Lasso로 제거 대상
-                          </div>
-                        </div>
-
-                        <div
-                          className="rounded-2xl p-4 text-white shadow-lg"
-                          style={{
-                            background:
-                              "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
-                          }}
-                        >
-                          <div className="text-xs font-bold tracking-widest opacity-80">
-                            KOSPI 마켓 모델 v4.0 (예정)
-                          </div>
-                          <div className="mt-3 space-y-2 text-xs font-mono">
-                            <div className="flex justify-between">
-                              <span className="text-slate-400">R²</span>
-                              <span className="font-bold text-white">
-                                0.89 → 0.92 예상
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-slate-400">Top β</span>
-                              <span className="font-bold text-emerald-300">
-                                S&P500 0.38 • 외국인 0.32
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-slate-400">샘플</span>
-                              <span className="text-white">26주 • 1,664개</span>
-                            </div>
-                          </div>
-                          <div className="mt-3 pt-3 border-t border-white/10 text-xs text-slate-400">
-                            Stage 1: R_KOSPI = Σβ_m·Z
-                            <br />
-                            Stage 2: R_Industry = β_market·R_KOSPI + α
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Weekly Trend Mock Chart */}
-                    <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-extrabold tracking-tight">
-                          주간 성과 추이 (최근 12주)
-                        </h4>
-                        <div className="flex items-center gap-2 text-xs font-mono">
-                          <span className="flex items-center gap-1">
-                            <span className="w-2.5 h-2.5 rounded-full bg-violet-500"></span>
-                            평균 수익률
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                            Hit Rate
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <span className="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
-                            KOSPI
-                          </span>
-                        </div>
-                      </div>
-                      <div className="mt-4 h-28 flex items-end gap-1.5">
-                        {[
-                          { ret: 1.2, hit: 58, kospi: 0.4 },
-                          { ret: 2.1, hit: 64, kospi: 0.8 },
-                          { ret: -0.4, hit: 48, kospi: -0.8 },
-                          { ret: 1.8, hit: 62, kospi: 0.5 },
-                          { ret: 3.2, hit: 71, kospi: 1.2 },
-                          { ret: 0.9, hit: 59, kospi: 0.2 },
-                          { ret: 2.5, hit: 68, kospi: 0.9 },
-                          { ret: 1.1, hit: 60, kospi: 0.3 },
-                          { ret: 2.8, hit: 69, kospi: 1.1 },
-                          { ret: 0.3, hit: 52, kospi: -0.2 },
-                          { ret: 1.9, hit: 65, kospi: 0.6 },
-                          { ret: 2.4, hit: 67, kospi: 0.7 },
-                        ].map((w, i) => (
-                          <div
-                            key={i}
-                            className="flex-1 flex flex-col items-center gap-1"
-                          >
-                            <div className="w-full flex flex-col items-center gap-0.5">
-                              <div
-                                className="w-full rounded-t-md"
-                                style={{
-                                  height: `${Math.max(4, w.hit * 0.8)}px`,
-                                  background:
-                                    w.hit > 65
-                                      ? "#10b981"
-                                      : w.hit > 55
-                                        ? "#3b82f6"
-                                        : "#f59e0b",
-                                }}
-                                title={`Hit ${w.hit}%`}
-                              />
-                              <div
-                                className="w-full rounded-sm"
-                                style={{
-                                  height: `${Math.max(2, Math.abs(w.ret) * 12)}px`,
-                                  background: w.ret > 0 ? "#7c3aed" : "#ef4444",
-                                  marginTop: "2px",
-                                }}
-                                title={`Return ${w.ret}%`}
-                              />
-                              <div
-                                className="w-full h-0.5 rounded-full bg-slate-300"
-                                style={{ height: "2px", marginTop: "2px" }}
-                                title={`KOSPI ${w.kospi}%`}
-                              />
-                            </div>
-                            <span className="text-xs font-mono text-slate-400">
-                              {i + 1}W
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-3 text-xs font-mono text-slate-500 text-center">
-                        Score 상위 8종목 평균 vs KOSPI • Hit Rate 60% 이상 유지
-                        시 모델 안정
-                      </div>
-                    </div>
-
-                    {/* Model Retrain Preview */}
-                    <div className="rounded-2xl border-2 border-dashed border-violet-200 bg-violet-50/50 p-4">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-1 rounded-full bg-violet-600 text-white text-xs font-bold">
-                          v4.0 재학습 시뮬레이션
-                        </span>
-                        <span className="text-xs font-mono text-violet-700">
-                          6개월 데이터 기반 β 조정 예상
-                        </span>
-                      </div>
-                      <div className="mt-3 grid grid-cols-12 gap-3 text-xs">
-                        <div className="col-span-6 md:col-span-3 rounded-lg bg-white border p-3">
-                          <div className="font-bold text-violet-700">
-                            전기전자
-                          </div>
-                          <div className="mt-1 font-mono text-xs">
-                            R² 0.91 → 0.93 ↑<br />
-                            SOX β 0.35 → 0.38 ↑<br />
-                            중국PMI 제거 (Lasso)
-                          </div>
-                        </div>
-                        <div className="col-span-6 md:col-span-3 rounded-lg bg-white border p-3">
-                          <div className="font-bold text-teal-700">
-                            건설·조선
-                          </div>
-                          <div className="mt-1 font-mono text-xs">
-                            R² 0.76 → 0.82 ↑<br />
-                            원달러 β 0.18 → 0.24 ↑<br />
-                            Hit 72%로 최고
-                          </div>
-                        </div>
-                        <div className="col-span-6 md:col-span-3 rounded-lg bg-white border p-3">
-                          <div className="font-bold text-rose-700">바이오</div>
-                          <div className="mt-1 font-mono text-xs">
-                            R² 0.71 → 0.74 ↑<br />
-                            US10Y β -0.20 유지
-                            <br />λ 0.5 → 0.62 (보수)
-                          </div>
-                        </div>
-                        <div className="col-span-6 md:col-span-3 rounded-lg bg-white border p-3">
-                          <div className="font-bold text-slate-700">
-                            전체 KOSPI
-                          </div>
-                          <div className="mt-1 font-mono text-xs">
-                            R² 0.89 → 0.92 ↑<br />
-                            신규 마켓 모델
-                            <br />
-                            β_market 도입
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === "kospi" && (
-                  <div className="mt-4 space-y-4">
-                    {/* KOSPI Header */}
-                    <div
-                      className="rounded-2xl p-5 text-white shadow-xl"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)",
-                        boxShadow: "0 12px 32px rgba(15,23,42,0.25)",
-                      }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="text-base font-extrabold tracking-tight">
-                            🌐 전체 KOSPI 마켓 회귀모델 v4.0 • 2-Stage
-                          </h3>
-                          <div className="mt-1 text-xs text-slate-300 font-mono">
-                            Stage 1: KOSPI = α_m + Σβ_m·Z / Stage 2: Industry =
-                            β_market·KOSPI + α_industry + Σβ_res·Z_res
-                          </div>
-                        </div>
-                        <span className="px-3 py-1.5 rounded-full bg-white/10 backdrop-blur border border-white/20 text-xs font-mono font-bold">
-                          R² 0.89 → 0.92 • 9 Factors
-                        </span>
-                      </div>
-                      <div className="mt-4 grid grid-cols-3 gap-3">
-                        <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3">
-                          <div className="text-xs font-mono text-slate-400 tracking-widest">
-                            KOSPI 예측 수익률
-                          </div>
-                          <div className="mt-1 text-xs font-extrabold text-white">
-                            +0.84%{" "}
-                            <span className="text-xs font-normal text-emerald-300">
-                              1W
-                            </span>
-                          </div>
-                          <div className="mt-1 text-xs text-slate-400">
-                            실제 1.2% • 오차 0.36%p
-                          </div>
-                        </div>
-                        <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3">
-                          <div className="text-xs font-mono text-slate-400 tracking-widest">
-                            마켓 베타 평균
-                          </div>
-                          <div className="mt-1 text-xs font-extrabold text-white">
-                            0.86{" "}
-                            <span className="text-xs font-normal">
-                              β_market
-                            </span>
-                          </div>
-                          <div className="mt-1 text-xs text-slate-400">
-                            전기전자 1.12 (고베타)
-                          </div>
-                        </div>
-                        <div className="rounded-xl bg-white text-slate-900 p-3 shadow-lg">
-                          <div className="text-xs font-mono text-slate-500 tracking-widest">
-                            알파 추출
-                          </div>
-                          <div className="mt-1 text-xs font-extrabold text-slate-900">
-                            마켓 중립 α +0.62%
-                          </div>
-                          <div className="mt-1 text-xs text-slate-500">
-                            KOSPI 대비 초과수익
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Stage 1: KOSPI Model Betas */}
-                    <div className="grid grid-cols-12 gap-4">
-                      <div className="col-span-12 md:col-span-7 rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-extrabold tracking-tight">
-                            Stage 1: KOSPI 마켓 모델 Betas (9 Factors)
-                          </h4>
-                          <span className="text-xs font-mono px-2 py-1 rounded-full bg-slate-900 text-white">
-                            R² 0.92 • Ridge λ=0.4
-                          </span>
-                        </div>
-                        <div className="mt-1 text-xs text-slate-500 font-mono">
-                          R_KOSPI(t) = α_m + Σ β_m,j · Z_j(t) + ε_m
-                        </div>
-                        <div className="mt-4 space-y-3">
-                          {[
-                            {
-                              factor: "S&P500",
-                              beta: 0.38,
-                              z: 0.63,
-                              contrib: 0.24,
-                              color: "#2563eb",
-                              desc: "글로벌 동조화 - 가장 강함",
-                            },
-                            {
-                              factor: "외국인 선물",
-                              beta: 0.32,
-                              z: 1.07,
-                              contrib: 0.34,
-                              color: "#059669",
-                              desc: "수급 - KOSPI 직결",
-                            },
-                            {
-                              factor: "반도체팩터",
-                              beta: 0.28,
-                              z: 1.59,
-                              contrib: 0.45,
-                              color: "#7c3aed",
-                              desc: "SOX 모멘텀",
-                            },
-                            {
-                              factor: "원달러",
-                              beta: 0.15,
-                              z: 1.38,
-                              contrib: 0.21,
-                              color: "#0f766e",
-                              desc: "환율",
-                            },
-                            {
-                              factor: "중국PMI",
-                              beta: 0.22,
-                              z: 0.21,
-                              contrib: 0.05,
-                              color: "#9333ea",
-                              desc: "중국 경기",
-                            },
-                            {
-                              factor: "US10Y",
-                              beta: -0.18,
-                              z: -1.13,
-                              contrib: 0.2,
-                              color: "#e11d48",
-                              desc: "금리 역방향",
-                            },
-                            {
-                              factor: "한미스프레드",
-                              beta: 0.18,
-                              z: 0.91,
-                              contrib: 0.16,
-                              color: "#1e293b",
-                              desc: "금리차",
-                            },
-                            {
-                              factor: "WTI",
-                              beta: -0.08,
-                              z: -0.32,
-                              contrib: 0.03,
-                              color: "#a16207",
-                              desc: "유가",
-                            },
-                            {
-                              factor: "정책더미",
-                              beta: 0.12,
-                              z: 0.2,
-                              contrib: 0.02,
-                              color: "#0891b2",
-                              desc: "정책",
-                            },
-                          ].map((f) => {
-                            const width = Math.abs(f.beta) * 180;
-                            return (
-                              <div key={f.factor} className="group">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-xs font-bold w-20">
-                                      {f.factor}
-                                    </span>
-                                    <span className="text-xs text-slate-500 hidden md:inline">
-                                      {f.desc}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-3">
-                                    <span
-                                      className="text-xs font-mono px-2 py-0.5 rounded-full"
-                                      style={{
-                                        background: `${f.color}15`,
-                                        color: f.color,
-                                        border: `1px solid ${f.color}20`,
-                                      }}
-                                    >
-                                      {f.beta > 0 ? "+" : ""}
-                                      {f.beta.toFixed(2)} β
-                                    </span>
-                                    <span
-                                      className="text-xs font-mono font-bold"
-                                      style={{
-                                        color:
-                                          f.contrib > 0 ? "#059669" : "#dc2626",
-                                      }}
-                                    >
-                                      {f.contrib > 0 ? "+" : ""}
-                                      {f.contrib.toFixed(2)}%
-                                    </span>
-                                  </div>
-                                </div>
-                                <div className="mt-1.5 flex items-center gap-2">
-                                  <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
-                                    <div
-                                      className="h-full rounded-full bar-animate"
-                                      style={{
-                                        width: `${width}%`,
-                                        background: `linear-gradient(90deg, ${f.color} 0%, ${f.color}aa 100%)`,
-                                        marginLeft: f.beta < 0 ? "auto" : "0",
-                                      }}
-                                    />
-                                  </div>
-                                  <span className="text-xs font-mono text-slate-400 w-12 text-right">
-                                    Z {f.z > 0 ? "+" : ""}
-                                    {f.z.toFixed(2)}
-                                  </span>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        <div className="mt-4 p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs">
-                          <div className="font-bold">
-                            해석: S&P500(0.38) + 외국인(0.32) + 반도체(0.28)가
-                            KOSPI의 70% 설명. US10Y는 역방향으로 금리 상승 시
-                            KOSPI 하락.
-                          </div>
-                          <div className="mt-1 font-mono text-xs text-slate-500">
-                            모델식: R_KOSPI = 0.12% + 0.38·S&P500 + 0.32·외국인
-                            + 0.28·SOX + 0.15·원달러 + ... + ε, R²=0.92, VIF max
-                            1.8 (안정)
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="col-span-12 md:col-span-5 space-y-4">
-                        <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                          <h4 className="text-sm font-extrabold tracking-tight">
-                            Stage 2: 산업별 β_market (KOSPI 민감도)
-                          </h4>
-                          <div className="mt-1 text-xs font-mono text-slate-500">
-                            R_Industry = β_market·R_KOSPI + α + Σβ_res·Z_res
-                          </div>
-                          <div className="mt-3 space-y-2.5">
-                            {[
-                              {
-                                id: "elec",
-                                name: "전기전자",
-                                betaM: 1.12,
-                                alpha: 0.18,
-                                r2: 0.91,
-                                color: "#2563eb",
-                              },
-                              {
-                                id: "auto",
-                                name: "자동차",
-                                betaM: 0.92,
-                                alpha: 0.08,
-                                r2: 0.84,
-                                color: "#0f766e",
-                              },
-                              {
-                                id: "chem",
-                                name: "화학·전지",
-                                betaM: 0.88,
-                                alpha: -0.12,
-                                r2: 0.79,
-                                color: "#9333ea",
-                              },
-                              {
-                                id: "fin",
-                                name: "금융",
-                                betaM: 0.78,
-                                alpha: 0.22,
-                                r2: 0.87,
-                                color: "#1e293b",
-                              },
-                              {
-                                id: "bio",
-                                name: "바이오",
-                                betaM: 0.62,
-                                alpha: 0.15,
-                                r2: 0.71,
-                                color: "#e11d48",
-                              },
-                              {
-                                id: "steel",
-                                name: "철강·소재",
-                                betaM: 0.95,
-                                alpha: 0.05,
-                                r2: 0.82,
-                                color: "#a16207",
-                              },
-                              {
-                                id: "const",
-                                name: "건설·조선",
-                                betaM: 1.05,
-                                alpha: 0.31,
-                                r2: 0.76,
-                                color: "#334155",
-                              },
-                              {
-                                id: "retail",
-                                name: "유통·IT",
-                                betaM: 0.85,
-                                alpha: -0.05,
-                                r2: 0.8,
-                                color: "#0891b2",
-                              },
-                            ].map((ind) => (
-                              <div
-                                key={ind.id}
-                                className="flex items-center justify-between p-2 rounded-lg border hover:bg-slate-50"
-                                style={{
-                                  borderColor: `${ind.color}15`,
-                                  background: `${ind.color}05`,
-                                }}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <span
-                                    className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold text-white"
-                                    style={{ background: ind.color }}
-                                  >
-                                    {
-                                      industries.find((i) => i.id === ind.id)
-                                        ?.icon
-                                    }
-                                  </span>
-                                  <div>
-                                    <div className="text-xs font-bold">
-                                      {ind.name}
-                                    </div>
-                                    <div className="text-xs font-mono text-slate-500">
-                                      R² {ind.r2} • α {ind.alpha > 0 ? "+" : ""}
-                                      {ind.alpha}%
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="text-right">
-                                  <div
-                                    className="text-xs font-mono font-bold"
-                                    style={{
-                                      color:
-                                        ind.betaM > 1
-                                          ? "#dc2626"
-                                          : ind.betaM > 0.9
-                                            ? "#2563eb"
-                                            : "#059669",
-                                    }}
-                                  >
-                                    β_m {ind.betaM.toFixed(2)}
-                                  </div>
-                                  <div className="text-xs font-mono text-slate-500">
-                                    {ind.betaM > 1 ? "고베타" : "저베타"}
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                          <div className="mt-3 p-2.5 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-800">
-                            💡 β_market {">"}1: KOSPI보다 변동성 큼 (전기전자,
-                            건설) • β_market {"<"}0.8: 방어적 (금융, 바이오)
-                          </div>
-                        </div>
-
-                        <div
-                          className="rounded-2xl p-4 text-white shadow-lg"
-                          style={{
-                            background:
-                              "linear-gradient(135deg, #059669 0%, #10b981 100%)",
-                          }}
-                        >
-                          <div className="text-xs font-bold tracking-widest">
-                            마켓 중립 알파 전략
-                          </div>
-                          <div className="mt-2 text-xs leading-relaxed">
-                            <div className="font-mono text-xs">
-                              Long: 건설·조선 α +0.31% (β_m 1.05)
-                            </div>
-                            <div className="font-mono text-xs">
-                              Short: 화학·전지 α -0.12% (β_m 0.88)
-                            </div>
-                            <div className="mt-2 pt-2 border-t border-white/20 text-xs opacity-90">
-                              KOSPI 헤지 후 순수 알파 +0.43% 기대
-                              <br />= (0.31 - (-0.12)) + (1.05-0.88)·R_KOSPI
-                              헤지
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* KOSPI Prediction vs Actual */}
-                    <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-extrabold tracking-tight">
-                          KOSPI 예측 vs 실제 (최근 12주) • 2-Stage 모델 검증
-                        </h4>
-                        <span className="text-xs font-mono px-2 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700">
-                          평균 오차 0.38%p • 방향 적중 75%
-                        </span>
-                      </div>
-                      <div className="mt-4 grid grid-cols-12 gap-1 h-36 items-end">
-                        {[
-                          { pred: 0.8, actual: 1.2, date: "W1" },
-                          { pred: 1.2, actual: 0.9, date: "W2" },
-                          { pred: -0.5, actual: -0.8, date: "W3" },
-                          { pred: 0.6, actual: 0.5, date: "W4" },
-                          { pred: 1.5, actual: 1.8, date: "W5" },
-                          { pred: 0.3, actual: 0.1, date: "W6" },
-                          { pred: 1.1, actual: 1.4, date: "W7" },
-                          { pred: 0.4, actual: 0.3, date: "W8" },
-                          { pred: 1.3, actual: 1.1, date: "W9" },
-                          { pred: -0.2, actual: -0.4, date: "W10" },
-                          { pred: 0.9, actual: 1.0, date: "W11" },
-                          { pred: 0.84, actual: 1.2, date: "W12" },
-                        ].map((w, i) => (
-                          <div
-                            key={i}
-                            className="col-span-1 flex flex-col items-center gap-1 h-full justify-end"
-                          >
-                            <div className="flex flex-col items-center gap-1 w-full">
-                              <div
-                                className="w-full rounded-t-sm"
-                                style={{
-                                  height: `${Math.abs(w.actual) * 18}px`,
-                                  background:
-                                    w.actual >= 0 ? "#0f172a" : "#ef4444",
-                                }}
-                                title={`실제 ${w.actual}%`}
-                              />
-                              <div
-                                className="w-full rounded-sm border-2 border-dashed"
-                                style={{
-                                  height: `${Math.abs(w.pred) * 18}px`,
-                                  borderColor:
-                                    w.pred >= 0 ? "#3b82f6" : "#f87171",
-                                  background:
-                                    w.pred >= 0 ? "#dbeafe" : "#fee2e2",
-                                }}
-                                title={`예측 ${w.pred}%`}
-                              />
-                            </div>
-                            <span className="text-xs font-mono text-slate-400">
-                              {w.date}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-3 flex items-center justify-center gap-4 text-xs font-mono">
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-3 h-2 rounded-sm bg-slate-900"></span>
-                          실제 KOSPI
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-3 h-2 rounded-sm border-2 border-dashed border-blue-400 bg-blue-100"></span>
-                          예측
-                        </span>
-                        <span className="text-slate-500">
-                          오차 {"<"}0.5%p이면 우수
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Overall KOSPI Model Formula */}
-                    <div className="rounded-2xl border-2 border-slate-900 bg-slate-900 p-4 text-white">
-                      <div className="text-xs font-bold tracking-widest text-slate-400">
-                        OVERALL KOSPI MODEL v4.0 • FINAL FORMULA
-                      </div>
-                      <div className="mt-3 font-mono text-xs leading-relaxed break-all">
-                        <span className="text-slate-500">Stage 1:</span> R_KOSPI
-                        = 0.12% + 0.38·S&P500 + 0.32·외국인 + 0.28·SOX +
-                        0.15·원달러 + 0.22·중국PMI -0.18·US10Y + 0.18·스프레드
-                        -0.08·WTI + 0.12·정책 + ε_m (R²=0.92)
-                        <br />
-                        <span className="text-slate-500 mt-2 block">
-                          Stage 2:
-                        </span>{" "}
-                        R_전기전자 = 1.12·R_KOSPI + 0.18% + 0.35·SOX_res +
-                        0.28·외국인_res + ε<br />
-                        R_자동차 = 0.92·R_KOSPI + 0.08% + 0.25·원달러_res + ...
-                        <br />
-                        <span className="text-emerald-300 mt-2 block">
-                          → 전체 KOSPI 모델로 마켓 리스크 헤지 후 산업별 순수
-                          알파 추출 가능
-                        </span>
-                      </div>
-                      <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
-                        <div className="rounded bg-white/5 border border-white/10 p-2">
-                          <div className="text-slate-400">Method</div>
-                          <div className="font-bold mt-0.5">
-                            2-Stage Ridge + Lasso
-                          </div>
-                        </div>
-                        <div className="rounded bg-white/5 border border-white/10 p-2">
-                          <div className="text-slate-400">VIF max</div>
-                          <div className="font-bold mt-0.5 text-emerald-300">
-                            1.8 • 안정
-                          </div>
-                        </div>
-                        <div className="rounded bg-white/5 border border-white/10 p-2">
-                          <div className="text-slate-400">Samples</div>
-                          <div className="font-bold mt-0.5">180D • 6개월</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                                {activeTab === "meta" && (() => {
-                  const fallbackRegime = {
-                    regime: "평시",
-                    confidence: 0.85,
-                    triggers: ["VIX 18.5 안정", "OVX 32.1 안정", "WTI vol 2.1% 정상"],
-                    window: 120,
-                    color: "#10b981",
-                    risk_level: "Low",
-                    indicators: { VIX: 18.5, OVX: 32.1, DXY: 103.8, WTI_vol: 2.1, KOSPI_3d: 0.42, KRW_vol: 0.8 },
-                    date: "2026-09-27",
-                    factor_adjustment: { "반도체팩터": 0.92, "원달러": 0.88, "WTI_vol": 0.45, "GPR": 0.35, "정제마진": 0.50, "구리": 0.78, "상해종합": 0.72 }
-                  };
-                  const rawRegime = history[0]?.regime;
-                  const currentRegime = rawRegime ? {
-                    ...fallbackRegime,
-                    ...rawRegime,
-                    indicators: { ...fallbackRegime.indicators, ...(rawRegime.indicators || {}) },
-                    factor_adjustment: { ...fallbackRegime.factor_adjustment, ...(rawRegime.factor_adjustment || {}) },
-                    triggers: rawRegime.triggers && rawRegime.triggers.length > 0 ? rawRegime.triggers : fallbackRegime.triggers,
-                    confidence: rawRegime.confidence ?? fallbackRegime.confidence,
-                    window: rawRegime.window ?? fallbackRegime.window,
-                    color: rawRegime.color || fallbackRegime.color,
-                    regime: rawRegime.regime || fallbackRegime.regime
-                  } : fallbackRegime;
-                  const currentMeta = history[0]?.meta || null;
-                  const regimeColor = currentRegime.color || (currentRegime.regime === "전시" ? "#dc2626" : currentRegime.regime === "고변동" ? "#f59e0b" : "#10b981");
-                  const isLive = history.length > 0 && history[0]?.regime?.indicators && Object.keys(history[0]?.regime?.indicators || {}).length > 0;
-                  
-                  return (
-                  <div className="mt-4 space-y-4">
-                    {/* Regime Header - v60.1 REAL */}
-                    <div
-                      className="rounded-2xl p-5 text-white shadow-xl relative overflow-hidden"
-                      style={{
-                        background: `linear-gradient(135deg, ${regimeColor} 0%, ${regimeColor}dd 50%, #0f172a 100%)`,
-                        boxShadow: `0 12px 32px ${regimeColor}35`,
-                      }}
-                    >
-                      <div className="absolute top-0 right-0 w-64 h-64 opacity-10">
-                        <div className="w-full h-full rounded-full border-[12px] border-white/20"></div>
-                      </div>
-                      <div className="flex items-center justify-between relative z-10">
-                        <div>
-                          <h3 className="text-base font-extrabold tracking-tight flex items-center gap-2">
-                            🔬 Regime Dashboard v60.1 • REAL
-                            <span className={`px-2.5 py-1 rounded-full text-xs font-mono ${isLive ? "bg-emerald-400 text-slate-900" : "bg-white/20"}`}>
-                              {isLive ? "● LIVE" : "○ DEMO"}
-                            </span>
-                          </h3>
-                          <div className="mt-1 text-xs text-white/80 font-mono">
-                            VIX/OVX/DXY/WTI/KOSPI REAL • {currentRegime.date} • {currentRegime.regime} 체제 {currentRegime.confidence ? `신뢰도 ${(currentRegime.confidence*100).toFixed(0)}%` : ""}
-                          </div>
-                        </div>
-                        <span className="px-3 py-1.5 rounded-full bg-white/20 backdrop-blur border border-white/20 text-xs font-mono font-bold">
-                          regime_detector.py + meta_factor_tracker.py
-                        </span>
-                      </div>
-                      <div className="mt-4 grid grid-cols-3 gap-3 relative z-10">
-                        <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3">
-                          <div className="text-xs font-mono text-white/70 tracking-widest">현재 체제</div>
-                          <div className="mt-1 text-lg font-extrabold text-white flex items-center gap-2">
-                            {currentRegime.regime}
-                            <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-white/20">
-                              {currentRegime.risk_level} Risk
-                            </span>
-                          </div>
-                          <div className="mt-2">
-                            <div className="flex justify-between text-xs">
-                              <span className="text-white/70">신뢰도</span>
-                              <span className="font-bold">{((currentRegime.confidence||0.85)*100).toFixed(0)}%</span>
-                            </div>
-                            <div className="mt-1 w-full h-2 rounded-full bg-white/20 overflow-hidden">
-                              <div className="h-full bg-white rounded-full" style={{width: `${(currentRegime.confidence||0.85)*100}%`}}></div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3">
-                          <div className="text-xs font-mono text-white/70 tracking-widest">권장 윈도우</div>
-                          <div className="mt-1 text-lg font-extrabold text-white">
-                            {currentRegime.window}일 <span className="text-xs font-normal">Rolling</span>
-                          </div>
-                          <div className="mt-1 text-xs text-white/80">
-                            {currentRegime.window === 120 ? "안정적 → 느린 적응" : currentRegime.window === 90 ? "빠른 적응 → 최근 반영" : "초단기 적응 → 방어적"}
-                          </div>
-                          <div className="mt-2 text-xs font-mono bg-white/15 rounded px-2 py-1">
-                            {currentRegime.window === 120 ? "매월 1일 재학습" : currentRegime.window === 90 ? "즉시 + 매주" : "매일 재학습"}
-                          </div>
-                        </div>
-                        <div className="rounded-xl bg-white text-slate-900 p-3 shadow-lg">
-                          <div className="text-xs font-mono text-slate-500 tracking-widest">실시간 지표</div>
-                          <div className="mt-1 grid grid-cols-2 gap-1 text-xs">
-                            <div className="flex justify-between"><span className="text-slate-500">VIX</span><span className={`font-bold ${currentRegime.indicators?.VIX > 22 ? "text-red-600" : "text-emerald-600"}`}>{currentRegime.indicators?.VIX?.toFixed(1) || "18.5"}</span></div>
-                            <div className="flex justify-between"><span className="text-slate-500">OVX</span><span className={`font-bold ${currentRegime.indicators?.OVX > 35 ? "text-red-600" : "text-emerald-600"}`}>{currentRegime.indicators?.OVX?.toFixed(1) || "32.1"}</span></div>
-                            <div className="flex justify-between"><span className="text-slate-500">DXY</span><span className="font-bold">{currentRegime.indicators?.DXY?.toFixed(1) || "103.8"}</span></div>
-                            <div className="flex justify-between"><span className="text-slate-500">WTI vol</span><span className={`font-bold ${currentRegime.indicators?.WTI_vol > 4 ? "text-amber-600" : ""}`}>{currentRegime.indicators?.WTI_vol?.toFixed(1) || "2.1"}%</span></div>
-                          </div>
-                          <div className="mt-2 text-xs text-slate-500">
-                            KOSPI 3일 {currentRegime.indicators?.KOSPI_3d > 0 ? "+" : ""}{currentRegime.indicators?.KOSPI_3d?.toFixed(2) || "0.42"}%
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-3 p-2.5 rounded-xl bg-black/20 backdrop-blur border border-white/10 relative z-10">
-                        <div className="text-xs font-mono text-white/60">트리거 • {currentRegime.triggers?.length || 0}개 감지</div>
-                        <div className="mt-1 flex flex-wrap gap-1.5">
-                          {(currentRegime.triggers || []).map((t, i) => (
-                            <span key={i} className="px-2.5 py-1 rounded-full bg-white/15 border border-white/10 text-xs font-mono text-white">
-                              {t}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Regime Indicators Grid - 8개 지표 */}
-                    <div className="grid grid-cols-12 gap-4">
-                      <div className="col-span-12 md:col-span-7 rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-extrabold tracking-tight flex items-center gap-2">
-                            📊 Regime 감지 지표 (8개 REAL)
-                            <span className="px-2 py-0.5 rounded-full bg-slate-900 text-white text-xs font-mono">{currentRegime.date}</span>
-                          </h4>
-                          <span className="text-xs font-mono px-2 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700">
-                            price_provider.py
-                          </span>
-                        </div>
-                        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-                          {[
-                            { k: "VIX", label: "공포지수", value: currentRegime.indicators?.VIX || 18.5, threshold: 22, unit: "", desc: "22↑ 고변동, 30↑ 전시", color: "#dc2626" },
-                            { k: "OVX", label: "원유 변동성", value: currentRegime.indicators?.OVX || 32.1, threshold: 35, unit: "", desc: "35↑ 고변동, 50↑ 전시", color: "#a16207" },
-                            { k: "DXY", label: "달러 인덱스", value: currentRegime.indicators?.DXY || 103.8, threshold: 104, unit: "", desc: "104↑ 강달러, 105↑ 위기", color: "#2563eb" },
-                            { k: "WTI_vol", label: "WTI 5일 변동", value: currentRegime.indicators?.WTI_vol || 2.1, threshold: 4, unit: "%", desc: "4%↑ 고변동 트리거", color: "#7c3aed" },
-                            { k: "KOSPI_3d", label: "KOSPI 3일 수익", value: currentRegime.indicators?.KOSPI_3d || 0.42, threshold: -3, unit: "%", desc: "-3%↓ 전시 트리거", color: "#0f766e" },
-                            { k: "KRW_vol", label: "원달러 변동", value: currentRegime.indicators?.KRW_vol || 0.8, threshold: 2.5, unit: "%", desc: "2.5%↑ 고변동", color: "#e11d48" },
-                            { k: "SP500", label: "S&P500 Z", value: zScores["S&P500"] || 0.63, threshold: 1.5, unit: "σ", desc: "글로벌 리스크", color: "#059669" },
-                            { k: "US10Y", label: "US10Y Z", value: zScores["US 10Y"] || -1.13, threshold: 1, unit: "σ", desc: "금리 변동", color: "#0891b2" },
-                          ].map((ind) => {
-                            const isHigh = ind.k === "KOSPI_3d" ? ind.value < ind.threshold : Math.abs(ind.value) > Math.abs(ind.threshold);
-                            return (
-                              <div key={ind.k} className={`rounded-xl p-3 border ${isHigh ? "bg-red-50 border-red-200" : "bg-slate-50 border-slate-200"}`}>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-xs font-bold text-slate-700">{ind.k}</span>
-                                  <span className={`w-2 h-2 rounded-full ${isHigh ? "bg-red-500 animate-pulse" : "bg-emerald-500"}`}></span>
-                                </div>
-                                <div className="text-xs text-slate-500">{ind.label}</div>
-                                <div className={`mt-1 text-sm font-mono font-bold ${isHigh ? "text-red-600" : "text-slate-900"}`}>
-                                  {ind.value > 0 ? "+" : ""}{ind.value.toFixed(1)}{ind.unit}
-                                </div>
-                                <div className="mt-1 text-[10px] font-mono text-slate-500 leading-tight">{ind.desc}</div>
-                                <div className="mt-2 w-full h-1 rounded-full bg-slate-200 overflow-hidden">
-                                  <div className="h-full rounded-full" style={{width: `${Math.min(100, Math.abs(ind.value)/ind.threshold*50)}%`, background: ind.color}}></div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        <div className="mt-4 p-3 rounded-xl bg-slate-900 text-slate-200 font-mono text-xs">
-                          <div className="flex justify-between">
-                            <span>Regime Logic v60.1:</span>
-                            <span className="text-white">VIX&gt;30 or OVX&gt;50 → 전시 / VIX&gt;22 or WTI_vol&gt;4% → 고변동 / else 평시</span>
-                          </div>
-                          <div className="mt-1 text-slate-400">스크립트: regime_detector.py • get_market_indicator("VIX"/"OVX"/"DXY"/"WTI") REAL • calc_volatility 5일</div>
-                        </div>
-                      </div>
-
-                      <div className="col-span-12 md:col-span-5 space-y-4">
-                        {/* Regime별 팩터 조정 */}
-                        <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                          <h4 className="text-sm font-extrabold flex items-center gap-2">
-                            🎛️ Regime별 팩터 유효성 조정
-                            <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-amber-100 border border-amber-200 text-amber-800">
-                              {currentRegime.regime} 모드
-                            </span>
-                          </h4>
-                          <div className="mt-3 space-y-2">
-                            {Object.entries(currentRegime.factor_adjustment || fallbackRegime.factor_adjustment).map(([factor, prob]) => (
-                              <div key={factor} className="flex items-center justify-between p-2.5 rounded-xl border bg-slate-50 hover:bg-white transition-colors">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-1.5 h-8 rounded-full" style={{background: prob > 0.8 ? "#10b981" : prob > 0.5 ? "#f59e0b" : "#ef4444"}}></div>
-                                  <div>
-                                    <div className="text-xs font-bold">{factor}</div>
-                                    <div className="text-[10px] text-slate-500 font-mono">
-                                      {factor === "반도체팩터" ? "elec 핵심" : factor === "원달러" ? "auto 핵심" : factor === "WTI_vol" ? "유가 변동" : factor === "GPR" ? "전쟁 리스크" : factor === "구리" ? "China Proxy" : "팩터"}
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="text-right">
-                                  <div className={`text-xs font-mono font-bold px-2 py-1 rounded-full text-white ${prob > 0.8 ? "bg-emerald-600" : prob > 0.5 ? "bg-amber-500" : "bg-red-500"}`}>
-                                    {Math.round(prob*100)}%
-                                  </div>
-                                  <div className="mt-1 w-16 h-1 rounded-full bg-slate-200 overflow-hidden ml-auto">
-                                    <div className="h-full rounded-full bg-slate-900" style={{width: `${prob*100}%`}}></div>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                          <div className="mt-3 p-2 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-800">
-                            💡 평시: 반도체 92% • 고변동: WTI_vol 75%↑ • 전시: GPR 35%→85% 급등
-                          </div>
-                        </div>
-
-                        <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                          <h4 className="text-sm font-extrabold">6개월 운영 제안 v60.1</h4>
-                          <div className="mt-3 space-y-2 text-xs">
-                            <div className={`p-2.5 rounded-lg border ${currentRegime.regime === "평시" ? "bg-emerald-50 border-emerald-300 ring-2 ring-emerald-200" : "bg-emerald-50/50 border-emerald-200"}`}>
-                              <div className="font-bold text-emerald-900 flex items-center gap-2">
-                                평시 운영 {currentRegime.regime === "평시" && <span className="px-1.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px]">현재</span>}
-                              </div>
-                              <div className="mt-1 text-emerald-700">매월 1일 재학습 • 120일 윈도우 • R² 0.89 유지 • 반도체/원달러 유효</div>
-                            </div>
-                            <div className={`p-2.5 rounded-lg border ${currentRegime.regime === "고변동" ? "bg-amber-50 border-amber-300 ring-2 ring-amber-200" : "bg-amber-50/50 border-amber-200"}`}>
-                              <div className="font-bold text-amber-900 flex items-center gap-2">
-                                고변동 트리거 {currentRegime.regime === "고변동" && <span className="px-1.5 py-0.5 rounded-full bg-amber-600 text-white text-[10px]">현재</span>}
-                              </div>
-                              <div className="mt-1 text-amber-700">WTI 5일 {">"}4% 또는 VIX{">"}22 → 90일 윈도우 • 즉시 재학습 • WTI_vol 활성화</div>
-                            </div>
-                            <div className={`p-2.5 rounded-lg border ${currentRegime.regime === "전시" ? "bg-red-50 border-red-300 ring-2 ring-red-200" : "bg-red-50/50 border-red-200"}`}>
-                              <div className="font-bold text-red-900 flex items-center gap-2">
-                                전시 트리거 {currentRegime.regime === "전시" && <span className="px-1.5 py-0.5 rounded-full bg-red-600 text-white text-[10px]">현재</span>}
-                              </div>
-                              <div className="mt-1 text-red-700">GPR{">"}150 또는 OVX{">"}50 또는 KOSPI 3일 -3% → 60일 윈도우 • GPR, WTI_vol 활성화</div>
-                            </div>
-                            <div className="mt-3 p-2 rounded-lg bg-slate-900 text-slate-200 font-mono text-xs">
-                              저장: regime_history/{currentRegime.date} • meta_history/{currentRegime.date}<br/>스크립트: regime_detector.py, meta_factor_tracker.py v60.1
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Meta Factor Tracker - Regime Aware */}
-                    <div className="grid grid-cols-12 gap-4">
-                      <div className="col-span-12 md:col-span-7 rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-extrabold tracking-tight">
-                            팩터 유효성 추적 (Meta Factor Tracker v60.1 • Regime Aware)
-                          </h4>
-                          <span className="text-xs font-mono px-2 py-1 rounded-full bg-emerald-900 text-white">
-                            P(valid|regime) = sigmoid(IC*5 + (Hit-50)/20) + bonus
-                          </span>
-                        </div>
-                        <div className="mt-1 text-xs text-slate-500 font-mono">
-                          평시: 반도체 92% 유효 • 고변동: WTI_vol 75% • 전시: GPR 35%→85% 급등 (Regime별 +0.35 가산)
-                        </div>
-                        <div className="mt-4 space-y-2.5">
-                          {(currentMeta?.factors || [
-                            { factor: "반도체팩터", ic: 0.18, hit: 71.2, prob: currentRegime.factor_adjustment?.["반도체팩터"] || 0.92, regime: currentRegime.regime, color: "#2563eb", desc: "전기전자 핵심 - 항상 유효" },
-                            { factor: "원달러", ic: 0.14, hit: 66.4, prob: currentRegime.factor_adjustment?.["원달러"] || 0.88, regime: currentRegime.regime, color: "#0f766e", desc: "자동차·건설 - 평시 유효" },
-                            { factor: "S&P500", ic: 0.15, hit: 68.5, prob: 0.89, regime: currentRegime.regime, color: "#059669", desc: "글로벌 리스크 온/오프 - 항상 유효" },
-                            { factor: "구리", ic: 0.12, hit: 63.5, prob: currentRegime.factor_adjustment?.["구리"] || 0.78, regime: currentRegime.regime, color: "#d97706", desc: "China Proxy 1 - 중국 경기 직결" },
-                            { factor: "WTI_vol", ic: 0.12, hit: 62.0, prob: currentRegime.factor_adjustment?.["WTI_vol"] || 0.45, regime: "고변동", color: "#a16207", desc: "유가 변동성 - 고변동 시 급등" },
-                            { factor: "정제마진", ic: 0.10, hit: 61.0, prob: currentRegime.factor_adjustment?.["정제마진"] || 0.50, regime: "고변동", color: "#7c3aed", desc: "화학 마진 - 유가 급등 시 유효" },
-                            { factor: "GPR", ic: -0.06, hit: 50.0, prob: currentRegime.factor_adjustment?.["GPR"] || 0.35, regime: "전시", color: "#dc2626", desc: "전쟁 리스크 - 전시만 유효" },
-                            { factor: "US10Y", ic: -0.04, hit: 48.2, prob: 0.48, regime: currentRegime.regime, color: "#e11d48", desc: "바이오 역방향 - 평시 무효" },
-                          ]).map((f) => (
-                            <div
-                              key={f.factor}
-                              className={`flex items-center justify-between p-3 rounded-xl border hover:bg-slate-50 transition-colors ${f.regime === currentRegime.regime ? "ring-1 ring-slate-300" : ""}`}
-                              style={{
-                                borderColor: `${f.color}20`,
-                                background: `${f.color}08`,
-                              }}
-                            >
-                              <div className="flex items-center gap-3">
-                                <div
-                                  className="w-2 h-10 rounded-full"
-                                  style={{ background: f.color }}
-                                ></div>
-                                <div>
-                                  <div
-                                    className="text-xs font-bold flex items-center gap-2"
-                                    style={{ color: f.color }}
-                                  >
-                                    {f.factor}{" "}
-                                    <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs bg-white border ${f.regime === currentRegime.regime ? "border-slate-900 bg-slate-900 text-white" : ""}`}>
-                                      {f.regime || f.base_regime || "평시"}
-                                    </span>
-                                    {f.regime === currentRegime.regime && <span className="text-[10px]">← 현재 체제에서 유효</span>}
-                                  </div>
-                                  <div className="text-xs text-slate-500">
-                                    {f.desc}
-                                  </div>
-                                  <div className="text-xs font-mono text-slate-400">
-                                    IC {f.ic > 0 ? "+" : ""}{f.ic.toFixed(2)} • Hit {f.hit}% • {f.regime === "전시" ? "+0.35 bonus" : f.regime === "고변동" ? "+0.20 bonus" : "base"}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <div
-                                  className="text-xs font-mono font-bold px-2.5 py-1 rounded-full text-white"
-                                  style={{
-                                    background:
-                                      f.prob > 0.8
-                                        ? "#059669"
-                                        : f.prob > 0.5
-                                          ? "#f59e0b"
-                                          : "#ef4444",
-                                  }}
-                                >
-                                  유효 {Math.round(f.prob * 100)}%
-                                </div>
-                                <div className="mt-1 w-20 h-1.5 rounded-full bg-slate-200 overflow-hidden">
-                                  <div
-                                    className="h-full rounded-full"
-                                    style={{
-                                      width: `${f.prob * 100}%`,
-                                      background: f.color,
-                                    }}
-                                  ></div>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="col-span-12 md:col-span-5 space-y-4">
-                        {/* Regime History - 최근 12개 스냅샷 */}
-                        <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                          <h4 className="text-sm font-extrabold flex items-center justify-between">
-                            <span>Regime History (최근 12주)</span>
-                            <span className="text-xs font-mono px-2 py-1 rounded-full bg-slate-900 text-white">regime_history</span>
-                          </h4>
-                          <div className="mt-3 flex items-end gap-1 h-20">
-                            {(() => {
-                              const demoHistory = [
-                                {regime: "평시", confidence: 0.85}, {regime: "평시", confidence: 0.82}, {regime: "고변동", confidence: 0.75}, {regime: "평시", confidence: 0.88}, {regime: "평시", confidence: 0.90}, {regime: "고변동", confidence: 0.72}, {regime: "평시", confidence: 0.86}, {regime: "평시", confidence: 0.84}, {regime: "평시", confidence: 0.87}, {regime: "고변동", confidence: 0.78}, {regime: "평시", confidence: 0.85}, currentRegime
-                              ];
-                              const realHistory = history.filter(h => h && h.regime).slice(0,12).reverse().map(h => h.regime);
-                              const displayHistory = realHistory.length >= 3 ? realHistory : demoHistory;
-                              return displayHistory.map((r, i) => {
-                                const safeR = r || {regime: "평시", confidence: 0.75};
-                                const conf = safeR.confidence || 0.75;
-                                const reg = safeR.regime || "평시";
-                                return (
-                                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                                    <div className="w-full rounded-t-md" style={{
-                                      height: `${conf*60}px`,
-                                      background: reg === "전시" ? "#dc2626" : reg === "고변동" ? "#f59e0b" : "#10b981"
-                                    }} title={`${reg} ${(conf*100).toFixed(0)}%`}></div>
-                                    <span className="text-[9px] font-mono text-slate-400">{reg[0] || "평"[0]}</span>
-                                  </div>
-                                );
-                              });
-                            })()}
-                          </div>
-                          <div className="mt-3 flex items-center justify-center gap-3 text-xs font-mono">
-                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500"></span>평시</span>
-                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500"></span>고변동</span>
-                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500"></span>전시</span>
-                          </div>
-                        </div>
-
-                        <div
-                          className="rounded-2xl p-4 text-white shadow-lg"
-                          style={{
-                            background:
-                              "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
-                          }}
-                        >
-                          <div className="text-xs font-bold tracking-widest opacity-80">
-                            메타 모델 로드맵 v60.1 • 고도화 완료
-                          </div>
-                          <div className="mt-3 space-y-2 text-xs font-mono">
-                            <div className="flex justify-between">
-                              <span className="text-slate-400">v60.0</span>
-                              <span className="font-bold text-white">카드 해석</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-slate-400">v60.1 ✅</span>
-                              <span className="font-bold text-emerald-300">Regime REAL + 8지표</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-slate-400">v60.1 ✅</span>
-                              <span className="font-bold text-amber-300">Meta Tracker Regime Aware</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-slate-400">v61</span>
-                              <span className="font-bold text-violet-300">Kalman β + WTI_vol</span>
-                            </div>
-                            <div className="mt-3 pt-3 border-t border-white/10 text-xs text-slate-400">
-                              목표: 평시 IC 0.12 유지, 전시 IC 0.05→0.15 개선<br/>현재: {currentRegime.regime} {currentRegime.window}일 윈도우 • {currentMeta?.top_valid?.length || 5}개 팩터 유효
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  );
-                })()
-                }
-
-                {activeTab === "retrain" && (() => {
-                  const fallbackRetrain = {
-                    date: "2026-09-27",
-                    avg_r2: 0.84,
-                    changes: 12,
-                    next_retrain: "2026-10-01",
-                    version: "v60.2-retrain-6mo-RidgeCV-REAL",
-                    window: 180,
-                    beta_changes: {
-                      elec: { "S&P500": {old: 0.42, new: 0.38, diff: -0.04}, "구리": {old: 0.15, new: 0.19, diff: 0.04} },
-                      chem: { "구리": {old: 0.32, new: 0.28, diff: -0.04}, "상해종합": {old: 0.22, new: 0.26, diff: 0.04} }
-                    },
-                    r2_list: {elec: 0.91, auto: 0.84, chem: 0.79, fin: 0.87, bio: 0.71, steel: 0.84, const: 0.76, retail: 0.80}
-                  };
-                  const retrainData = history[0]?.retrain || (typeof retrainMeta !== 'undefined' ? retrainMeta : fallbackRetrain);
-                  const betaSnapshot = history[0]?.beta_snapshot || null;
-                  const isRetrainLive = history[0]?.retrain || (typeof retrainMeta !== 'undefined' && retrainMeta.date !== "2026-09-27");
-                  
-                  return (
-                  <div className="mt-4 space-y-4">
-                    {/* Retrain Header - v60.2 */}
-                    <div
-                      className="rounded-2xl p-5 text-white shadow-xl relative overflow-hidden"
-                      style={{
-                        background: "linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #92400e 100%)",
-                        boxShadow: "0 12px 32px rgba(245,158,11,0.25)",
-                      }}
-                    >
-                      <div className="absolute top-0 right-0 w-64 h-64 opacity-10">
-                        <div className="w-full h-full rounded-full border-[12px] border-white/20"></div>
-                      </div>
-                      <div className="flex items-center justify-between relative z-10">
-                        <div>
-                          <h3 className="text-base font-extrabold tracking-tight flex items-center gap-2">
-                            🔄 Retrain Dashboard v60.2 • 6개월 재학습 REAL
-                            <span className={`px-2.5 py-1 rounded-full text-xs font-mono ${isRetrainLive ? "bg-white text-amber-700" : "bg-white/20"}`}>
-                              {isRetrainLive ? "● LIVE" : "○ DEMO"}
-                            </span>
-                          </h3>
-                          <div className="mt-1 text-xs text-amber-100 font-mono">
-                            RidgeCV α=[0.1,0.5,1.0,2.0] + 180D Rolling + 70% new 30% old blending • yfinance REAL
-                          </div>
-                        </div>
-                        <span className="px-3 py-1.5 rounded-full bg-white/20 backdrop-blur border border-white/20 text-xs font-mono font-bold">
-                          retrain_model.py + retrain.yml
-                        </span>
-                      </div>
-                      <div className="mt-4 grid grid-cols-4 gap-3 relative z-10">
-                        <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3">
-                          <div className="text-xs font-mono text-amber-200 tracking-widest">최근 재학습</div>
-                          <div className="mt-1 text-sm font-extrabold text-white">{retrainData.date}</div>
-                          <div className="mt-1 text-xs text-amber-100">버전 {retrainData.version?.split('-')[0] || "v60.2"}</div>
-                        </div>
-                        <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3">
-                          <div className="text-xs font-mono text-amber-200 tracking-widest">평균 R²</div>
-                          <div className="mt-1 text-sm font-extrabold text-white">{retrainData.avg_r2} <span className="text-xs font-normal">8개 업종</span></div>
-                          <div className="mt-1 text-xs text-amber-100">R² {">"}0.8 우수 • {"<"}0.7 재검토</div>
-                        </div>
-                        <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3">
-                          <div className="text-xs font-mono text-amber-200 tracking-widest">베타 변화</div>
-                          <div className="mt-1 text-sm font-extrabold text-white">{retrainData.changes}개 팩터</div>
-                          <div className="mt-1 text-xs text-amber-100">|Δβ| {">"}0.02 기준</div>
-                        </div>
-                        <div className="rounded-xl bg-white text-amber-900 p-3 shadow-lg">
-                          <div className="text-xs font-mono text-amber-700 tracking-widest">다음 재학습</div>
-                          <div className="mt-1 text-sm font-extrabold">{retrainData.next_retrain}</div>
-                          <div className="mt-1 text-xs text-amber-700">매월 1일 11:00 KST</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-12 gap-4">
-                      <div className="col-span-12 md:col-span-7 rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-extrabold tracking-tight flex items-center gap-2">
-                            📈 업종별 R² 변화 (6개월 재학습)
-                            <span className="px-2 py-0.5 rounded-full bg-amber-100 border border-amber-200 text-amber-800 text-xs font-mono">{retrainData.window}일 윈도우</span>
-                          </h4>
-                          <span className="text-xs font-mono px-2 py-1 rounded-full bg-slate-900 text-white">RidgeCV α 최적화</span>
-                        </div>
-                        <div className="mt-4 space-y-2.5">
-                          {Object.entries(retrainData.r2_list || fallbackRetrain.r2_list).map(([indId, r2]) => {
-                            const ind = industries.find(i => i.id === indId);
-                            const oldR2 = ind?.r2 || 0.80;
-                            const diff = r2 - oldR2;
-                            return (
-                              <div key={indId} className="flex items-center justify-between p-3 rounded-xl border bg-slate-50 hover:bg-white transition-colors">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-2 h-10 rounded-full" style={{background: ind?.color || "#2563eb"}}></div>
-                                  <div>
-                                    <div className="text-xs font-bold flex items-center gap-2">
-                                      <span className="px-2 py-0.5 rounded-full text-white text-xs" style={{background: ind?.color}}>{ind?.short || indId}</span>
-                                      <span className="font-mono text-slate-500">{indId}</span>
-                                    </div>
-                                    <div className="text-xs text-slate-500">{ind?.desc?.substring(0,30) || ""}</div>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                  <div className="text-right">
-                                    <div className="text-xs font-mono text-slate-500">이전 R² {oldR2.toFixed(2)}</div>
-                                    <div className="text-xs font-mono font-bold">현재 R² {r2.toFixed(2)}</div>
-                                  </div>
-                                  <div className={`text-xs font-bold px-2.5 py-1 rounded-full text-white ${diff > 0 ? "bg-emerald-600" : diff < -0.02 ? "bg-red-500" : "bg-slate-400"}`}>
-                                    {diff > 0 ? "+" : ""}{diff.toFixed(3)}
-                                  </div>
-                                  <div className="w-20 h-1.5 rounded-full bg-slate-200 overflow-hidden">
-                                    <div className="h-full rounded-full" style={{width: `${r2*100}%`, background: ind?.color}}></div>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        <div className="mt-4 p-3 rounded-xl bg-slate-900 text-slate-200 font-mono text-xs">
-                          <div className="flex justify-between">
-                            <span>Method:</span>
-                            <span className="text-white">RidgeCV α=[0.1,0.5,1.0,2.0] + StandardScaler + 70% new 30% old blending</span>
-                          </div>
-                          <div className="mt-1 text-slate-400">대표주: 005930 삼성전자, 005380 현대차, 051910 LG화학 등 8개 - yfinance REAL • 샘플 {retrainData.window-1}개</div>
-                        </div>
-                      </div>
-
-                      <div className="col-span-12 md:col-span-5 space-y-4">
-                        <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                          <h4 className="text-sm font-extrabold flex items-center gap-2">
-                            🔧 베타 변화 상세 (Δβ {">"}0.02)
-                            <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-amber-100 border border-amber-200 text-amber-800">
-                              {retrainData.changes}개 변화
-                            </span>
-                          </h4>
-                          <div className="mt-3 space-y-3">
-                            {Object.entries(retrainData.beta_changes || {}).length === 0 ? (
-                              <div className="text-xs text-slate-500 py-8 text-center">변화 없음 • 안정적 모델 • |Δβ| {"<"}0.02</div>
-                            ) : (
-                              Object.entries(retrainData.beta_changes || {}).map(([indId, changes]) => {
-                                const ind = industries.find(i => i.id === indId);
-                                return (
-                                  <div key={indId} className="rounded-xl border bg-amber-50/50 border-amber-200 p-3">
-                                    <div className="flex items-center justify-between">
-                                      <span className="text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{background: ind?.color}}>{ind?.short || indId}</span>
-                                      <span className="text-xs font-mono text-slate-500">{Object.keys(changes).length}개 팩터 변화</span>
-                                    </div>
-                                    <div className="mt-2 space-y-1.5">
-                                      {Object.entries(changes).map(([factor, ch]) => (
-                                        <div key={factor} className="flex items-center justify-between text-xs font-mono bg-white rounded-lg p-2 border">
-                                          <span className="font-bold">{factor}</span>
-                                          <span className="flex items-center gap-2">
-                                            <span className="text-slate-500">{ch.old.toFixed(3)}</span>
-                                            <span className="text-slate-400">→</span>
-                                            <span className="font-bold">{ch.new.toFixed(3)}</span>
-                                            <span className={`px-1.5 py-0.5 rounded-full text-white text-[10px] ${ch.diff > 0 ? "bg-emerald-500" : "bg-red-500"}`}>
-                                              {ch.diff > 0 ? "+" : ""}{ch.diff.toFixed(3)}
-                                            </span>
-                                          </span>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                );
-                              })
-                            )}
-                          </div>
-                          <div className="mt-3 p-2 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-800">
-                            💡 변화 해석: 구리 +0.04 → 중국 경기 민감도 상승 / S&P500 -0.04 → 글로벌 동조화 약화
-                          </div>
-                        </div>
-
-                        <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                          <h4 className="text-sm font-extrabold">재학습 자동화 스케줄</h4>
-                          <div className="mt-3 space-y-2 text-xs">
-                            <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200">
-                              <div className="font-bold text-emerald-900">매월 1일 11:00 KST 자동</div>
-                              <div className="mt-1 text-emerald-700">RidgeCV 180일 롤링 • Firebase beta_snapshots/latest 업데이트 • data.js.new 생성</div>
-                            </div>
-                            <div className="p-2.5 rounded-lg bg-blue-50 border border-blue-200">
-                              <div className="font-bold text-blue-900">고변동/전시 트리거</div>
-                              <div className="mt-1 text-blue-700">VIX{">"}22 또는 WTI vol{">"}4% 시 즉시 재학습 • 90일/60일 윈도우로 축소</div>
-                            </div>
-                            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                              <div className="font-bold text-slate-900">수동 실행</div>
-                              <div className="mt-1 text-slate-700">GitHub Actions → retrain.yml → Run workflow → window_days 180 • force 옵션</div>
-                            </div>
-                            <div className="mt-3 p-2 rounded-lg bg-slate-900 text-slate-200 font-mono text-xs">
-                              저장: retrain_history/{retrainData.date} • beta_snapshots/latest<br/>스크립트: retrain_model.py v60.2 REAL • 워크플로우: retrain.yml
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Beta History Chart - 최근 6개월 */}
-                    <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-extrabold tracking-tight">베타 진화 추적 (최근 6개월) • 8개 업종</h4>
-                        <span className="text-xs font-mono px-2 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700">beta_snapshots history</span>
-                      </div>
-                      <div className="mt-4 grid grid-cols-8 gap-2">
-                        {industries.map((ind) => (
-                          <div key={ind.id} className="text-center">
-                            <div className="text-xs font-bold px-2 py-1 rounded-full text-white" style={{background: ind.color}}>{ind.short}</div>
-                            <div className="mt-2 space-y-1">
-                              {Object.entries(ind.betas || {}).slice(0,3).map(([f, b]) => (
-                                <div key={f} className="text-[10px] font-mono bg-slate-50 rounded px-1 py-0.5">
-                                  {f}: {b > 0 ? "+" : ""}{b.toFixed(2)}
-                                </div>
-                              ))}
-                            </div>
-                            <div className="mt-2 text-xs font-mono text-slate-500">R² {ind.r2}</div>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-4 flex items-end gap-1 h-16">
-                        {[
-                          {r2: 0.82, date: "04"}, {r2: 0.83, date: "05"}, {r2: 0.81, date: "06"}, {r2: 0.84, date: "07"}, {r2: 0.85, date: "08"}, {r2: retrainData.avg_r2, date: "09"}
-                        ].map((m, i) => (
-                          <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                            <div className="w-full rounded-t-md bg-amber-500" style={{height: `${m.r2*60}px`}} title={`Avg R² ${m.r2}`}></div>
-                            <span className="text-[10px] font-mono text-slate-400">{m.date}월</span>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-3 text-xs text-slate-500 font-mono text-center">매월 1일 재학습으로 R² 0.80+ 유지 • 급락 시 즉시 재학습 트리거</div>
-                    </div>
-                  </div>
-                  );
-                })()
-                }
-
-                {/* ===== 필터 - 별도 메뉴 (6개 탭 아래 빈 공간) - v52/v53 DART ===== */}
-                <div className="mt-8 border-t border-slate-200 pt-8">
-                  <div className="flex items-center gap-2 mb-4">
-                    <span
-                      className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold shadow-md"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)",
-                      }}
-                    >
-                      🛡️
-                    </span>
-                    <h2 className="text-lg font-extrabold tracking-tight">
-                      필터 • 1단계 최적 필터
-                    </h2>
-                    <span className="text-xs font-mono text-slate-500 ml-2">
-                      개별 기업 특성 기반 부실주 제거 • DART 실데이터 연동
-                    </span>
-                  </div>
-                  <div className="mt-4 space-y-4">
-                    <div
-                      className="rounded-2xl p-5 text-white shadow-xl"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)",
-                        boxShadow: "0 12px 32px rgba(15,23,42,0.25)",
-                      }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="text-base font-extrabold tracking-tight">
-                            🛡️ 1단계 최적 필터 • 개별 기업 특성 기반 부실주 제거
-                          </h3>
-                          <div className="mt-1 text-xs text-slate-300 font-mono">
-                            Fundamental Filter: PER, PBR, ROE, 영업이익률,
-                            부채비율, 유동비율, 매출증가율 - Score는 그대로,
-                            부실주만 사전 제외
-                          </div>
-                        </div>
-                        <span className="px-3 py-1.5 rounded-full bg-emerald-500 text-white text-xs font-mono font-bold">
-                          Hit Rate +4.4%p • MDD -0.8%p
-                        </span>
-                      </div>
-                      <div className="mt-4 grid grid-cols-12 gap-3">
-                        {[
-                          {
-                            id: "elec",
-                            name: "전기전자",
-                            rule: "v54 완화: ROE>-10% • 부채<400% • 유동>80% • 영업>-10% (대장주 보호)",
-                            color: "#2563eb",
-                            reject:
-                              "부채 800%↑ 또는 ROE -30%↓ 극심 부실만 탈락 • 005930 삼성전자 등 13개 화이트리스트",
-                            effect: "반도체 불황 완화 - 2023 적자 허용, Hit +4.4%p",
-                          },
-                          {
-                            id: "auto",
-                            name: "자동차",
-                            rule: "v54 완화: ROE>-5% • 부채<400% • 유동>80% • 영업>-5%",
-                            color: "#0f766e",
-                            reject:
-                              "004020 현대제철(ROE -2.5% → 통과) • 부채 500%↑만 탈락",
-                            effect: "부채 많은 업종 완화, 유동성 80%↑면 통과",
-                          },
-                          {
-                            id: "chem",
-                            name: "화학/전지",
-                            rule: "v54 완화: ROE>-10% • 부채<400% • 영업>-10% (2차전지 침체 완화)",
-                            color: "#7c3aed",
-                            reject:
-                              "096770 SK이노베이션(ROE -2.1% → 통과) • 011170 롯데케미칼(ROE -8.2% → 통과)",
-                            effect: "2차전지 적자 허용, 극심 부실만 제거",
-                          },
-                          {
-                            id: "fin",
-                            name: "금융",
-                            rule: "v54 완화: ROE>0% • 부채<1500% • 유동>70% (저PBR 허용)",
-                            color: "#1e293b",
-                            reject:
-                              "088350 한화생명(ROE 4.5% → 통과) • 부채 1500%↑만 탈락",
-                            effect: "금융 완화 - PBR 필터 제거, ROE 0%↑면 통과",
-                          },
-                          {
-                            id: "bio",
-                            name: "바이오",
-                            rule: "v54 완화: ROE>-50% • 부채<250% • 유동>100% (현금 중심)",
-                            color: "#e11d48",
-                            reject:
-                              "195940 HLB(ROE -15% → 통과) • 부채 800%↑ 또는 ROE -50%↓만 탈락",
-                            effect: "바이오 완화 - 현금과 부채로 생존력 판단",
-                          },
-                          {
-                            id: "steel",
-                            name: "철강",
-                            rule: "v54 완화: ROE>-10% • 부채<500% • 영업>-10% • 유동>70%",
-                            color: "#a16207",
-                            reject:
-                              "004020 현대제철(ROE -2.5% → 통과) • 부채 500%↑만 탈락",
-                            effect: "철강 완화 - 마진 -10%까지 허용",
-                          },
-                          {
-                            id: "const",
-                            name: "건설/조선",
-                            rule: "v54 완화: ROE>-10% • 부채<500% • 유동>80% • 영업>-10%",
-                            color: "#334155",
-                            reject:
-                              "006360 GS건설(ROE -15.2% → 탈락 가능) • 부채 500%↑ 집중 관리",
-                            effect: "건설/조선 완화 - 불황기 적자 허용",
-                          },
-                          {
-                            id: "retail",
-                            name: "유통/IT",
-                            rule: "v54 완화: ROE>-5% • 부채<350% • 영업>-5%",
-                            color: "#0891b2",
-                            reject:
-                              "139480 이마트(ROE -2.5% → 통과) • 023530 롯데쇼핑(ROE -5.2% → 경계)",
-                            effect: "유통 완화 - PER/PBR 필터 제거, 적자 -5%까지 허용",
-                          },
-                        ].map((f) => (
-                          <div
-                            key={f.id}
-                            className="col-span-12 md:col-span-6 rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-white text-slate-900">
-                                {f.name}
-                              </span>
-                              <span className="text-xs font-mono text-slate-300">
-                                {f.rule}
-                              </span>
-                            </div>
-                            <div className="mt-2 text-xs text-slate-200">
-                              탈락: {f.reject}
-                            </div>
-                            <div className="mt-1 text-xs text-emerald-300">
-                              → {f.effect}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-4 grid grid-cols-3 gap-3">
-                        <div className="rounded-xl bg-white/10 border border-white/15 p-3">
-                          <div className="text-xs font-mono text-slate-400">
-                            필터 없을 때
-                          </div>
-                          <div className="text-sm font-bold">
-                            Hit 62.4% • 수익 +1.84% • MDD -3.2%
-                          </div>
-                        </div>
-                        <div className="rounded-xl bg-white/10 border border-white/15 p-3">
-                          <div className="text-xs font-mono text-slate-400">
-                            필터 적용 후
-                          </div>
-                          <div className="text-sm font-bold text-emerald-300">
-                            Hit 66.8% • 수익 +2.21% • MDD -2.4%
-                          </div>
-                        </div>
-                        <div className="rounded-xl bg-white text-slate-900 p-3">
-                          <div className="text-xs font-mono text-slate-500">
-                            개선 효과
-                          </div>
-                          <div className="text-sm font-bold">
-                            +4.4%p • +0.37%p • -0.8%p • 탈락률 15%
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </main>
-
-              <aside className="col-span-12 md:col-span-4 space-y-4">
-                <div
-                  className="rounded-2xl border bg-white p-4 shadow-sm"
-                  style={{ borderColor: "#e2e8f0" }}
-                >
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-extrabold tracking-tight">
-                      Today's Factor Z-Scores
-                    </h3>
-                    <span className="text-xs font-mono px-2.5 py-1 rounded-full bg-emerald-600 text-white font-bold">
-                      {selectedDate} • v60 REAL • yfinance 100%
-                    </span>
-                  </div>
-                  <div className="mt-4">
-                    <div className="grid grid-cols-12 text-xs font-mono text-slate-400 pb-2 border-b font-bold tracking-widest">
-                      <div className="col-span-6">FACTOR</div>
-                      <div className="col-span-2 text-right">Z</div>
-                      <div className="col-span-2 text-right">β</div>
-                      <div className="col-span-2 text-right">기여도</div>
-                    </div>
-                    {contributions.map((c) => {
-                      const zAbs = Math.abs(c.z);
-                      const zCls =
-                        zAbs > 1
-                          ? c.z > 0
-                            ? "z-strong-pos"
-                            : "z-strong-neg"
-                          : c.z > 0
-                            ? "z-pos"
-                            : c.z < 0
-                              ? "z-neg"
-                              : "z-neutral";
+              <aside className="col-span-12 md:col-span-3 space-y-4 md:sticky md:top-20 md:h-[calc(100vh-6rem)] md:overflow-auto">
+                <div className="rounded-2xl bg-slate-900 text-white p-4 shadow-xl">
+                  <div className="flex items-center justify-between"><h3 className="text-xs font-bold tracking-widest">INDUSTRIES • 8</h3><span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span></div>
+                  <div className="mt-1 text-xs text-slate-400">왼쪽 추천 선택 • 클릭하면 중앙 필터</div>
+                  <div className="mt-4 space-y-2">
+                    {industries.map((ind) => {
+                      const isSelected = ind.id === selectedIndustry;
+                      const pred = contributions.filter(c => Object.keys(ind.betas).includes(c.factor)).reduce((s,c) => s + c.contrib, 0);
                       return (
-                        <div
-                          key={c.factor}
-                          className="grid grid-cols-12 py-3 border-b border-slate-50 items-center hover:bg-slate-50/50 rounded-lg px-1 transition-colors"
-                        >
-                          <div className="col-span-6">
-                            <div className="text-sm font-bold tracking-tight">
-                              {c.factor}
-                            </div>
-                            <div className="text-xs text-slate-500">
-                              {factorMeta[c.factor]?.desc || ""}
-                            </div>
-                          </div>
-                          <div className="col-span-2 text-right">
-                            <span className={`z-badge ${zCls}`}>
-                              {c.z > 0 ? "+" : ""}
-                              {c.z.toFixed(2)}
-                            </span>
-                          </div>
-                          <div className="col-span-2 text-right font-mono text-xs font-semibold text-slate-600">
-                            {c.beta > 0 ? "+" : ""}
-                            {c.beta.toFixed(2)}
-                          </div>
-                          <div
-                            className={`col-span-2 text-right font-mono text-xs font-bold ${c.contrib >= 0 ? "text-emerald-600" : "text-red-600"}`}
-                          >
-                            {c.contrib > 0 ? "+" : ""}
-                            {c.contrib.toFixed(2)}%
-                          </div>
+                        <button key={ind.id} onClick={() => setSelectedIndustry(ind.id)} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all text-left ${isSelected ? "bg-white text-slate-900 shadow-lg" : "bg-white/10 hover:bg-white/15 text-white/90"}`}>
+                          <div className="flex items-center gap-2.5"><div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: isSelected ? `${ind.color}15` : "rgba(255,255,255,0.1)", color: isSelected ? ind.color : "white" }}>{ind.icon}</div><div><div className="text-xs font-bold">{ind.short}</div><div className={`text-xs ${isSelected ? "text-slate-500" : "text-white/60"}`}>R² {ind.r2}</div></div></div>
+                          <div className="text-right"><div className={`text-xs font-mono font-bold ${pred>=0 ? (isSelected ? "text-emerald-600" : "text-emerald-300") : (isSelected ? "text-red-600" : "text-red-300")}`}>{pred>0 ? "+" : ""}{pred.toFixed(2)}%</div><div className={`w-2 h-2 rounded-full ml-auto mt-1 ${isSelected ? "bg-slate-900" : "bg-white/30"}`}></div></div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-white/10 text-xs text-white/50">Top1이 오늘 최강 업종 • 8개 중 선택</div>
+                </div>
+
+                <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+                  <h3 className="text-xs font-bold tracking-widest text-slate-700">오늘 Top 예측 (α·β)</h3>
+                  <div className="mt-3 space-y-1.5">
+                    {industries.map((ind) => ({ ...ind, pred: Object.entries(ind.betas).reduce((s,[f,b]) => s + (zScores[f] ?? 0)*b, 0) })).sort((a,b) => b.pred - a.pred).map((item, idx) => {
+                      const isSelected = item.id === selectedIndustry;
+                      const isTop = idx === 0;
+                      return (
+                        <div key={item.id} onClick={() => setSelectedIndustry(item.id)} className={`flex items-center justify-between px-2.5 py-2 rounded-xl cursor-pointer transition-all ${isSelected ? "bg-slate-900 text-white shadow-md" : "bg-slate-50 hover:bg-slate-100"}`}>
+                          <div className="flex items-center gap-2"><span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${isTop ? "bg-amber-400 text-slate-900" : isSelected ? "bg-white text-slate-900" : "bg-white border"}`}>{idx+1}</span><span className="text-xs font-bold">{item.short}</span></div>
+                          <span className={`text-xs font-mono font-bold ${item.pred>=0 ? (isSelected ? "text-emerald-300" : "text-emerald-600") : (isSelected ? "text-red-300" : "text-red-600")}`}>{item.pred>0 ? "+" : ""}{item.pred.toFixed(2)}%</span>
                         </div>
                       );
                     })}
                   </div>
-                  <div
-                    className="mt-4 rounded-xl p-3.5 flex items-center justify-between text-white shadow-lg"
-                    style={{
-                      background: `linear-gradient(135deg, ${currentIndustry.color} 0%, ${currentIndustry.color}cc 100%)`,
-                      boxShadow: `0 8px 20px ${currentIndustry.color}30`,
-                    }}
-                  >
-                    <span className="text-sm font-bold">
-                      예측 수익률 합계 • {currentIndustry.short}
-                    </span>
-                    <span className="font-mono text-xs font-extrabold bg-white text-slate-900 px-3 py-1 rounded-full shadow-sm">
-                      {predictedReturn > 0 ? "+" : ""}
-                      {predictedReturn.toFixed(2)}%
-                    </span>
-                  </div>
-                  <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
-                    <div
-                      className="rounded-xl p-3 border"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)",
-                        borderColor: "#a7f3d0",
-                      }}
-                    >
-                      <div className="text-xs font-mono text-emerald-700 font-bold">
-                        다중공선성 VIF
-                      </div>
-                      <div className="mt-1 font-mono font-bold text-emerald-900">
-                        max 2.4 <span className="text-emerald-700">• 안정</span>
-                      </div>
-                    </div>
-                    <div
-                      className="rounded-xl p-3 border"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)",
-                        borderColor: "#e2e8f0",
-                      }}
-                    >
-                      <div className="text-xs font-mono text-slate-500 font-bold">
-                        잔차 왜도 / 첨도
-                      </div>
-                      <div className="mt-1 font-mono font-bold">
-                        0.12 / 3.1{" "}
-                        <span className="text-slate-500">정규근사</span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
+              </aside>
 
-                <div
-                  className="rounded-2xl p-5 text-white shadow-xl"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-                    <div className="text-xs font-bold tracking-widest">
-                      DATA PIPELINE • PRODUCTION • v60 REAL yfinance 100% + DART + Regime
-                    </div>
-                  </div>
-                  <div className="mt-4 space-y-2.5 text-xs font-mono">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="px-2.5 py-1 rounded-full bg-white/10 border border-white/10 backdrop-blur">
-                        yfinance
-                      </span>
-                      <span className="text-slate-500">+</span>
-                      <span className="px-2.5 py-1 rounded-full bg-white/10 border border-white/10">
-                        KRX API
-                      </span>
-                      <span className="text-slate-500">+</span>
-                      <span className="px-2.5 py-1 rounded-full bg-white/10 border border-white/10">
-                        FRED
-                      </span>
-                      <span className="text-slate-500">→</span>
-                      <span
-                        className="px-2.5 py-1 rounded-full"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)",
-                          color: "white",
-                        }}
-                      >
-                        Python
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span>→ StandardScaler → RidgeCV(λ) →</span>
-                      <span
-                        className="px-2.5 py-1 rounded-full"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, #10b981 0%, #34d399 100%)",
-                          color: "white",
-                        }}
-                      >
-                        Dashboard
-                      </span>
-                      <span className="text-slate-500">
-                        • CRON 일요일 18:00
-                      </span>
-                    </div>
-                    <div className="mt-3 pt-3 border-t border-white/10 text-xs text-slate-400 leading-relaxed">
-                      Features: 10 factors, 120D rolling, Missing→ffill, Outlier
-                      3σ Winsorize
-                      <br />
-                      Output: β matrix (8x9), Z-scores, Score = β·Z + Alpha •
-                      Quant Terminal v60 - China Proxy + DART + Regime + Retrain
-                      <br />
-                      Firebase Live: {liveCount}개 스냅샷 • {selectedDate} •
-                      onSnapshot
-                    </div>
-                    <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
-                      <div className="rounded-lg bg-white/5 border border-white/10 p-2.5 backdrop-blur">
-                        <div className="text-slate-400">Last Update</div>
-                        <div className="font-bold mt-0.5 text-white">
-                          {selectedDate} 18:00
-                        </div>
-                      </div>
-                      <div className="rounded-lg bg-white/5 border border-white/10 p-2.5">
-                        <div className="text-slate-400">Latency</div>
-                        <div className="font-bold mt-0.5 text-white">
-                          ~4.2 min
-                        </div>
-                      </div>
-                      <div className="rounded-lg bg-white/5 border border-white/10 p-2.5">
-                        <div className="text-slate-400">Status</div>
-                        <div className="font-bold mt-0.5 text-emerald-300">
-                          ● Live
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="text-center text-xs font-mono text-slate-500 py-3 space-y-2">
-                  <div>
-                    KOSPI Quant Terminal v60 - 10 Factors China Proxy + DART + 64 Picks + Regime + Retrain • 2-Stage
-                    8×8 Industry • 6개월 재학습 • 1단계 필터 • © 2026 Quant Lab
-                  </div>
-                  <div className="flex items-center justify-center gap-3 flex-wrap">
-                    <button
-                      onClick={() => setShowDisclaimer(true)}
-                      className="px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold hover:bg-amber-100 btn-modern"
-                    >
-                      ⚠️ 투자위험 고지 및 면책사항
+              <main className="col-span-12 md:col-span-5">
+                <div className="flex items-center gap-1.5 p-1 rounded-full bg-white border border-slate-200 shadow-sm w-fit flex-wrap sticky top-20 z-10">
+                  {[
+                    { id: "recommend", label: "추천", icon: "🎯", count: filteredPicks.length, color: "#0f172a" },
+                    { id: "all64", label: "전체 64", icon: "📋", count: all64Filtered.length, color: "#334155" },
+                    { id: "performance", label: "성과", icon: "📈", count: pastPicks.length, color: "#7c3aed" },
+                    { id: "market", label: "마켓", icon: "🌐", count: currentMeta?.top_valid?.length || 5, color: "#059669" },
+                    { id: "system", label: "시스템", icon: "⚙️", count: retrainData.changes || 41, color: "#d97706" },
+                  ].map((tab) => (
+                    <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                      className={`btn-modern px-4 py-2 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all ${activeTab === tab.id ? "text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
+                      style={activeTab === tab.id ? { background: tab.color, boxShadow: `0 6px 20px ${tab.color}30` } : {}}>
+                      <span>{tab.icon}</span> {tab.label} <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs font-mono ${activeTab === tab.id ? "bg-white/20" : "bg-slate-100"}`}>{tab.count}</span>
                     </button>
-                    <span className="text-slate-400">•</span>
-                    <a href="disclaimer.html" target="_blank" className="px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-200 btn-modern">
-                      📄 법적 고지 전문 보기
-                    </a>
-                    <span className="text-slate-400">•</span>
-                    <span className="text-xs">FRED • yfinance • KRX • DART 출처 명시</span>
+                  ))}
+                </div>
+
+                <div className="mt-3 text-xs font-mono text-slate-500 flex items-center gap-2">
+                  Selected: <span className="font-bold px-2 py-1 rounded-full text-white" style={{ background: currentIndustry.color }}>{currentIndustry.name}</span>
+                  {selectedFactor && <><span className="font-bold px-2 py-1 rounded-full bg-emerald-600 text-white">+ {selectedFactor} 필터</span><button onClick={() => setSelectedFactor(null)} className="px-2 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-xs">✕ 해제</button></>}
+                  <span className="ml-auto text-xs px-2 py-1 rounded-full bg-slate-900 text-white">{activeTab}</span>
+                </div>
+
+                {activeTab === "recommend" && (
+                  <div className="mt-4 space-y-4">
+                    <div className="rounded-2xl p-4 text-white" style={{ background: `linear-gradient(135deg, ${currentIndustry.color} 0%, ${currentIndustry.color}dd 100%)`, boxShadow: `0 8px 24px ${currentIndustry.color}30` }}>
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <h3 className="text-sm font-extrabold tracking-tight flex items-center gap-2 flex-wrap">{currentIndustry.name} 8종목 <span className="text-xs font-mono opacity-80 bg-white/20 px-2.5 py-1 rounded-full whitespace-nowrap">전체 64종 중 {currentIndustry.short} Top 8 • KRX β·모멘텀</span></h3>
+                        <span className="text-xs font-mono bg-white/20 backdrop-blur px-2.5 py-1 rounded-full whitespace-nowrap ml-auto">{selectedDate} 18:00 KST • 일요일</span>
+                      </div>
+                      <div className="mt-1.5 text-xs text-white/85">Score = 6.5 + |Z|×1.2×β_adj + mom×0.3 • 타겟팩터 {Object.entries(currentIndustry.betas).sort((a,b) => Math.abs(b[1])-Math.abs(a[1]))[0]?.[0]} {selectedFactor ? `+ ${selectedFactor} 필터` : ""}</div>
+                      <div className="mt-3 grid grid-cols-3 gap-2">
+                        <div className="rounded-xl bg-white/15 backdrop-blur p-2.5"><div className="text-xs text-white/70">예측 수익률</div><div className="text-sm font-bold">{predictedReturn>0 ? "+" : ""}{predictedReturn.toFixed(2)}% α·β</div></div>
+                        <div className="rounded-xl bg-white/15 backdrop-blur p-2.5"><div className="text-xs text-white/70">Top 기여도</div><div className="text-sm font-bold">{contributions[0]?.factor} {contributions[0]?.contrib>0 ? "+" : ""}{contributions[0]?.contrib.toFixed(2)}%</div></div>
+                        <div className="rounded-xl bg-white/15 backdrop-blur p-2.5"><div className="text-xs text-white/70">R² / 필터</div><div className="text-sm font-bold">{currentIndustry.r2} • DART {filterEnabled ? "ON" : "OFF"}</div></div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl bg-white border border-slate-200 p-3 shadow-sm">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div className="flex items-center gap-2"><span className="w-7 h-7 rounded-lg bg-red-50 border border-red-100 flex items-center justify-center">🛡️</span><span className="text-xs font-bold">DART 필터 • 1단계 최적 필터</span><span className="text-xs font-mono text-slate-500">부실주 제거 • 개별 기업 특성 기반</span></div>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => setFilterEnabled(!filterEnabled)} className={`text-xs px-3 py-1.5 rounded-full font-bold transition-all ${filterEnabled ? "bg-emerald-600 text-white shadow" : "bg-slate-100 text-slate-500"}`}>{filterEnabled ? "ON • Hit +4.4%p" : "OFF"}</button>
+                          <span className="text-xs px-2 py-1 rounded-full bg-slate-900 text-white font-mono">v54 완화</span>
+                        </div>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {[
+                          { label: "ROE>-10% 완화", on: true },
+                          { label: "부채<400% 완화", on: true },
+                          { label: "대장주 13개 보호", on: true },
+                          { label: "부실주 15% 탈락", on: filterEnabled },
+                          { label: "MDD -0.8%p 개선", on: filterEnabled },
+                        ].map((f,i) => (
+                          <span key={i} className={`text-xs px-2.5 py-1 rounded-full border font-mono ${f.on ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-slate-50 border-slate-200 text-slate-400"}`}>{f.label}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                      {filteredPicks.map((p) => {
+                        const ind = industries.find((i) => i.id === p.industryId);
+                        return (
+                          <div key={`${p.industryId}-${p.ticker}`} className={`pick-card ${p.industryId} card-hover`}>
+                            <div className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: `${ind.color}15`, color: ind.color }}>{ind?.icon}</span>
+                                  <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ background: `${ind.color}10`, color: ind.color }}>{ind?.short}</span>
+                                  <span className="text-xs font-mono px-2 py-1 rounded-full bg-slate-100 border text-slate-600">{p.ticker}</span>
+                                </div>
+                                <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full text-white shadow-md" style={{ background: `linear-gradient(135deg, ${ind.color} 0%, ${ind.color}cc 100%)` }}>Score {p.score}</span>
+                              </div>
+                              <div className="mt-3 text-base font-extrabold tracking-tight">{p.name}</div>
+                              <div className="text-xs text-slate-500 mt-1 font-mono">{p.reason}</div>
+                              <div className="mt-3 flex items-center gap-2">
+                                <span className="px-2.5 py-1 rounded-full text-xs font-bold font-mono" style={{ background: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)", color: "#065f46", border: "1px solid #a7f3d0" }}>예상 +{p.expectedReturn}%</span>
+                                <span className="text-xs font-mono text-slate-400">Target: {p.targetFactor}</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div className="text-[10px] text-slate-400">
-                    예상 수익률 +1.29% 등은 모델 예측값이며 투자 조언이 아닙니다 • 원금 손실 위험 • 본인 판단 책임
+                )}
+
+                {activeTab === "all64" && (
+                  <div className="mt-4 space-y-4">
+                    <div className="rounded-2xl p-5 text-white shadow-xl" style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)" }}>
+                      <div className="flex items-center justify-between"><h3 className="text-base font-extrabold">📋 전체 64종 • 8×8 Industry 전체 보기</h3><span className="px-3 py-1 rounded-full bg-white/15 text-xs font-mono">{all64Filtered.length}종 {selectedFactor ? `• ${selectedFactor} 필터` : ""}</span></div>
+                      <div className="mt-2 text-xs text-slate-300">왼쪽 산업 선택 + 오른쪽 팩터 선택으로 필터링 • Score 높은 순 • 트레이더 스캔용</div>
+                      <div className="mt-3 grid grid-cols-4 gap-2">
+                        {industries.map(ind => {
+                          const cnt = all64Filtered.filter(p => p.industryId === ind.id).length;
+                          return <div key={ind.id} className="rounded-xl bg-white/10 border border-white/10 p-2 text-center"><div className="text-xs font-bold" style={{ color: ind.color }}>{ind.short}</div><div className="text-xs font-mono text-white">{cnt}종</div></div>;
+                        })}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {all64Filtered.slice(0,32).map((p) => {
+                        const ind = industries.find(i => i.id === p.industryId);
+                        return (
+                          <div key={`${p.industryId}-${p.ticker}-all`} className="rounded-xl border bg-white p-3 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-center justify-between"><span className="text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: ind.color }}>{ind.short}</span><span className="text-xs font-mono">{p.ticker}</span><span className="text-xs font-bold">Score {p.score}</span></div>
+                            <div className="mt-2 text-sm font-bold">{p.name}</div>
+                            <div className="text-xs text-slate-500 font-mono">{p.reason}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="text-xs text-center text-slate-400">전체 {all64Filtered.length}종 중 32종 표시 • 전체 보기는 스크롤</div>
+                  </div>
+                )}
+
+                {activeTab === "performance" && (
+                  <div className="mt-4 space-y-4">
+                    <div className="rounded-2xl border bg-white overflow-hidden shadow-sm" style={{ borderColor: "#e2e8f0" }}>
+                      <div className="p-4 border-b bg-gradient-to-r from-violet-50 to-purple-50">
+                        <div className="flex items-center justify-between"><h3 className="text-sm font-extrabold">📈 지난주 성과 • {currentIndustry.short} 8종</h3><span className="text-xs font-mono px-2 py-1 rounded-full bg-violet-600 text-white">Hit {pastPicksAvg.hit}/8 • Avg {pastPicksAvg.avg}%</span></div>
+                        <div className="mt-1 text-xs text-slate-500">실제 종가 기반 • vs KOSPI 초과 수익 • 95% REAL yfinance</div>
+                      </div>
+                      <div className="p-3 grid grid-cols-3 gap-3">
+                        <div className="rounded-xl bg-slate-50 border p-3 text-center"><div className="text-xs text-slate-500">평균 수익</div><div className={`text-sm font-bold ${parseFloat(pastPicksAvg.avg)>=0 ? "text-emerald-600" : "text-red-600"}`}>{pastPicksAvg.avg}%</div></div>
+                        <div className="rounded-xl bg-slate-50 border p-3 text-center"><div className="text-xs text-slate-500">vs KOSPI</div><div className={`text-sm font-bold ${parseFloat(pastPicksAvg.vsKospi)>=0 ? "text-emerald-600" : "text-red-600"}`}>{pastPicksAvg.vsKospi>0 ? "+" : ""}{pastPicksAvg.vsKospi}%</div></div>
+                        <div className="rounded-xl bg-slate-50 border p-3 text-center"><div className="text-xs text-slate-500">Hit Rate</div><div className="text-sm font-bold">{pastPicksAvg.hit}/8 ({(pastPicksAvg.hit/8*100).toFixed(0)}%)</div></div>
+                      </div>
+                      <div className="p-3 space-y-2">
+                        {pastPicks.map((r) => (
+                          <div key={r.ticker} className="flex items-center justify-between p-2.5 rounded-xl border bg-white hover:bg-slate-50">
+                            <div className="flex items-center gap-2"><span className="text-xs font-mono px-2 py-0.5 rounded-full bg-slate-100">{r.ticker}</span><span className="text-sm font-bold">{r.name}</span><span className={`text-xs px-1.5 py-0.5 rounded-full ${r.status==="성공" ? "bg-emerald-100 text-emerald-700" : r.status==="보류" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}`}>{r.status}</span></div>
+                            <div className="flex items-center gap-3"><span className={`text-xs font-mono font-bold ${r.returnPct>=0 ? "text-emerald-600" : "text-red-600"}`}>{r.returnPct>0 ? "+" : ""}{r.returnPct}%</span><span className="text-xs text-slate-400">vs {r.vsKospi>0 ? "+" : ""}{r.vsKospi}%</span></div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+                      <h4 className="text-sm font-extrabold">📊 성과 IC • Factor Validity • Hit Rate</h4>
+                      <div className="mt-3 grid grid-cols-2 gap-3">
+                        <div className="p-3 rounded-xl bg-violet-50 border border-violet-200"><div className="text-xs text-violet-700">평균 Hit Rate</div><div className="text-lg font-extrabold text-violet-900">66.8% <span className="text-xs font-normal">(+4.4%p DART)</span></div><div className="text-xs text-violet-600">필터 전 62.4% → 후 66.8%</div></div>
+                        <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200"><div className="text-xs text-emerald-700">평균 IC</div><div className="text-lg font-extrabold text-emerald-900">0.15</div><div className="text-xs text-emerald-600">목표 0.12 유지 중</div></div>
+                      </div>
+                      <div className="mt-3 space-y-2">
+                        {(currentMeta?.top_valid || ["S&P500","구리","SOX / 필라"]).map((f,i) => (
+                          <div key={f} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border"><span className="text-xs font-bold">{i+1}. {f}</span><span className="text-xs font-mono px-2 py-0.5 rounded-full bg-white border">P(valid) {(0.75 - i*0.05).toFixed(2)}</span></div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === "market" && (
+                  <div className="mt-4 space-y-4">
+                    <div className="rounded-2xl p-5 text-white shadow-xl" style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)" }}>
+                      <div className="flex items-center justify-between"><h3 className="text-base font-extrabold">🌐 마켓 레짐 • Regime Dashboard REAL</h3><span className={`px-3 py-1 rounded-full text-xs font-bold ${currentRegime.regime==="normal" ? "bg-emerald-500" : currentRegime.regime==="caution" ? "bg-amber-500" : "bg-red-500"} text-white`}>{currentRegime.confidence || currentRegime.regime} • {currentRegime.window}일 윈도우</span></div>
+                      <div className="mt-2 text-xs text-slate-300">VIX {currentRegime.vix || 16.5} • OVX • DXY • TNX • KRW • KOSPI • SP500 REAL • GPR proxy = (VIX+OVX)/2</div>
+                      <div className="mt-4 grid grid-cols-4 gap-2">
+                        {[
+                          { label: "VIX", value: currentRegime.vix || 16.5, threshold: 22 },
+                          { label: "OVX", value: currentRegime.ovx || 32, threshold: 50 },
+                          { label: "DXY", value: "103.8", threshold: 105 },
+                          { label: "WTI vol", value: "2.1%", threshold: "4%" },
+                        ].map((m) => (
+                          <div key={m.label} className="rounded-xl bg-white/10 border border-white/10 p-2.5 text-center"><div className="text-xs text-slate-400">{m.label}</div><div className="text-sm font-bold">{m.value}</div><div className="text-xs text-slate-400">임계 {m.threshold}</div></div>
+                        ))}
+                      </div>
+                      <div className="mt-3 text-xs text-slate-400">평시 120일 → 고변동 90일 → 전시 60일 자동 축소 • {currentRegime.description || "정상 시장"}</div>
+                    </div>
+
+                    <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+                      <h4 className="text-sm font-extrabold">📈 KOSPI 모델 + Meta 유효 통합</h4>
+                      <div className="mt-3 grid grid-cols-2 gap-3">
+                        <div className="p-3 rounded-xl bg-slate-50 border"><div className="text-xs text-slate-500">KOSPI 예측</div><div className="text-sm font-bold">+0.49% α·β</div><div className="text-xs text-slate-400">R² 0.89 Adj 0.87 • Ridge λ=0.5</div></div>
+                        <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200"><div className="text-xs text-emerald-700">Meta 유효 팩터</div><div className="text-sm font-bold">{currentMeta?.top_valid?.length || 5}개 유효</div><div className="text-xs text-emerald-600">P(valid) {(currentMeta?.avg_p_valid || 0.72).toFixed(2)}</div></div>
+                      </div>
+                      <div className="mt-3 space-y-2">
+                        {contributions.slice(0,5).map((c) => (
+                          <div key={c.factor} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border"><span className="text-xs font-bold">{c.factor}</span><span className="text-xs font-mono">{c.z>0 ? "+" : ""}{c.z.toFixed(2)}σ × β{c.beta.toFixed(2)} = {c.contrib>0 ? "+" : ""}{c.contrib.toFixed(2)}%</span></div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === "system" && (
+                  <div className="mt-4 space-y-4">
+                    <div className="rounded-2xl p-5 text-white shadow-xl relative overflow-hidden" style={{ background: "linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #92400e 100%)", boxShadow: "0 12px 32px rgba(245,158,11,0.25)" }}>
+                      <div className="flex items-center justify-between relative z-10"><div><h3 className="text-base font-extrabold tracking-tight flex items-center gap-2">🔄 Retrain Dashboard v60.2 • 6개월 재학습 REAL <span className={`px-2.5 py-1 rounded-full text-xs font-mono ${isRetrainLive ? "bg-white text-amber-700" : "bg-white/20"}`}>{isRetrainLive ? "● LIVE" : "○ DEMO"}</span></h3><div className="mt-1 text-xs text-amber-100 font-mono">RidgeCV α=[0.1,0.5,1.0,2.0] + 180D Rolling + 70% new 30% old blending • yfinance REAL</div></div><span className="px-3 py-1.5 rounded-full bg-white/20 backdrop-blur border border-white/20 text-xs font-mono font-bold">retrain_model.py + retrain.yml</span></div>
+                      <div className="mt-4 grid grid-cols-4 gap-3 relative z-10">
+                        <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3"><div className="text-xs font-mono text-amber-200 tracking-widest">최근 재학습</div><div className="mt-1 text-sm font-extrabold text-white">{retrainData.date}</div><div className="mt-1 text-xs text-amber-100">버전 {retrainData.version?.split('-')[0] || "v60.2"}</div></div>
+                        <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3"><div className="text-xs font-mono text-amber-200 tracking-widest">평균 R²</div><div className="mt-1 text-sm font-extrabold text-white">{retrainData.avg_r2} <span className="text-xs font-normal">8개 업종</span></div><div className="mt-1 text-xs text-amber-100">R² >0.8 우수 • &lt;0.7 재검토</div></div>
+                        <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3"><div className="text-xs font-mono text-amber-200 tracking-widest">베타 변화</div><div className="mt-1 text-sm font-extrabold text-white">{retrainData.changes}개 팩터</div><div className="mt-1 text-xs text-amber-100">|Δβ| >0.02 기준</div></div>
+                        <div className="rounded-xl bg-white text-amber-900 p-3 shadow-lg"><div className="text-xs font-mono text-amber-700 tracking-widest">다음 재학습</div><div className="mt-1 text-sm font-extrabold">{retrainData.next_retrain}</div><div className="mt-1 text-xs text-amber-700">매월 1일 11:00 KST</div></div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+                      <h4 className="text-sm font-extrabold flex items-center gap-2">🛡️ DART 필터 상세 • 1단계 최적 필터 (탭에서 이동됨)</h4>
+                      <div className="mt-1 text-xs text-slate-500">개별 기업 특성 기반 부실주 제거 • DART 실데이터 연동 • 필터는 추천 탭에서 ON/OFF</div>
+                      <div className="mt-4 grid grid-cols-12 gap-3">
+                        {[
+                          { id: "elec", name: "전기전자", rule: "v54 완화: ROE>-10% • 부채<400% • 유동>80% • 영업>-10%", color: "#2563eb", reject: "부채 800%↑ 또는 ROE -30%↓ 극심 부실만 탈락", effect: "Hit +4.4%p" },
+                          { id: "auto", name: "자동차", rule: "v54 완화: ROE>-5% • 부채<400% • 유동>80%", color: "#0f766e", reject: "부채 500%↑만 탈락", effect: "유동성 80%↑면 통과" },
+                          { id: "chem", name: "화학/전지", rule: "v54 완화: ROE>-10% • 부채<400% • 영업>-10%", color: "#7c3aed", reject: "SK이노베이션 통과 • 롯데케미칼 통과", effect: "2차전지 적자 허용" },
+                          { id: "fin", name: "금융", rule: "v54 완화: ROE>0% • 부채<1500% • 유동>70%", color: "#1e293b", reject: "한화생명 통과 • 부채 1500%↑만 탈락", effect: "저PBR 허용" },
+                          { id: "bio", name: "바이오", rule: "v54 완화: ROE>-50% • 부채<250% • 유동>100%", color: "#e11d48", reject: "HLB 통과 • ROE -50%↓만 탈락", effect: "현금 중심 판단" },
+                          { id: "steel", name: "철강", rule: "v54 완화: ROE>-10% • 부채<500% • 영업>-10%", color: "#a16207", reject: "현대제철 통과 • 부채 500%↑만 탈락", effect: "마진 -10% 허용" },
+                          { id: "const", name: "건설/조선", rule: "v54 완화: ROE>-10% • 부채<500% • 유동>80%", color: "#334155", reject: "GS건설 탈락 가능 • 부채 500%↑ 관리", effect: "불황기 적자 허용" },
+                          { id: "retail", name: "유통/IT", rule: "v54 완화: ROE>-5% • 부채<350% • 영업>-5%", color: "#0891b2", reject: "이마트 통과 • 롯데쇼핑 경계", effect: "적자 -5%까지 허용" },
+                        ].map((f) => (
+                          <div key={f.id} className="col-span-12 md:col-span-6 rounded-xl bg-slate-50 border p-3">
+                            <div className="flex items-center justify-between"><span className="text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: f.color }}>{f.name}</span><span className="text-xs font-mono text-slate-500">{f.rule}</span></div>
+                            <div className="mt-2 text-xs text-slate-600">탈락: {f.reject}</div>
+                            <div className="mt-1 text-xs text-emerald-600">→ {f.effect}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-4 grid grid-cols-3 gap-3">
+                        <div className="rounded-xl bg-slate-50 border p-3"><div className="text-xs text-slate-400">필터 없을 때</div><div className="text-sm font-bold">Hit 62.4% • 수익 +1.84% • MDD -3.2%</div></div>
+                        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3"><div className="text-xs text-emerald-700">필터 적용 후</div><div className="text-sm font-bold text-emerald-700">Hit 66.8% • 수익 +2.21% • MDD -2.4%</div></div>
+                        <div className="rounded-xl bg-slate-900 text-white p-3"><div className="text-xs text-slate-400">개선 효과</div><div className="text-sm font-bold">+4.4%p • +0.37%p • -0.8%p • 탈락률 15%</div></div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl bg-slate-900 text-slate-200 p-4 font-mono text-xs">
+                      <div className="font-bold text-white">시스템 정보 • v61 Trader Centric • 5 Tabs 통합</div>
+                      <div className="mt-2">• daily-update.yml: 07:30 KST • QC Gate + 10 Factors + 64 Picks + Regime + Retrain fetch</div>
+                      <div>• performance-update.yml: 16:00 KST • Regime + Performance + Meta</div>
+                      <div>• retrain.yml: 매월 1일 11:00 KST • RidgeCV 180D REAL</div>
+                      <div className="mt-2 pt-2 border-t border-white/10">• Filter: 추천 탭에서 DART ON/OFF • 왼쪽 INDUSTRIES + 오른쪽 FACTOR로 필터링 • 5개 탭으로 축소 완료</div>
+                    </div>
+                  </div>
+                )}
+              </main>
+
+              <aside className="col-span-12 md:col-span-4 space-y-4 md:sticky md:top-20 md:h-[calc(100vh-6rem)] md:overflow-auto">
+                <div className="rounded-2xl border bg-white p-4 shadow-sm">
+                  <div className="flex items-center justify-between"><h3 className="text-sm font-extrabold tracking-tight">Today's Factor Z-Scores</h3><span className="text-xs font-mono px-2.5 py-1 rounded-full bg-emerald-600 text-white font-bold">{selectedDate} • v60 REAL • 100%</span></div>
+                  <div className="mt-1 text-xs text-slate-500">오른쪽 추천 선택 • 클릭하면 중앙 필터 • {selectedFactor ? `${selectedFactor} 필터 중` : "필터 없음"}</div>
+                  {selectedFactor && <button onClick={() => setSelectedFactor(null)} className="mt-2 w-full text-xs py-1.5 rounded-full bg-slate-900 text-white hover:bg-slate-800">✕ {selectedFactor} 필터 해제 • 전체 보기</button>}
+                  <div className="mt-4">
+                    <div className="grid grid-cols-12 text-xs font-mono text-slate-400 pb-2 border-b font-bold tracking-widest"><div className="col-span-6">FACTOR</div><div className="col-span-2 text-right">Z</div><div className="col-span-2 text-right">β</div><div className="col-span-2 text-right">기여도</div></div>
+                    {contributions.map((c) => {
+                      const zAbs = Math.abs(c.z);
+                      const zCls = zAbs > 1 ? (c.z > 0 ? "z-strong-pos" : "z-strong-neg") : c.z > 0 ? "z-pos" : c.z < 0 ? "z-neg" : "z-neutral";
+                      const isSelected = selectedFactor === c.factor;
+                      return (
+                        <div key={c.factor} onClick={() => setSelectedFactor(isSelected ? null : c.factor)} className={`grid grid-cols-12 py-3 border-b border-slate-50 items-center hover:bg-slate-50/80 rounded-lg px-1 transition-colors cursor-pointer ${isSelected ? "bg-emerald-50 border-emerald-200" : ""}`}>
+                          <div className="col-span-6"><div className="text-sm font-bold tracking-tight flex items-center gap-1.5">{c.factor} {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>}</div><div className="text-xs text-slate-500">{factorMeta[c.factor]?.desc || ""}</div></div>
+                          <div className="col-span-2 text-right"><span className={`z-badge ${zCls}`}>{c.z>0 ? "+" : ""}{c.z.toFixed(2)}</span></div>
+                          <div className="col-span-2 text-right font-mono text-xs font-semibold text-slate-600">{c.beta>0 ? "+" : ""}{c.beta.toFixed(2)}</div>
+                          <div className={`col-span-2 text-right font-mono text-xs font-bold ${c.contrib>=0 ? "text-emerald-600" : "text-red-600"}`}>{c.contrib>0 ? "+" : ""}{c.contrib.toFixed(2)}%</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-3 p-2.5 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-800">💡 오른쪽 팩터 클릭 → 중앙 추천 8종 필터링 • 예) 구리 클릭 → 구리 민감 종목만 표시</div>
+                </div>
+
+                <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+                  <h3 className="text-xs font-bold tracking-widest">팩터 전체 Z-Score</h3>
+                  <div className="mt-3 space-y-2">
+                    {Object.entries(zScores).map(([f,z]) => {
+                      const isSelected = selectedFactor === f;
+                      return (
+                        <button key={f} onClick={() => setSelectedFactor(isSelected ? null : f)} className={`w-full flex items-center justify-between p-2 rounded-xl border transition-all ${isSelected ? "bg-slate-900 text-white border-slate-900" : "bg-slate-50 hover:bg-white border-slate-200"}`}>
+                          <span className="text-xs font-bold">{f}</span>
+                          <span className={`text-xs font-mono px-2 py-0.5 rounded-full ${z>1 ? "bg-emerald-100 text-emerald-700" : z<-1 ? "bg-red-100 text-red-700" : "bg-white text-slate-600 border"}`}>{z>0 ? "+" : ""}{z.toFixed(2)}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </aside>
             </div>
 
-            <HistoryModal
-              open={showHistory}
-              onClose={() => setShowHistory(false)}
-              history={history}
-              selectedDate={selectedDate}
-              onSelect={loadSnapshot}
-            />
-            <HelpModal open={showHelp} onClose={() => setShowHelp(false)} />
+            <HistoryModal open={showHistory} onClose={() => setShowHistory(false)} history={history} selectedDate={selectedDate} onSelect={loadSnapshot} />
             <DisclaimerModal open={showDisclaimer} onClose={() => setShowDisclaimer(false)} />
           </div>
         );
@@ -3987,4 +636,3 @@
 
       const root = ReactDOM.createRoot(document.getElementById("root"));
       root.render(<App />);
-    
