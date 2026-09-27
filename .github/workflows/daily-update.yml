@@ -2,6 +2,7 @@ name: KOSPI Quant Terminal v60 - 10 Factors China Proxy 100% REAL + DART + 64 Pi
 on:
   schedule:
     - cron: '30 22 * * 0-4'  # UTC 22:30 = KST 07:30 평일
+    - cron: '0 9 * * 0'      # UTC 09:00 = KST 18:00 일요일 - Weekly 64 Picks for Monday
   workflow_dispatch:
 
 jobs:
