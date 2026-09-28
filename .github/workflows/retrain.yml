@@ -1,4 +1,4 @@
-name: KOSPI Quant Terminal v60.2 - Monthly Retrain + 6M Auto REAL
+name: KOSPI Quant Terminal v61 - Monthly Retrain + 6M Auto 100% REAL KRX
 
 on:
   schedule:
@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install deps v60.2 Retrain REAL - FIX yfinance
+      - name: Install deps v61 Retrain 100% REAL KRX
         run: |
           python -m pip install --upgrade pip
           pip install firebase-admin yfinance requests lxml pandas numpy pykrx beautifulsoup4 scikit-learn --upgrade
@@ -42,14 +42,15 @@ jobs:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
           KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
-          PRICE_SOURCE: yfinance
+          PRICE_SOURCE: krx
         run: |
           echo "=== Retrain v60.2 - 6개월 재학습 - RidgeCV REAL ==="
           echo "- Window: ${{ inputs.window_days || '180' }} days"
           echo "- Industries: 8 (elec, auto, chem, fin, bio, steel, const, retail)"
           echo "- Factors: 10 (SP500, US10Y, 외국인, SOX, 원달러, WTI, DXY, VIX, 구리, 상해종합)"
           echo "- Method: RidgeCV alpha=[0.1,0.5,1.0,2.0] + StandardScaler + 70% new 30% old"
-          echo "- Proxy: 삼성전자 005930 등 8개 대표주 REAL yfinance"
+          echo "- Proxy: 삼성전자 005930 등 8개 대표주 REAL KRX OPEN API"
+          echo "- KRX OPEN API: 7 APIs approved (KOSPI, KOSDAQ, futures)"
           python scripts/retrain_model.py
 
       - name: Check generated data.js.new
