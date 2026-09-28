@@ -367,7 +367,7 @@ const { useState, useMemo, useEffect } = React;
               </div>
             </header>
 
-            <div className="max-w-screen-2xl mx-auto px-4 md:px-6 pt-4 pb-4 grid grid-cols-12 gap-4">
+            <div className="max-w-screen-2xl mx-auto px-4 md:px-6 pt-4 pb-4 grid grid-cols-12 gap-4 items-start">
 
               <aside className="col-span-12 md:col-span-2 space-y-4 md:sticky md:top-[88px] md:h-[calc(100vh-6rem)] md:overflow-auto">
                 <div className="rounded-2xl bg-[#e0f2fe] text-[#0c4a6e] p-4 border border-[#bae6fd]">
@@ -579,24 +579,26 @@ const { useState, useMemo, useEffect } = React;
                 )}
 
                 {activeTab === "market" && (
-                  <div className="mt-4 space-y-4">
-                    <div className="rounded-2xl p-5 text-white" style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #1e293b 100%)" }}>
-                      <div className="flex items-center justify-between"><h3 className="text-base font-extrabold">🌐 마켓 레짐 • Regime Dashboard REAL</h3><span className={`px-3 py-1 rounded-full text-xs font-bold ${currentRegime.regime==="normal" ? "bg-emerald-500" : currentRegime.regime==="caution" ? "bg-amber-500" : "bg-red-500"} text-white`}>{currentRegime.confidence || currentRegime.regime} • {currentRegime.window}일 윈도우</span></div>
-                      <div className="mt-2 text-xs text-slate-300">VIX {currentRegime.vix || 16.5} • OVX • DXY • TNX • KRW • KOSPI • SP500 REAL • GPR proxy = (VIX+OVX)/2</div>
-                      <div className="mt-4 grid grid-cols-4 gap-2">
+                  <div className="mt-4 space-y-4 flex flex-col">
+                    <div className="rounded-2xl p-6 text-white min-h-[420px] flex flex-col justify-between" style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #1e293b 100%)" }}>
+                      <div>
+                        <div className="flex items-center justify-between"><h3 className="text-base font-extrabold">🌐 마켓 레짐 • Regime Dashboard REAL</h3><span className={`px-3 py-1 rounded-full text-xs font-bold ${currentRegime.regime==="normal" ? "bg-emerald-500" : currentRegime.regime==="caution" ? "bg-amber-500" : "bg-red-500"} text-white`}>{currentRegime.confidence || currentRegime.regime} • {currentRegime.window}일 윈도우</span></div>
+                        <div className="mt-2 text-xs text-slate-300">VIX {currentRegime.vix || 16.5} • OVX • DXY • TNX • KRW • KOSPI • SP500 REAL • GPR proxy = (VIX+OVX)/2</div>
+                      </div>
+                      <div className="mt-6 grid grid-cols-4 gap-3 flex-1 items-center">
                         {[
                           { label: "VIX", value: currentRegime.vix || 16.5, threshold: 22 },
                           { label: "OVX", value: currentRegime.ovx || 32, threshold: 50 },
                           { label: "DXY", value: "103.8", threshold: 105 },
                           { label: "WTI vol", value: "2.1%", threshold: "4%" },
                         ].map((m) => (
-                          <div key={m.label} className="rounded-xl bg-white/10 border border-white/10 p-2.5 text-center"><div className="text-xs text-slate-400">{m.label}</div><div className="text-sm font-bold">{m.value}</div><div className="text-xs text-slate-400">임계 {m.threshold}</div></div>
+                          <div key={m.label} className="rounded-xl bg-white/10 border border-white/10 p-4 text-center flex flex-col justify-center min-h-[96px]"><div className="text-xs text-slate-400">{m.label}</div><div className="text-base font-bold mt-1">{m.value}</div><div className="text-xs text-slate-400 mt-1">임계 {m.threshold}</div></div>
                         ))}
                       </div>
-                      <div className="mt-3 text-xs text-slate-400">평시 120일 → 고변동 90일 → 전시 60일 자동 축소 • {currentRegime.description || "정상 시장"}</div>
+                      <div className="mt-6 text-xs text-slate-400">평시 120일 → 고변동 90일 → 전시 60일 자동 축소 • {currentRegime.description || "정상 시장"}</div>
                     </div>
 
-                    <div className="rounded-2xl bg-white border border-slate-200 p-4">
+                    <div className="rounded-2xl bg-white border border-slate-200 p-4 min-h-[200px] flex flex-col justify-center">
                       <h4 className="text-sm font-extrabold">📈 KOSPI 모델 + Meta 유효 통합</h4>
                       <div className="mt-3 grid grid-cols-2 gap-3">
                         <div className="p-3 rounded-xl bg-slate-50 border"><div className="text-xs text-slate-500">KOSPI 예측</div><div className="text-sm font-bold">+0.49% α·β</div><div className="text-xs text-slate-400">R² 0.89 Adj 0.87 • Ridge λ=0.5</div></div>
