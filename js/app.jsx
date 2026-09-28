@@ -356,28 +356,28 @@ const { useState, useMemo, useEffect } = React;
             <div className="max-w-screen-2xl mx-auto px-4 md:px-6 pt-0 pb-4 grid grid-cols-12 gap-4">
 
               <aside className="col-span-12 md:col-span-2 space-y-4 md:sticky md:top-[88px] md:h-[calc(100vh-6rem)] md:overflow-auto">
-                <div className="rounded-2xl bg-[#1e3a8a] text-white p-4 shadow-xl">
-                  <div className="flex items-center justify-between"><h3 className="text-xs font-bold tracking-widest">INDUSTRIES • 8</h3><span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span></div>
-                  <div className="mt-1 text-xs text-slate-400">왼쪽 추천 선택 • 클릭하면 중앙 필터</div>
+                <div className="rounded-2xl bg-[#e0f2fe] text-[#0c4a6e] p-4 shadow-sm border border-[#bae6fd]">
+                  <div className="flex items-center justify-between"><h3 className="text-xs font-bold tracking-widest text-[#0369a1]">INDUSTRIES • 8</h3><span className="w-2 h-2 rounded-full bg-[#0ea5e9] animate-pulse"></span></div>
+                  <div className="mt-1 text-xs text-[#0284c7]">업종 선택 • 중앙 필터</div>
                   <div className="mt-4 space-y-2">
                     {industries.map((ind) => {
                       const isSelected = ind.id === selectedIndustry;
                       const pred = contributions.filter(c => Object.keys(ind.betas).includes(c.factor)).reduce((s,c) => s + c.contrib, 0);
                       return (
-                        <button key={ind.id} onClick={() => setSelectedIndustry(ind.id)} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all text-left ${isSelected ? "bg-white text-[#1e3a8a] shadow-lg" : "bg-white/10 hover:bg-white/15 text-white/90"}`}>
-                          <div className="flex items-center gap-2.5"><div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: isSelected ? `${ind.color}15` : "rgba(255,255,255,0.1)", color: isSelected ? ind.color : "white" }}>{ind.icon}</div><div><div className="text-xs font-bold">{ind.short}</div><div className={`text-xs ${isSelected ? "text-slate-500" : "text-white/60"}`}>R² {ind.r2}</div></div></div>
-                          <div className="text-right"><div className={`text-xs font-mono font-bold ${pred>=0 ? (isSelected ? "text-emerald-600" : "text-emerald-300") : (isSelected ? "text-red-600" : "text-red-300")}`}>{pred>0 ? "+" : ""}{pred.toFixed(2)}%</div><div className={`w-2 h-2 rounded-full ml-auto mt-1 ${isSelected ? "bg-[#1e3a8a]" : "bg-white/30"}`}></div></div>
+                        <button key={ind.id} onClick={() => setSelectedIndustry(ind.id)} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all text-left border ${isSelected ? "bg-white text-[#0c4a6e] shadow-md border-[#7dd3fc]" : "bg-white/70 hover:bg-white text-[#475569] border-white/50 hover:border-[#7dd3fc]"}`}>
+                          <div className="flex items-center gap-2.5"><div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: `${ind.color}15`, color: ind.color }}>{ind.icon}</div><div><div className="text-xs font-bold">{ind.short}</div><div className="text-xs text-slate-500">R² {ind.r2}</div></div></div>
+                          <div className="text-right"><div className={`text-xs font-mono font-bold ${pred>=0 ? "text-emerald-600" : "text-red-600"}`}>{pred>0 ? "+" : ""}{pred.toFixed(2)}%</div><div className={`w-2 h-2 rounded-full ml-auto mt-1 ${isSelected ? "bg-[#0ea5e9]" : "bg-slate-300"}`}></div></div>
                         </button>
                       );
                     })}
                   </div>
-                  <div className="mt-3 pt-3 border-t border-white/10 text-xs text-white/50">Top1이 오늘 최강 업종 • 8개 중 선택</div>
+                  <div className="mt-3 pt-3 border-t border-[#bae6fd] text-xs text-[#0284c7]">Top1이 최강 • 8개 중 선택</div>
                 </div>
               </aside>
 
               <div className="col-span-12 md:col-span-10 grid grid-cols-12 gap-4">
               <main className="col-span-12 lg:col-span-8">
-                <div className="flex items-center gap-1.5 p-1 rounded-full bg-white border border-slate-200 shadow-sm w-fit flex-wrap sticky top-20 z-10">
+                <div className="flex items-center gap-1 p-1.5 rounded-full bg-white border border-[#e5e8eb] shadow-sm w-fit flex-wrap sticky top-[88px] z-10">
                   {[
                     { id: "recommend", label: "추천", icon: "🎯", count: filteredPicks.length, color: "#1e3a8a" },
                     { id: "top", label: "오늘 Top 예측", icon: "📊", count: 8, color: "#f59e0b" },
@@ -393,10 +393,13 @@ const { useState, useMemo, useEffect } = React;
                   ))}
                 </div>
 
-                <div className="mt-3 text-xs font-mono text-slate-500 flex items-center gap-2">
-                  Selected: <span className="font-bold px-2 py-1 rounded-full text-white" style={{ background: currentIndustry.color }}>{currentIndustry.name}</span>
-                  {selectedFactor && <><span className="font-bold px-2 py-1 rounded-full bg-emerald-600 text-white">+ {selectedFactor} 필터</span><button onClick={() => setSelectedFactor(null)} className="px-2 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-xs">✕ 해제</button></>}
-                  <span className="ml-auto text-xs px-2 py-1 rounded-full bg-[#1e3a8a] text-white">{activeTab}</span>
+                <div className="mt-3 flex items-center justify-between">
+                  <div className="text-xs font-mono text-slate-500 flex items-center gap-2">
+                    <span>Selected:</span>
+                    <span className="font-bold px-3 py-1 rounded-full text-white text-xs" style={{ background: currentIndustry.color }}>{currentIndustry.name}</span>
+                    {selectedFactor && <><span className="font-bold px-2 py-1 rounded-full bg-emerald-600 text-white text-xs">+ {selectedFactor}</span><button onClick={() => setSelectedFactor(null)} className="px-2 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-xs">✕</button></>}
+                  </div>
+                  <span className="text-xs px-3 py-1 rounded-full bg-[#1e3a8a] text-white font-mono">{activeTab}</span>
                 </div>
 
                 {activeTab === "recommend" && (
