@@ -410,7 +410,7 @@ const { useState, useMemo, useEffect } = React;
 
                 {activeTab === "recommend" && (
                   <div className="mt-4 space-y-4">
-                    <div className="rounded-2xl p-4 text-white" style={{ background: `linear-gradient(135deg, ${currentIndustry.color} 0%, ${currentIndustry.color}dd 100%)`}30` }}>
+                    <div className="rounded-2xl p-4 text-white" style={{ background: `linear-gradient(135deg, ${currentIndustry.color} 0%, ${currentIndustry.color}dd 100%)` }}>
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <h3 className="text-sm font-extrabold tracking-tight flex items-center gap-2 flex-wrap">{currentIndustry.name} 8종목 <span className="text-xs font-mono opacity-80 bg-white/20 px-2.5 py-1 rounded-full whitespace-nowrap">전체 64종 중 {currentIndustry.short} Top 8 • KRX β·모멘텀</span></h3>
                         <span className="text-xs font-mono bg-white/20 backdrop-blur px-2.5 py-1 rounded-full whitespace-nowrap ml-auto">{selectedDate} 18:00 KST • 일요일</span>
@@ -427,7 +427,7 @@ const { useState, useMemo, useEffect } = React;
                       <div className="flex items-center justify-between flex-wrap gap-2">
                         <div className="flex items-center gap-2"><span className="w-7 h-7 rounded-lg bg-red-50 border border-red-100 flex items-center justify-center">🛡️</span><span className="text-xs font-bold">DART 필터 • 1단계 최적 필터</span><span className="text-xs font-mono text-slate-500">부실주 제거 • 개별 기업 특성 기반</span></div>
                         <div className="flex items-center gap-2">
-                          <button onClick={() => setFilterEnabled(!filterEnabled)} className={`text-xs px-3 py-1.5 rounded-full font-bold transition-all ${filterEnabled ? "bg-emerald-600 text-white shadow" : "bg-slate-100 text-slate-500"}`}>{filterEnabled ? "ON • Hit +4.4%p" : "OFF"}</button>
+                          <button onClick={() => setFilterEnabled(!filterEnabled)} className={`text-xs px-3 py-1.5 rounded-full font-bold transition-all ${filterEnabled ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-500"}`}>{filterEnabled ? "ON • Hit +4.4%p" : "OFF"}</button>
                           <span className="text-xs px-2 py-1 rounded-full bg-[#1e3a8a] text-white font-mono">v54 완화</span>
                         </div>
                       </div>
