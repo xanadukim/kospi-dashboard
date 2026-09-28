@@ -1,6 +1,6 @@
 
 """
-daily_update.py v60 - KOSPI Quant Terminal - 10 Factors China Proxy 100% REAL + DART + 64 Picks
+daily_update.py v61.3 - KOSPI Quant Terminal - 10 Factors China Proxy 100% REAL + DART + 64 Picks
 - Final 10 Factors (100% REAL):
   1. S&P500 (^GSPC) - yfinance REAL
   2. US 10Y (DGS10) - FRED REAL
@@ -31,44 +31,44 @@ except ImportError:
 try:
     from fundamental_filter import apply_fundamental_filter
     FILTER_ENABLED = True
-    print("[v60] Fundamental filter loaded - DART REAL v54 RELAXED")
+    print("[v61.3] Fundamental filter loaded - DART REAL v54 RELAXED")
 except ImportError:
     try:
         from scripts.fundamental_filter import apply_fundamental_filter
         FILTER_ENABLED = True
-        print("[v60] Fundamental filter loaded from scripts - DART REAL v54 RELAXED")
+        print("[v61.3] Fundamental filter loaded from scripts - DART REAL v54 RELAXED")
     except Exception as e:
         FILTER_ENABLED = False
-        print(f"[v60] Fundamental filter not available: {e}")
+        print(f"[v61.3] Fundamental filter not available: {e}")
 
 # Regime Detector + Meta Tracker import (v60.1 고도화)
 try:
     from regime_detector import build_regime_snapshot
     REGIME_ENABLED = True
-    print("[v60.1] Regime detector loaded - VIX/OVX/DXY REAL")
+    print("[v61.3] Regime detector loaded - VIX/OVX/DXY REAL")
 except ImportError:
     try:
         from scripts.regime_detector import build_regime_snapshot
         REGIME_ENABLED = True
-        print("[v60.1] Regime detector loaded from scripts - VIX/OVX/DXY REAL")
+        print("[v61.3] Regime detector loaded from scripts - VIX/OVX/DXY REAL")
     except Exception as e:
         REGIME_ENABLED = False
         build_regime_snapshot = None
-        print(f"[v60.1] Regime detector not available: {e}")
+        print(f"[v61.3] Regime detector not available: {e}")
 
 try:
     from meta_factor_tracker import build_meta_tracker
     META_ENABLED = True
-    print("[v60.1] Meta tracker loaded - Regime aware")
+    print("[v61.3] Meta tracker loaded - Regime aware")
 except ImportError:
     try:
         from scripts.meta_factor_tracker import build_meta_tracker
         META_ENABLED = True
-        print("[v60.1] Meta tracker loaded from scripts - Regime aware")
+        print("[v61.3] Meta tracker loaded from scripts - Regime aware")
     except Exception as e:
         META_ENABLED = False
         build_meta_tracker = None
-        print(f"[v60.1] Meta tracker not available: {e}")
+        print(f"[v61.3] Meta tracker not available: {e}")
 
 FRED_API_KEY = os.environ.get("FRED_API_KEY", "")
 DART_API_KEY = os.environ.get("DART_API_KEY", "")
@@ -84,7 +84,7 @@ try:
             cred = credentials.Certificate(cred_dict)
             firebase_admin.initialize_app(cred)
         db = firestore.client()
-        print("[Firebase] connected - kospi-quant v60")
+        print("[Firebase] connected - kospi-quant v61.3 100% REAL KRX")
     else:
         db = None
         print("[Firebase] No service account - local mode")
@@ -310,7 +310,7 @@ def generate_64_picks(z_scores, details):
                 "betaStock": beta_stock,
             })
     all_picks_sorted = sorted(all_picks, key=lambda x: x["score"], reverse=True)
-    print(f"[v60] Generated {len(all_picks_sorted)} picks (64선) - Top score {all_picks_sorted[0]['score'] if all_picks_sorted else 0}")
+    print(f"[v61.3] Generated {len(all_picks_sorted)} picks (64선) - Top score {all_picks_sorted[0]['score'] if all_picks_sorted else 0}")
     return all_picks_sorted
 
 def fetch_latest_retrain():
@@ -344,12 +344,12 @@ def save_to_firebase(z_scores, details, weekly_picks, regime_snapshot=None, meta
         "meta": meta_snapshot,
         "retrain": retrain_snapshot,
         "beta_snapshot": retrain_snapshot,
-        "source": "yfinance (5) + FRED (3) + KRX + China Proxy (구리+상해) + DART v54 + 64 Picks + Regime + Retrain v60.2 REAL",
-        "version": "v60.2-10factors-china-proxy-DART-64Picks-Regime-Retrain-REAL",
+        "source": "yfinance (4) + FRED (3) + KRX OPEN API (2) + 15007 CSV (1) + China Proxy (구리+상해) + DART v54 + 64 Picks + Regime + Retrain v61.3 100% REAL",
+        "version": "v61.3-10factors-100REAL-KRX-15007CSV-DART-64Picks-Regime-Retrain-REAL",
         "factors_count": 10,
         "picks_count": len(weekly_picks),
         "china_proxy": "구리(HG=F) + 상해종합(000001.SS) - PMI 대체",
-        "real_data_ratio": "100% REAL (yfinance+FRED+pykrx) + DART filter + Regime detector + Retrain",
+        "real_data_ratio": "100% REAL (yfinance+FRED+KRX OPEN API+15007 CSV) + DART filter + Regime detector + Retrain v61.3",
         "filter_applied": FILTER_ENABLED,
         "regime_enabled": REGIME_ENABLED,
         "meta_enabled": META_ENABLED,
@@ -371,7 +371,7 @@ def save_to_firebase(z_scores, details, weekly_picks, regime_snapshot=None, meta
         print(f"[Firebase] save error: {e}")
 
 if __name__ == "__main__":
-    print("=== KOSPI Quant Terminal v60.2 - 10 Factors China Proxy + DART + 64 Picks + Regime + Retrain 6M REAL ===")
+    print("=== KOSPI Quant Terminal v61.3 - 10 Factors 100% REAL KRX + 15007 CSV REAL + DART + 64 Picks + Regime + Retrain 6M REAL ===")
     z_scores, details = fetch_10_factors_china_proxy()
     weekly_picks = generate_64_picks(z_scores, details)
     if FILTER_ENABLED and DART_API_KEY and weekly_picks:

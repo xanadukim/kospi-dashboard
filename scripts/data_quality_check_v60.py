@@ -29,7 +29,7 @@ import math
 
 KST = timezone(timedelta(hours=9))
 today = datetime.datetime.now(KST).strftime('%Y-%m-%d')
-print(f"\n=== Data Quality Check v61.1 15007 REAL {today} ===")
+print(f"\n=== Data Quality Check v61.3 100% REAL KRX + 15007 CSV REAL {today} ===")
 print("10 Factors QC Gate - NaN 1개면 FAIL, 0.85 fallback은 WARN")
 
 # Try imports
@@ -304,7 +304,7 @@ health_score -= fail_count * 20
 health_score -= warn_count * 5
 health_score = max(0, min(100, health_score))
 
-print(f"\n=== QC Summary v60 ===")
+print(f"\n=== QC Summary v61.3 100% REAL KRX + 15007 CSV REAL ===")
 print(f"FAIL: {fail_count} WARN: {warn_count} Health: {health_score}/100")
 print(f"Checked: {len(results)} factors")
 
@@ -325,7 +325,7 @@ if db:
             'china_proxy_ok': not any(r['name'] in ['구리','상해종합'] and r['status']=='FAIL' for r in results),
             'foreign_fallback': any('is_fallback' in r and r['is_fallback'] for r in results),
             'source': 'data_quality_check_v60 - 10 Factors + China Proxy + 0.85 fallback detection',
-            'version': 'v61.1-15007-CSV-REAL',
+            'version': 'v61.3-100REAL-KRX-15007CSV-REAL',
             'createdAt': firestore.SERVER_TIMESTAMP
         }
         db.collection('data_quality_logs').document(today).set(log_doc, merge=True)
