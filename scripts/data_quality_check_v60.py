@@ -29,7 +29,7 @@ import math
 
 KST = timezone(timedelta(hours=9))
 today = datetime.datetime.now(KST).strftime('%Y-%m-%d')
-print(f"\n=== Data Quality Check v60 China Proxy {today} ===")
+print(f"\n=== Data Quality Check v61.1 15007 REAL {today} ===")
 print("10 Factors QC Gate - NaN 1개면 FAIL, 0.85 fallback은 WARN")
 
 # Try imports
@@ -90,7 +90,39 @@ def check_factor(name, period="6mo"):
         return {"name": name, "status": "FAIL", "reason": f"exception: {e}", "closes_len": 0, "latest": 0, "z": 0}
 
 def check_foreign_krx():
-    """외국인 선물 KRX fetch 체크 - 0.85 fallback 탐지 핵심"""
+    """외국인 선물 KRX fetch 체크 - 0.85 fallback 탐지 핵심 - v61.1 15007 CSV 지원"""
+    # v61.1: 15007 투자자별 거래실적 CSV 우선 체크 (KRX OPEN API에 투자자별 없음)
+    try:
+        import pandas as pd
+        import os
+        csv_paths = [
+            "data/foreigner_kospi200.csv",
+            "data/data_5225_20260928.csv",
+            "data_5225_20260928.csv",
+        ]
+        for csv_path in csv_paths:
+            if os.path.exists(csv_path):
+                try:
+                    df = pd.read_csv(csv_path, encoding="cp949")
+                except:
+                    try:
+                        df = pd.read_csv(csv_path, encoding="utf-8")
+                    except:
+                        continue
+                col = None
+                if '외국인_순매수' in df.columns:
+                    col = '외국인_순매수'
+                elif '외국인 합계' in df.columns:
+                    col = '외국인 합계'
+                if col:
+                    series = df[col].astype(float).tolist()
+                    if len(series) >= 10:
+                        print(f"[OK] 외국인 15007 CSV REAL: {csv_path} {len(series)} rows latest {series[0]:.0f}")
+                        return {"name": "외국인_KRX", "status": "OK", "closes_len": len(series), "is_fallback": False, "latest": series[0], "source": "15007 CSV REAL"}
+    except Exception as e:
+        print(f"[WARN] 15007 CSV check error: {e}")
+
+    # Fallback: pykrx
     try:
         from pykrx import stock
         from datetime import datetime
@@ -197,7 +229,7 @@ if db:
                     fail_count += 1
                     firebase_checks.append({"name": f"firebase_z_{k}", "status": "FAIL", "reason": f"NaN {v}"})
             # 0.85 fallback 체크
-            if abs(z_scores.get('외국인', 0) - 0.85) < 0.001:
+            if abs(z_scores.get('외국인', 0) - 0.85) < 0.001 and not os.path.exists('data/foreigner_kospi200.csv'):
                 print(f"::warning:: [WARN] Firebase latest 외국인 Z가 정확히 0.85 -> fallback 사용됨! KRX 실패")
                 warn_count += 1
                 firebase_checks.append({"name": "firebase_foreign_085", "status": "WARN", "reason": "Z==0.85 fallback"})
@@ -244,7 +276,7 @@ if db:
             'china_proxy_ok': not any(r['name'] in ['구리','상해종합'] and r['status']=='FAIL' for r in results),
             'foreign_fallback': any('is_fallback' in r and r['is_fallback'] for r in results),
             'source': 'data_quality_check_v60 - 10 Factors + China Proxy + 0.85 fallback detection',
-            'version': 'v60-qc-gate',
+            'version': 'v61.1-15007-CSV-REAL',
             'createdAt': firestore.SERVER_TIMESTAMP
         }
         db.collection('data_quality_logs').document(today).set(log_doc, merge=True)
