@@ -369,17 +369,17 @@ const { useState, useMemo, useEffect } = React;
 
             <div className="max-w-screen-2xl mx-auto px-4 md:px-6 pt-4 pb-4 grid grid-cols-12 gap-4 items-start">
 
-              <aside className="col-span-12 md:col-span-2 space-y-4 md:sticky md:top-[88px] md:h-[calc(100vh-6rem)] md:overflow-auto">
-                <div className="rounded-2xl bg-[#e0f2fe] text-[#0c4a6e] p-4 border border-[#bae6fd]">
+              <aside className="col-span-12 md:col-span-2 space-y-4 md:sticky md:top-[88px]">
+                <div className="rounded-2xl bg-[#e0f2fe] text-[#0c4a6e] p-4 border border-[#bae6fd] h-[420px] flex flex-col">
                   <div className="flex items-center justify-between"><h3 className="text-xs font-bold tracking-widest text-[#0369a1]">INDUSTRIES • 8</h3><span className="w-2 h-2 rounded-full bg-[#0ea5e9] animate-pulse"></span></div>
                   <div className="mt-1 text-xs text-[#0284c7]">업종 선택 • 중앙 필터</div>
-                  <div className="mt-4 space-y-2">
+                  <div className="mt-3 space-y-1 flex-1 overflow-auto pr-1">
                     {industries.map((ind) => {
                       const isSelected = ind.id === selectedIndustry;
                       const pred = contributions.filter(c => Object.keys(ind.betas).includes(c.factor)).reduce((s,c) => s + c.contrib, 0);
                       return (
-                        <button key={ind.id} onClick={() => setSelectedIndustry(ind.id)} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all text-left border ${isSelected ? "bg-white text-[#0c4a6e] border-[#7dd3fc]" : "bg-white/70 hover:bg-white text-[#475569] border-white/50 hover:border-[#7dd3fc]"}`}>
-                          <div className="flex items-center gap-2.5"><div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: `${ind.color}15`, color: ind.color }}>{ind.icon}</div><div><div className="text-xs font-bold">{ind.short}</div><div className="text-xs text-slate-500">R² {ind.r2}</div></div></div>
+                        <button key={ind.id} onClick={() => setSelectedIndustry(ind.id)} className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl transition-all text-left border ${isSelected ? "bg-white text-[#0c4a6e] border-[#7dd3fc]" : "bg-white/70 hover:bg-white text-[#475569] border-white/50 hover:border-[#7dd3fc]"}`}>
+                          <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold" style={{ background: `${ind.color}15`, color: ind.color }}>{ind.icon}</div><div><div className="text-xs font-bold">{ind.short}</div><div className="text-xs text-slate-500">R² {ind.r2}</div></div></div>
                           <div className="text-right"><div className={`text-xs font-mono font-bold ${pred>=0 ? "text-emerald-600" : "text-red-600"}`}>{pred>0 ? "+" : ""}{pred.toFixed(2)}%</div><div className={`w-2 h-2 rounded-full ml-auto mt-1 ${isSelected ? "bg-[#0ea5e9]" : "bg-slate-300"}`}></div></div>
                         </button>
                       );
@@ -390,7 +390,7 @@ const { useState, useMemo, useEffect } = React;
               </aside>
 
               <div className="col-span-12 md:col-span-10 grid grid-cols-12 gap-4">
-              <main className="col-span-12 lg:col-span-8 lg:sticky lg:top-[88px] lg:h-[calc(100vh-6rem)] lg:overflow-auto pr-1">
+              <main className="col-span-12 lg:col-span-8 lg:sticky lg:top-[88px]">
                 {/* 탭은 상단 헤더로 이동 - 여기서는 모바일용 작은 탭 표시 */}
                 <div className="xl:hidden flex items-center gap-1 p-1 rounded-full bg-[#f1f5f9] border border-[#e5e8eb] w-fit flex-wrap mb-4">
                   {[
@@ -615,7 +615,7 @@ const { useState, useMemo, useEffect } = React;
 
                 </main>
 
-              <aside className="col-span-12 lg:col-span-4 space-y-4 lg:sticky lg:top-[88px] lg:h-[calc(100vh-6rem)] lg:overflow-auto">
+              <aside className="col-span-12 lg:col-span-4 space-y-3 lg:sticky lg:top-[88px]">
                 {/* 헤더에서 이동된 외국인, US10Y */}
                 <div className="grid grid-cols-2 gap-2">
                   <div className="rounded-xl bg-white border border-slate-200 p-3">
@@ -629,11 +629,11 @@ const { useState, useMemo, useEffect } = React;
                     <div className="text-xs text-slate-400">DXY 103.8 • Regime</div>
                   </div>
                 </div>
-                <div className="rounded-2xl border bg-white p-4">
+                <div className="rounded-2xl border bg-white p-4 h-[320px] flex flex-col">
                   <div className="flex items-center justify-between"><h3 className="text-sm font-bold">오늘의 팩터</h3><span className="text-xs text-slate-400">{selectedDate}</span></div>
                   {selectedFactor && <button onClick={() => setSelectedFactor(null)} className="mt-2 w-full text-xs py-1.5 rounded-full bg-[#1e3a8a] text-white hover:bg-[#23408e]">✕ {selectedFactor} 필터 해제 • 전체 보기</button>}
-                  <div className="mt-4">
-                    <div className="grid grid-cols-12 text-xs font-mono text-slate-400 pb-2 border-b font-bold tracking-widest"><div className="col-span-6">FACTOR</div><div className="col-span-2 text-right">Z</div><div className="col-span-2 text-right">β</div><div className="col-span-2 text-right">기여도</div></div>
+                  <div className="mt-3 flex-1 overflow-auto">
+                    <div className="grid grid-cols-12 text-xs font-mono text-slate-400 pb-2 border-b font-bold tracking-widest sticky top-0 bg-white"><div className="col-span-6">FACTOR</div><div className="col-span-2 text-right">Z</div><div className="col-span-2 text-right">β</div><div className="col-span-2 text-right">기여도</div></div>
                     {contributions.map((c) => {
                       const zAbs = Math.abs(c.z);
                       const zCls = zAbs > 1 ? (c.z > 0 ? "z-strong-pos" : "z-strong-neg") : c.z > 0 ? "z-pos" : c.z < 0 ? "z-neg" : "z-neutral";
