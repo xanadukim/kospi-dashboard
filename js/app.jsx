@@ -337,21 +337,12 @@ const { useState, useMemo, useEffect } = React;
                   <div className="text-sm font-bold" style={{color: "#1e3a8a"}}>KOSPI Quant Terminal <span className="text-xs font-normal text-slate-500 ml-1">v61.6</span></div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {/* 3개 핵심 지표 - 최상단 이전자료 왼쪽으로 */}
+                  {/* 핵심 지표 1개만 - 외국인, US10Y는 우측으로 이동 */}
                   <div className="hidden lg:flex items-center gap-2 mr-2">
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#f8f9fa] border border-[#e5e8eb]">
                       <span className="text-xs text-slate-500">KOSPI R²</span>
                       <span className="text-xs font-bold">0.89</span>
                       <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100">+{predictedReturn.toFixed(2)}%</span>
-                    </div>
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#f8f9fa] border border-[#e5e8eb]">
-                      <span className="text-xs text-slate-500">외국인</span>
-                      <span className="text-xs font-bold">1327억 <span className="text-emerald-600">순매수</span></span>
-                    </div>
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#f8f9fa] border border-[#e5e8eb]">
-                      <span className="text-xs text-slate-500">US 10Y</span>
-                      <span className="text-xs font-bold">4.72%</span>
-                      <span className="text-xs text-red-500">+0.04</span>
                     </div>
                   </div>
                   {isViewingHistory && <button onClick={returnToLatest} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">↩ 최신으로</button>}
@@ -364,7 +355,7 @@ const { useState, useMemo, useEffect } = React;
 
             <div className="max-w-screen-2xl mx-auto px-4 md:px-6 pt-0 pb-4 grid grid-cols-12 gap-4">
 
-              <aside className="col-span-12 md:col-span-2 space-y-4 md:sticky md:top-[88px] md:h-[calc(100vh-6rem)] md:overflow-auto">
+              <aside className="col-span-12 md:col-span-3 space-y-4 md:sticky md:top-[88px] md:h-[calc(100vh-6rem)] md:overflow-auto">
                 <div className="rounded-2xl bg-[#1e3a8a] text-white p-4 shadow-xl">
                   <div className="flex items-center justify-between"><h3 className="text-xs font-bold tracking-widest">INDUSTRIES • 8</h3><span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span></div>
                   <div className="mt-1 text-xs text-slate-400">왼쪽 추천 선택 • 클릭하면 중앙 필터</div>
@@ -400,14 +391,14 @@ const { useState, useMemo, useEffect } = React;
                 </div>
               </aside>
 
-              <main className="col-span-12 md:col-span-6">
+              <div className="col-span-12 md:col-span-9 grid grid-cols-12 gap-4">
+              <main className="col-span-12 lg:col-span-8">
                 <div className="flex items-center gap-1.5 p-1 rounded-full bg-white border border-slate-200 shadow-sm w-fit flex-wrap sticky top-20 z-10">
                   {[
                     { id: "recommend", label: "추천", icon: "🎯", count: filteredPicks.length, color: "#1e3a8a" },
                     { id: "all64", label: "전체 64", icon: "📋", count: all64Filtered.length, color: "#334155" },
                     { id: "performance", label: "성과", icon: "📈", count: pastPicks.length, color: "#7c3aed" },
                     { id: "market", label: "마켓", icon: "🌐", count: currentMeta?.top_valid?.length || 5, color: "#059669" },
-                    { id: "system", label: "시스템", icon: "⚙️", count: retrainData.changes || 41, color: "#d97706" },
                   ].map((tab) => (
                     <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                       className={`btn-modern px-4 py-2 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all ${activeTab === tab.id ? "text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
@@ -598,51 +589,22 @@ const { useState, useMemo, useEffect } = React;
                   </div>
                 )}
 
-                {activeTab === "system" && (
-                  <div className="mt-4 space-y-4">
-                    <div className="rounded-2xl p-5 text-white shadow-xl relative overflow-hidden" style={{ background: "linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #92400e 100%)", boxShadow: "0 12px 32px rgba(245,158,11,0.25)" }}>
-                      <div className="flex items-center justify-between relative z-10"><div><h3 className="text-base font-bold tracking-tight flex items-center gap-2">🔄 재학습 대시보드 <span className={`px-2.5 py-1 rounded-full text-xs font-mono ${isRetrainLive ? "bg-white text-amber-700" : "bg-white/20"}`}>{isRetrainLive ? "● LIVE" : "○ DEMO"}</span></h3><div className="mt-1 text-xs text-amber-100">매월 1일 • 180일 데이터로 자동 갱신</div></div><span className="px-3 py-1.5 rounded-full bg-white/20 backdrop-blur border border-white/20 text-xs font-bold">정기 업데이트</span></div>
-                      <div className="mt-4 grid grid-cols-4 gap-3 relative z-10">
-                        <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3"><div className="text-xs font-mono text-amber-200 tracking-widest">최근 재학습</div><div className="mt-1 text-sm font-extrabold text-white">{retrainData.date}</div><div className="mt-1 text-xs text-amber-100">정기 재학습</div></div>
-                        <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3"><div className="text-xs font-mono text-amber-200 tracking-widest">평균 R²</div><div className="mt-1 text-sm font-extrabold text-white">{retrainData.avg_r2} <span className="text-xs font-normal">8개 업종</span></div><div className="mt-1 text-xs text-amber-100">R² >0.8 우수 • &lt;0.7 재검토</div></div>
-                        <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3"><div className="text-xs font-mono text-amber-200 tracking-widest">베타 변화</div><div className="mt-1 text-sm font-extrabold text-white">{retrainData.changes}개 팩터</div><div className="mt-1 text-xs text-amber-100">|Δβ| >0.02 기준</div></div>
-                        <div className="rounded-xl bg-white text-amber-900 p-3 shadow-lg"><div className="text-xs font-mono text-amber-700 tracking-widest">다음 재학습</div><div className="mt-1 text-sm font-extrabold">{retrainData.next_retrain}</div><div className="mt-1 text-xs text-amber-700">매월 1일 11:00 KST</div></div>
-                      </div>
-                    </div>
+                </main>
 
-                    <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                      <h4 className="text-sm font-extrabold flex items-center gap-2">🛡️ DART 필터 상세 • 1단계 최적 필터 (탭에서 이동됨)</h4>
-                      <div className="mt-1 text-xs text-slate-500">개별 기업 특성 기반 부실주 제거 • DART 실데이터 연동 • 필터는 추천 탭에서 ON/OFF</div>
-                      <div className="mt-4 grid grid-cols-12 gap-3">
-                        {[
-                          { id: "elec", name: "전기전자", rule: "v54 완화: ROE>-10% • 부채<400% • 유동>80% • 영업>-10%", color: "#2563eb", reject: "부채 800%↑ 또는 ROE -30%↓ 극심 부실만 탈락", effect: "Hit +4.4%p" },
-                          { id: "auto", name: "자동차", rule: "v54 완화: ROE>-5% • 부채<400% • 유동>80%", color: "#0f766e", reject: "부채 500%↑만 탈락", effect: "유동성 80%↑면 통과" },
-                          { id: "chem", name: "화학/전지", rule: "v54 완화: ROE>-10% • 부채<400% • 영업>-10%", color: "#7c3aed", reject: "SK이노베이션 통과 • 롯데케미칼 통과", effect: "2차전지 적자 허용" },
-                          { id: "fin", name: "금융", rule: "v54 완화: ROE>0% • 부채<1500% • 유동>70%", color: "#1e293b", reject: "한화생명 통과 • 부채 1500%↑만 탈락", effect: "저PBR 허용" },
-                          { id: "bio", name: "바이오", rule: "v54 완화: ROE>-50% • 부채<250% • 유동>100%", color: "#e11d48", reject: "HLB 통과 • ROE -50%↓만 탈락", effect: "현금 중심 판단" },
-                          { id: "steel", name: "철강", rule: "v54 완화: ROE>-10% • 부채<500% • 영업>-10%", color: "#a16207", reject: "현대제철 통과 • 부채 500%↑만 탈락", effect: "마진 -10% 허용" },
-                          { id: "const", name: "건설/조선", rule: "v54 완화: ROE>-10% • 부채<500% • 유동>80%", color: "#334155", reject: "GS건설 탈락 가능 • 부채 500%↑ 관리", effect: "불황기 적자 허용" },
-                          { id: "retail", name: "유통/IT", rule: "v54 완화: ROE>-5% • 부채<350% • 영업>-5%", color: "#0891b2", reject: "이마트 통과 • 롯데쇼핑 경계", effect: "적자 -5%까지 허용" },
-                        ].map((f) => (
-                          <div key={f.id} className="col-span-12 md:col-span-6 rounded-xl bg-slate-50 border p-3">
-                            <div className="flex items-center justify-between"><span className="text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: f.color }}>{f.name}</span><span className="text-xs font-mono text-slate-500">{f.rule}</span></div>
-                            <div className="mt-2 text-xs text-slate-600">탈락: {f.reject}</div>
-                            <div className="mt-1 text-xs text-emerald-600">→ {f.effect}</div>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-4 grid grid-cols-3 gap-3">
-                        <div className="rounded-xl bg-slate-50 border p-3"><div className="text-xs text-slate-400">필터 없을 때</div><div className="text-sm font-bold">Hit 62.4% • 수익 +1.84% • MDD -3.2%</div></div>
-                        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3"><div className="text-xs text-emerald-700">필터 적용 후</div><div className="text-sm font-bold text-emerald-700">Hit 66.8% • 수익 +2.21% • MDD -2.4%</div></div>
-                        <div className="rounded-xl bg-[#1e3a8a] text-white p-3"><div className="text-xs text-slate-400">개선 효과</div><div className="text-sm font-bold">+4.4%p • +0.37%p • -0.8%p • 탈락률 15%</div></div>
-                      </div>
-                    </div>
-
-                    </div>
-                )}
-              </main>
-
-              <aside className="col-span-12 md:col-span-4 space-y-4 md:sticky md:top-[88px] md:h-[calc(100vh-6rem)] md:overflow-auto">
+              <aside className="col-span-12 lg:col-span-4 space-y-4 lg:sticky lg:top-[88px] lg:h-[calc(100vh-6rem)] lg:overflow-auto">
+                {/* 헤더에서 이동된 외국인, US10Y */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded-xl bg-white border border-slate-200 p-3">
+                    <div className="text-xs text-slate-500">외국인 선물</div>
+                    <div className="mt-1 text-sm font-bold">1327억 <span className="text-emerald-600">순매수</span></div>
+                    <div className="text-xs text-slate-400">KOSPI200 • DART</div>
+                  </div>
+                  <div className="rounded-xl bg-white border border-slate-200 p-3">
+                    <div className="text-xs text-slate-500">US 10Y / DXY</div>
+                    <div className="mt-1 text-sm font-bold">4.72% <span className="text-xs text-red-500">+0.04</span></div>
+                    <div className="text-xs text-slate-400">DXY 103.8 • Regime</div>
+                  </div>
+                </div>
                 <div className="rounded-2xl border bg-white p-4 shadow-sm">
                   <div className="flex items-center justify-between"><h3 className="text-sm font-bold">오늘의 팩터</h3><span className="text-xs text-slate-400">{selectedDate}</span></div>
                   <div className="mt-1 text-xs text-slate-500">오른쪽 추천 선택 • 클릭하면 중앙 필터 • {selectedFactor ? `${selectedFactor} 필터 중` : "필터 없음"}</div>
@@ -666,21 +628,8 @@ const { useState, useMemo, useEffect } = React;
                   <div className="mt-3 p-2.5 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-800">💡 오른쪽 팩터 클릭 → 중앙 추천 8종 필터링 • 예) 구리 클릭 → 구리 민감 종목만 표시</div>
                 </div>
 
-                <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                  <h3 className="text-xs font-bold tracking-widest">팩터 전체 Z-Score</h3>
-                  <div className="mt-3 space-y-2">
-                    {Object.entries(zScores).map(([f,z]) => {
-                      const isSelected = selectedFactor === f;
-                      return (
-                        <button key={f} onClick={() => setSelectedFactor(isSelected ? null : f)} className={`w-full flex items-center justify-between p-2 rounded-xl border transition-all ${isSelected ? "bg-[#1e3a8a] text-white border-slate-900" : "bg-slate-50 hover:bg-white border-slate-200"}`}>
-                          <span className="text-xs font-bold">{f}</span>
-                          <span className={`text-xs font-mono px-2 py-0.5 rounded-full ${z>1 ? "bg-emerald-100 text-emerald-700" : z<-1 ? "bg-red-100 text-red-700" : "bg-white text-slate-600 border"}`}>{z>0 ? "+" : ""}{z.toFixed(2)}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </aside>
+                </aside>
+              </div>
             </div>
 
             <HistoryModal open={showHistory} onClose={() => setShowHistory(false)} history={history} selectedDate={selectedDate} onSelect={loadSnapshot} />
