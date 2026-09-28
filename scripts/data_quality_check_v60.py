@@ -90,37 +90,59 @@ def check_factor(name, period="6mo"):
         return {"name": name, "status": "FAIL", "reason": f"exception: {e}", "closes_len": 0, "latest": 0, "z": 0}
 
 def check_foreign_krx():
-    """외국인 선물 KRX fetch 체크 - 0.85 fallback 탐지 핵심 - v61.1 15007 CSV 지원"""
-    # v61.1: 15007 투자자별 거래실적 CSV 우선 체크 (KRX OPEN API에 투자자별 없음)
+    """외국인 선물 KRX fetch 체크 - 0.85 fallback 탐지 핵심 - v61.2 15007 CSV 지원 + debug"""
+    # v61.2: 15007 투자자별 거래실적 CSV 우선 체크 (KRX OPEN API에 투자자별 없음)
     try:
         import pandas as pd
         import os
+        # Debug: list data/ folder
+        print(f"[DEBUG] CWD: {os.getcwd()}")
+        try:
+            if os.path.exists("data"):
+                print(f"[DEBUG] data/ folder exists: {os.listdir('data')[:10]}")
+            else:
+                print(f"[DEBUG] data/ folder NOT exists, root: {os.listdir('.')[:20]}")
+        except Exception as de:
+            print(f"[DEBUG] list error: {de}")
+
         csv_paths = [
             "data/foreigner_kospi200.csv",
             "data/data_5225_20260928.csv",
             "data_5225_20260928.csv",
+            "./data/foreigner_kospi200.csv",
         ]
         for csv_path in csv_paths:
-            if os.path.exists(csv_path):
+            exists = os.path.exists(csv_path)
+            print(f"[DEBUG] Check {csv_path} exists={exists}")
+            if exists:
                 try:
                     df = pd.read_csv(csv_path, encoding="cp949")
-                except:
+                except Exception as e1:
+                    print(f"[DEBUG] cp949 read fail {csv_path}: {e1}")
                     try:
                         df = pd.read_csv(csv_path, encoding="utf-8")
-                    except:
+                    except Exception as e2:
+                        print(f"[DEBUG] utf-8 read fail {csv_path}: {e2}")
                         continue
+                print(f"[DEBUG] CSV loaded {csv_path} columns={list(df.columns)[:5]} rows={len(df)}")
                 col = None
                 if '외국인_순매수' in df.columns:
                     col = '외국인_순매수'
                 elif '외국인 합계' in df.columns:
                     col = '외국인 합계'
+                elif '외국인합계' in df.columns:
+                    col = '외국인합계'
                 if col:
                     series = df[col].astype(float).tolist()
                     if len(series) >= 10:
                         print(f"[OK] 외국인 15007 CSV REAL: {csv_path} {len(series)} rows latest {series[0]:.0f}")
                         return {"name": "외국인_KRX", "status": "OK", "closes_len": len(series), "is_fallback": False, "latest": series[0], "source": "15007 CSV REAL"}
+                else:
+                    print(f"[DEBUG] No foreign column found in {csv_path}: {list(df.columns)}")
     except Exception as e:
         print(f"[WARN] 15007 CSV check error: {e}")
+        import traceback
+        traceback.print_exc()
 
     # Fallback: pykrx
     try:
