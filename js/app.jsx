@@ -393,15 +393,6 @@ const { useState, useMemo, useEffect } = React;
                   ))}
                 </div>
 
-                <div className="mt-3 flex items-center justify-between">
-                  <div className="text-xs font-mono text-slate-500 flex items-center gap-2">
-                    <span>Selected:</span>
-                    <span className="font-bold px-3 py-1 rounded-full text-white text-xs" style={{ background: currentIndustry.color }}>{currentIndustry.name}</span>
-                    {selectedFactor && <><span className="font-bold px-2 py-1 rounded-full bg-emerald-600 text-white text-xs">+ {selectedFactor}</span><button onClick={() => setSelectedFactor(null)} className="px-2 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-xs">✕</button></>}
-                  </div>
-                  <span className="text-xs px-3 py-1 rounded-full bg-[#1e3a8a] text-white font-mono">{activeTab}</span>
-                </div>
-
                 {activeTab === "recommend" && (
                   <div className="mt-4 space-y-4">
                     <div className="rounded-2xl p-4 text-white" style={{ background: `linear-gradient(135deg, ${currentIndustry.color} 0%, ${currentIndustry.color}dd 100%)`, boxShadow: `0 8px 24px ${currentIndustry.color}30` }}>
