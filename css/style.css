@@ -5,7 +5,7 @@
   --naver-blue-light: #e8f3ff;
   --border: #e5e8eb;
   --bg: #f8f9fa;
-  --text-main: #191f28;
+  --text-main: #1e3a8a;
   --text-sub: #6b7684;
 }
 
@@ -48,7 +48,7 @@ body {
 .grad-elec { background: #3182f6; }
 .grad-auto { background: #00b386; }
 .grad-chem { background: #8b5cf6; }
-.grad-fin { background: #191f28; }
+.grad-fin { background: #1e3a8a; }
 .grad-bio { background: #f04452; }
 .grad-steel { background: #ff8a00; }
 .grad-const { background: #5a6a7a; }
@@ -140,7 +140,7 @@ body {
 .pick-card.elec::before { background: #3182f6; }
 .pick-card.auto::before { background: #00b386; }
 .pick-card.chem::before { background: #8b5cf6; }
-.pick-card.fin::before { background: #191f28; }
+.pick-card.fin::before { background: #1e3a8a; }
 .pick-card.bio::before { background: #f04452; }
 .pick-card.steel::before { background: #ff8a00; }
 .pick-card.const::before { background: #5a6a7a; }
