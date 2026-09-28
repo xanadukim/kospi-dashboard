@@ -1,266 +1,239 @@
 :root {
-        --font-kr: "Noto Sans KR", sans-serif;
-        --font-mono: "JetBrains Mono", monospace;
-      }
-      body {
-        font-family: var(--font-kr);
-        background:
-          radial-gradient(
-            1200px 600px at 10% -10%,
-            #dbeafe 0%,
-            transparent 60%
-          ),
-          radial-gradient(1000px 500px at 90% 0%, #ede9fe 0%, transparent 50%),
-          radial-gradient(800px 400px at 50% 100%, #fce7f3 0%, transparent 60%),
-          #f8fafc;
-        min-height: 100vh;
-      }
-      .font-mono {
-        font-family: var(--font-mono) !important;
-      }
-      .bar-animate {
-        transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1);
-      }
-      .card-hover {
-        transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-      }
-      .card-hover:hover {
-        transform: translateY(-4px) scale(1.01);
-        box-shadow:
-          0 20px 40px rgba(0, 0, 0, 0.1),
-          0 8px 16px rgba(0, 0, 0, 0.06);
-      }
-      .help-overlay {
-        backdrop-filter: blur(16px);
-        background: rgba(15, 23, 42, 0.65);
-      }
-      .help-card {
-        animation: helpIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-      }
-      @keyframes helpIn {
-        from {
-          opacity: 0;
-          transform: translateY(20px) scale(0.94);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0) scale(1);
-        }
-      }
+  --font-kr: "Noto Sans KR", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --naver-blue: #3182f6;
+  --naver-blue-light: #e8f3ff;
+  --border: #e5e8eb;
+  --bg: #f8f9fa;
+  --text-main: #191f28;
+  --text-sub: #6b7684;
+}
 
-      /* Industry gradients */
-      .grad-elec {
-        background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
-      }
-      .grad-auto {
-        background: linear-gradient(135deg, #0f766e 0%, #2dd4bf 100%);
-      }
-      .grad-chem {
-        background: linear-gradient(135deg, #7c3aed 0%, #c084fc 100%);
-      }
-      .grad-fin {
-        background: linear-gradient(135deg, #1e293b 0%, #64748b 100%);
-      }
-      .grad-bio {
-        background: linear-gradient(135deg, #e11d48 0%, #fb7185 100%);
-      }
-      .grad-steel {
-        background: linear-gradient(135deg, #a16207 0%, #facc15 100%);
-      }
-      .grad-const {
-        background: linear-gradient(135deg, #334155 0%, #94a3b8 100%);
-      }
-      .grad-retail {
-        background: linear-gradient(135deg, #0891b2 0%, #22d3ee 100%);
-      }
+body {
+  font-family: var(--font-kr);
+  background: #ffffff;
+  min-height: 100vh;
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+}
 
-      /* Modern button */
-      .btn-modern {
-        position: relative;
-        border-radius: 9999px;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-        transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-        overflow: hidden;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-      }
-      .btn-modern::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(
-          135deg,
-          rgba(255, 255, 255, 0.25) 0%,
-          transparent 60%
-        );
-        opacity: 0;
-        transition: opacity 0.3s;
-      }
-      .btn-modern:hover::after {
-        opacity: 1;
-      }
-      .btn-modern:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-      }
-      .btn-modern:active {
-        transform: scale(0.97);
-      }
-      .btn-active {
-        background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
-        color: white;
-        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.3);
-      }
-      .btn-inactive {
-        background: white;
-        border: 1.5px solid #e2e8f0;
-        color: #64748b;
-      }
-      .btn-inactive:hover {
-        background: #f8fafc;
-        border-color: #cbd5e1;
-        color: #0f172a;
-      }
+.font-mono {
+  font-family: var(--font-mono) !important;
+}
 
-      /* Checklist modern */
-      .check-card {
-        background: white;
-        border-radius: 14px;
-        border: 1px solid #e2e8f0;
-        padding: 14px 16px;
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s;
-      }
-      .check-card::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 4px;
-      }
-      .check-card.c1::before {
-        background: linear-gradient(180deg, #f59e0b 0%, #f97316 100%);
-      }
-      .check-card.c2::before {
-        background: linear-gradient(180deg, #2563eb 0%, #60a5fa 100%);
-      }
-      .check-card.c3::before {
-        background: linear-gradient(180deg, #0f766e 0%, #2dd4bf 100%);
-      }
-      .check-card.c4::before {
-        background: linear-gradient(180deg, #7c3aed 0%, #c084fc 100%);
-      }
-      .check-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
-        border-color: #cbd5e1;
-      }
+/* Naver-style flat cards */
+.card-hover {
+  transition: all 0.2s ease;
+  border: 1px solid var(--border);
+}
+.card-hover:hover {
+  border-color: #d1d6db;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
 
-      /* Metric cards */
-      .metric-card {
-        background: linear-gradient(
-          135deg,
-          rgba(255, 255, 255, 0.9) 0%,
-          rgba(255, 255, 255, 0.6) 100%
-        );
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.7);
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-      }
+.help-overlay {
+  backdrop-filter: blur(8px);
+  background: rgba(0,0,0,0.35);
+}
+.help-card {
+  animation: helpIn 0.25s ease;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+}
+@keyframes helpIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-      /* Picks card modern */
-      .pick-card {
-        background: white;
-        border-radius: 16px;
-        border: 1px solid #e2e8f0;
-        overflow: hidden;
-        position: relative;
-        transition: all 0.35s;
-      }
-      .pick-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-      }
-      .pick-card.elec::before {
-        background: linear-gradient(90deg, #2563eb, #60a5fa);
-      }
-      .pick-card.auto::before {
-        background: linear-gradient(90deg, #0f766e, #2dd4bf);
-      }
-      .pick-card.chem::before {
-        background: linear-gradient(90deg, #7c3aed, #c084fc);
-      }
-      .pick-card.fin::before {
-        background: linear-gradient(90deg, #1e293b, #64748b);
-      }
-      .pick-card.bio::before {
-        background: linear-gradient(90deg, #e11d48, #fb7185);
-      }
-      .pick-card.steel::before {
-        background: linear-gradient(90deg, #a16207, #facc15);
-      }
-      .pick-card.const::before {
-        background: linear-gradient(90deg, #334155, #94a3b8);
-      }
-      .pick-card.retail::before {
-        background: linear-gradient(90deg, #0891b2, #22d3ee);
-      }
-      .pick-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 16px 32px rgba(0, 0, 0, 0.08);
-      }
+/* Industry colors - flat Naver style */
+.grad-elec { background: #3182f6; }
+.grad-auto { background: #00b386; }
+.grad-chem { background: #8b5cf6; }
+.grad-fin { background: #191f28; }
+.grad-bio { background: #f04452; }
+.grad-steel { background: #ff8a00; }
+.grad-const { background: #5a6a7a; }
+.grad-retail { background: #00a8cc; }
 
-      /* Z-score badges */
-      .beta-bar-pos {
-        background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
-        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
-      }
-      .beta-bar-neg {
-        background: linear-gradient(90deg, #ef4444 0%, #f87171 100%);
-        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
-      }
+/* Buttons - Naver flat */
+.btn-modern {
+  position: relative;
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+.btn-modern:hover {
+  transform: none;
+  box-shadow: none;
+  filter: brightness(0.97);
+}
+.btn-modern:active {
+  transform: scale(0.98);
+}
+.btn-active {
+  background: var(--naver-blue);
+  color: white;
+}
+.btn-inactive {
+  background: white;
+  border: 1px solid var(--border);
+  color: var(--text-sub);
+}
+.btn-inactive:hover {
+  background: #f8f9fa;
+  border-color: #d1d6db;
+  color: var(--text-main);
+}
 
-      .z-badge {
-        padding: 4px 10px;
-        border-radius: 9999px;
-        font-size: 11px;
-        font-weight: 700;
-        font-family: var(--font-mono);
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-      }
-      .z-pos {
-        background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-        color: #065f46;
-        border: 1px solid #a7f3d0;
-      }
-      .z-neg {
-        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-        color: #991b1b;
-        border: 1px solid #fecaca;
-      }
-      .z-strong-pos {
-        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-        color: white;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        border: none;
-      }
-      .z-strong-neg {
-        background: linear-gradient(135deg, #dc2626 0%, #f87171 100%);
-        color: white;
-        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-        border: none;
-      }
-      .z-neutral {
-        background: white;
-        color: #64748b;
-        border: 1px solid #e2e8f0;
-      }
+/* Checklist - Naver clean */
+.check-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.15s;
+}
+.check-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+}
+.check-card.c1::before { background: #ff8a00; }
+.check-card.c2::before { background: #3182f6; }
+.check-card.c3::before { background: #00b386; }
+.check-card.c4::before { background: #8b5cf6; }
+.check-card:hover {
+  border-color: #d1d6db;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+/* Metric cards - Naver */
+.metric-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+/* Picks card - Naver flat */
+.pick-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  position: relative;
+  transition: all 0.15s;
+}
+.pick-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+}
+.pick-card.elec::before { background: #3182f6; }
+.pick-card.auto::before { background: #00b386; }
+.pick-card.chem::before { background: #8b5cf6; }
+.pick-card.fin::before { background: #191f28; }
+.pick-card.bio::before { background: #f04452; }
+.pick-card.steel::before { background: #ff8a00; }
+.pick-card.const::before { background: #5a6a7a; }
+.pick-card.retail::before { background: #00a8cc; }
+.pick-card:hover {
+  border-color: #d1d6db;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Z-score badges - Naver minimal */
+.beta-bar-pos {
+  background: #00b386;
+}
+.beta-bar-neg {
+  background: #f04452;
+}
+.z-badge {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  display: inline-flex;
+  align-items: center;
+}
+.z-pos {
+  background: #e6f9f0;
+  color: #0a7a42;
+  border: 1px solid #b5e6cc;
+}
+.z-neg {
+  background: #ffe9ea;
+  color: #c41c2b;
+  border: 1px solid #ffb3b8;
+}
+.z-strong-pos {
+  background: #00b386;
+  color: white;
+  border: none;
+}
+.z-strong-neg {
+  background: #f04452;
+  color: white;
+  border: none;
+}
+.z-neutral {
+  background: #f2f4f6;
+  color: #6b7684;
+  border: 1px solid var(--border);
+}
+
+/* Layout - Naver */
+.trader-left {
+  position: sticky;
+  top: 4rem;
+  max-height: calc(100vh - 5rem);
+  overflow-y: auto;
+}
+.trader-right {
+  position: sticky;
+  top: 4rem;
+  max-height: calc(100vh - 5rem);
+  overflow-y: auto;
+}
+.trader-center {
+  min-height: 600px;
+}
+.filter-chip {
+  transition: all 0.15s ease;
+  border-radius: 8px;
+}
+.filter-chip:hover {
+  background: #f2f4f6;
+}
+.filter-chip.active {
+  background: var(--naver-blue);
+  color: white;
+  border-color: var(--naver-blue);
+}
+.factor-selected {
+  background: #e8f3ff !important;
+  color: #3182f6 !important;
+  border-color: #3182f6 !important;
+}
+
+/* Naver header */
+.naver-header {
+  background: white;
+  border-bottom: 1px solid var(--border);
+  box-shadow: none;
+}
+.naver-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
