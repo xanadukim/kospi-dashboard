@@ -355,7 +355,7 @@ const { useState, useMemo, useEffect } = React;
 
             <div className="max-w-screen-2xl mx-auto px-4 md:px-6 pt-0 pb-4 grid grid-cols-12 gap-4">
 
-              <aside className="col-span-12 md:col-span-3 space-y-4 md:sticky md:top-[88px] md:h-[calc(100vh-6rem)] md:overflow-auto">
+              <aside className="col-span-12 md:col-span-2 space-y-4 md:sticky md:top-[88px] md:h-[calc(100vh-6rem)] md:overflow-auto">
                 <div className="rounded-2xl bg-[#1e3a8a] text-white p-4 shadow-xl">
                   <div className="flex items-center justify-between"><h3 className="text-xs font-bold tracking-widest">INDUSTRIES • 8</h3><span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span></div>
                   <div className="mt-1 text-xs text-slate-400">왼쪽 추천 선택 • 클릭하면 중앙 필터</div>
@@ -373,29 +373,14 @@ const { useState, useMemo, useEffect } = React;
                   </div>
                   <div className="mt-3 pt-3 border-t border-white/10 text-xs text-white/50">Top1이 오늘 최강 업종 • 8개 중 선택</div>
                 </div>
-
-                <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                  <h3 className="text-xs font-bold tracking-widest text-slate-700">오늘 Top 예측 (α·β)</h3>
-                  <div className="mt-3 space-y-1.5">
-                    {industries.map((ind) => ({ ...ind, pred: Object.entries(ind.betas).reduce((s,[f,b]) => s + (zScores[f] ?? 0)*b, 0) })).sort((a,b) => b.pred - a.pred).map((item, idx) => {
-                      const isSelected = item.id === selectedIndustry;
-                      const isTop = idx === 0;
-                      return (
-                        <div key={item.id} onClick={() => setSelectedIndustry(item.id)} className={`flex items-center justify-between px-2.5 py-2 rounded-xl cursor-pointer transition-all ${isSelected ? "bg-[#1e3a8a] text-white shadow-md" : "bg-slate-50 hover:bg-slate-100"}`}>
-                          <div className="flex items-center gap-2"><span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${isTop ? "bg-amber-400 text-[#1e3a8a]" : isSelected ? "bg-white text-[#1e3a8a]" : "bg-white border"}`}>{idx+1}</span><span className="text-xs font-bold">{item.short}</span></div>
-                          <span className={`text-xs font-mono font-bold ${item.pred>=0 ? (isSelected ? "text-emerald-300" : "text-emerald-600") : (isSelected ? "text-red-300" : "text-red-600")}`}>{item.pred>0 ? "+" : ""}{item.pred.toFixed(2)}%</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
               </aside>
 
-              <div className="col-span-12 md:col-span-9 grid grid-cols-12 gap-4">
+              <div className="col-span-12 md:col-span-10 grid grid-cols-12 gap-4">
               <main className="col-span-12 lg:col-span-8">
                 <div className="flex items-center gap-1.5 p-1 rounded-full bg-white border border-slate-200 shadow-sm w-fit flex-wrap sticky top-20 z-10">
                   {[
                     { id: "recommend", label: "추천", icon: "🎯", count: filteredPicks.length, color: "#1e3a8a" },
+                    { id: "top", label: "오늘 Top 예측", icon: "📊", count: 8, color: "#f59e0b" },
                     { id: "all64", label: "전체 64", icon: "📋", count: all64Filtered.length, color: "#334155" },
                     { id: "performance", label: "성과", icon: "📈", count: pastPicks.length, color: "#7c3aed" },
                     { id: "market", label: "마켓", icon: "🌐", count: currentMeta?.top_valid?.length || 5, color: "#059669" },
@@ -474,6 +459,34 @@ const { useState, useMemo, useEffect } = React;
                           </div>
                         );
                       })}
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === "top" && (
+                  <div className="mt-4 space-y-4">
+                    <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+                      <h3 className="text-sm font-bold flex items-center gap-2">📊 오늘 Top 예측 (α·β) • 8개 업종 랭킹</h3>
+                      <div className="mt-1 text-xs text-slate-500">예측수익률 기준 정렬 • Top1이 오늘 최강 업종 • 클릭하면 해당 업종 필터</div>
+                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {industries.map((ind) => ({ ...ind, pred: Object.entries(ind.betas).reduce((s,[f,b]) => s + (zScores[f] ?? 0)*b, 0) })).sort((a,b) => b.pred - a.pred).map((item, idx) => {
+                          const isSelected = item.id === selectedIndustry;
+                          const isTop = idx === 0;
+                          return (
+                            <div key={item.id} onClick={() => setSelectedIndustry(item.id)} className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all border ${isSelected ? "bg-[#1e3a8a] text-white border-[#1e3a8a] shadow-md" : "bg-slate-50 hover:bg-white border-slate-200"}`}>
+                              <div className="flex items-center gap-3">
+                                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${isTop ? "bg-amber-400 text-[#1e3a8a]" : isSelected ? "bg-white text-[#1e3a8a]" : "bg-white border"}`}>{idx+1}</span>
+                                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: isSelected ? "rgba(255,255,255,0.15)" : `${item.color}15`, color: isSelected ? "white" : item.color }}>{item.icon}</div>
+                                <div><div className="text-sm font-bold">{item.short}</div><div className={`text-xs ${isSelected ? "text-white/60" : "text-slate-500"}`}>R² {item.r2} • {item.name}</div></div>
+                              </div>
+                              <div className="text-right">
+                                <div className={`text-sm font-mono font-bold ${item.pred>=0 ? (isSelected ? "text-emerald-300" : "text-emerald-600") : (isSelected ? "text-red-300" : "text-red-600")}`}>{item.pred>0 ? "+" : ""}{item.pred.toFixed(2)}%</div>
+                                <div className={`text-xs ${isSelected ? "text-white/50" : "text-slate-400"}`}>{isTop ? "👑 최강" : `${idx+1}위`}</div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 )}
