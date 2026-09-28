@@ -1,4 +1,4 @@
-name: KOSPI Quant Terminal v61 - Monthly Retrain + 6M Auto 100% REAL KRX
+name: KOSPI Quant Terminal v61.3 - Monthly Retrain + 6M Auto 100% REAL KRX
 
 on:
   schedule:
@@ -77,7 +77,7 @@ jobs:
       - name: Summary
         if: always()
         run: |
-          echo "v60.2 Retrain pipeline completed - REAL yfinance"
+          echo "v61.3 Retrain pipeline 100% REAL KRX + 15007 CSV completed - REAL yfinance"
           echo "- retrain_history/{today} - 180D RidgeCV REAL"
           echo "- beta_snapshots/{today} - 8 industries new betas REAL"
           echo "- beta_snapshots/latest - always latest - Frontend LIVE"

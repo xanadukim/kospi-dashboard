@@ -1,4 +1,4 @@
-name: KOSPI Quant Terminal v61 - Daily Update + QC Gate + Regime + Retrain 100% REAL KRX
+name: KOSPI Quant Terminal v61.3 - Daily Update + QC Gate + Regime + Retrain 100% REAL KRX
 
 on:
   schedule:
@@ -27,7 +27,7 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
         run: |
-          echo "=== QC Gate v60 - 10 Factors NaN 체크 ==="
+          echo "=== QC Gate v61.3 - 10 Factors 100% REAL KRX + 15007 CSV REAL NaN 체크 ==="
           python scripts/data_quality_check_v60.py
           echo "QC Gate passed"
 
@@ -40,7 +40,7 @@ jobs:
           KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
           PRICE_SOURCE: krx
         run: |
-          echo "=== Daily Update v61 100% REAL KRX Regime + Retrain 6M REAL ==="
+          echo "=== Daily Update v61.3 100% REAL KRX + 15007 CSV REAL Regime + Retrain 6M REAL ==="
           echo "- KRX OPEN API: 7 APIs approved (KOSPI, KOSDAQ, futures)"
           echo "- Price Source: KRX OPEN API DIRECT (yfinance fallback removed)"
           echo "- Regime Detector: VIX/OVX/DXY/WTI/KOSPI REAL"
@@ -51,7 +51,7 @@ jobs:
       - name: Summary
         if: always()
         run: |
-          echo "v60.2 Daily pipeline with QC Gate + Regime + Retrain completed"
+          echo "v61.3 Daily pipeline 100% REAL KRX + 15007 CSV REAL with QC Gate + Regime + Retrain completed"
           echo "- QC: data_quality_logs/{today}"
           echo "- Factors: factor_snapshots/{today} - 10 Factors REAL + regime + retrain"
           echo "- Regime: regime_history/{today} - VIX/OVX/DXY REAL + 8 indicators"
