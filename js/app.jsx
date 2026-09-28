@@ -704,6 +704,7 @@ const { useState, useMemo, useEffect } = React;
 
             <HistoryModal open={showHistory} onClose={() => setShowHistory(false)} history={history} selectedDate={selectedDate} onSelect={loadSnapshot} />
             <DisclaimerModal open={showDisclaimer} onClose={() => setShowDisclaimer(false)} />
+            <HelpModal open={showHelp} onClose={() => setShowHelp(false)} />
           </div>
         );
       }
