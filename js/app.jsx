@@ -59,7 +59,7 @@ const { useState, useMemo, useEffect } = React;
                     <span className="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700">⚠️</span>
                     투자위험 고지 및 면책사항 • Legal Disclaimer
                   </h2>
-                  <div className="text-xs font-mono text-slate-500 mt-1">KOSPI Quant Terminal v61.5 • 2026-09-28 • 100% REAL KRX + 15007 CSV REAL • 데이터 출처 및 법적 고지</div>
+                  <div className="text-xs font-mono text-slate-500 mt-1">데이터 출처 및 법적 고지</div>
                 </div>
                 <button onClick={onClose} className="w-9 h-9 rounded-full bg-slate-900 text-white hover:bg-slate-800 btn-modern">✕</button>
               </div>
@@ -95,7 +95,7 @@ const { useState, useMemo, useEffect } = React;
                     본 대시보드는 개인 연구용으로 제작되었습니다. FRED, yfinance, KRX, DART 데이터는 각 출처의 이용 약관을 따릅니다. 
                     Firebase Firestore는 읽기 전용(read=true, write=false)으로 설정되어 있으며 쓰기는 Admin SDK만 가능합니다. 
                     Google API Key는 Firebase 공개키이며 비밀키가 아닙니다. 비밀키는 GitHub Secrets에만 보관됩니다.<br/>
-                    KOSPI Quant Terminal v61.5 • 10 Factors China Proxy + DART + 64 Picks + Regime + Retrain • 6개월 운영 • © 2026 Quant Lab
+                    10 Factors China Proxy + DART + 64 Picks + Regime + Retrain • 6개월 운영 • © 2026 Quant Lab
                   </div>
                 </div>
               </div>
@@ -330,28 +330,28 @@ const { useState, useMemo, useEffect } = React;
 
         return (
           <div className="min-h-screen bg-[#f8fafc]">
-            <header className="sticky top-0 z-30" style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #172554 100%)", borderBottom: "1px solid rgba(147,197,253,0.15)", boxShadow: "0 4px 24px rgba(30,58,138,0.35)" }}>
+            <header className="sticky top-0 z-30 naver-header" style={{ background: "white", borderBottom: "1px solid #e5e8eb" }}>
               <div className="max-w-screen-2xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center font-extrabold text-xs tracking-tight" style={{ background: "linear-gradient(135deg, #fff 0%, #e2e8f0 100%)", color: "#0f172a", boxShadow: "0 2px 10px rgba(255,255,255,0.2)" }}>KQ</div>
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center font-extrabold text-xs" style={{ background: "#3182f6", color: "white" }}>KQ</div>
                   <div>
-                    <div className="text-xs font-extrabold leading-tight tracking-tight text-white">KOSPI Quant Terminal v61.5 • Trader Centric</div>
-                    <div className="text-xs font-mono text-blue-200 flex items-center gap-2">
-                    <span className="hidden md:inline">KRX REAL • 15007 CSV REAL • DART v54 • Ridge λ=0.5 • 120D • {liveCount>0 ? `${liveCount}개 스냅샷` : "Live"} • </span>
-                    <span className="px-2 py-0.5 rounded-full bg-white/10 border border-white/15">예측 {predictedReturn>0 ? "+" : ""}{predictedReturn.toFixed(2)}% • {currentIndustry.short}</span>
-                    <span className="hidden md:inline-flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>외국인 {zScores["외국인 선물"]?.toFixed(2) ?? "1.07"}σ</span>
+                    <div className="text-sm font-bold leading-tight tracking-tight" style={{color: "#191f28"}}>KOSPI Quant Terminal <span className="text-xs font-normal text-slate-500 ml-1">v61.6</span></div>
+                    <div className="text-xs text-slate-500 hidden md:flex items-center gap-2">
+                    <span>오늘의 예측 • {currentIndustry.short} {predictedReturn>0 ? "+" : ""}{predictedReturn.toFixed(2)}%</span>
+                    <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                    <span className="text-slate-400">업데이트 {lastRefresh.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})}</span>
                   </div>
                   </div>
                   <div className="hidden md:flex items-center gap-3 ml-6 pl-6 border-l border-white/15">
-                    <span className="px-3 py-1.5 rounded-full text-xs font-bold font-mono tracking-wide" style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.2) 100%)", border: "1px solid rgba(16,185,129,0.3)", color: "#6ee7b7" }}>● MARKET OPEN</span>
-                    <span className="text-xs font-mono text-slate-300">{selectedDate} ({getDayName(selectedDate)}) • {lastRefresh.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})} KST</span>
+                    <span className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: "#e6f9f0", color: "#0a7a42", border: "1px solid #b5e6cc" }}>● MARKET OPEN</span>
+                    <span className="text-xs text-slate-500">{selectedDate} • {getDayName(selectedDate)}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   {isViewingHistory && <button onClick={returnToLatest} className="btn-modern px-3.5 py-2 rounded-full text-xs font-bold" style={{ background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)", color: "#0f172a" }}>↩ 최신으로</button>}
-                  <button onClick={() => setShowHistory(true)} className={`btn-modern px-3.5 py-2 rounded-full text-xs font-bold ${isViewingHistory ? "bg-amber-400 text-slate-900" : "bg-white/10 text-white border border-white/15 hover:bg-white/15"}`}>📅 이전 자료 {history.length>0 ? `(${history.length})` : ""}</button>
-                  <button onClick={() => setShowDisclaimer(true)} className="btn-modern px-3 py-2 rounded-full text-xs font-bold bg-white/10 text-white border border-white/15 hover:bg-white/20">⚠️ 면책</button>
-                  <button onClick={() => setShowHelp(true)} className="btn-modern px-3 py-2 rounded-full text-xs font-bold bg-white text-blue-900 hover:bg-blue-50 shadow">? 도움말</button>
+                  <button onClick={() => setShowHistory(true)} className={`btn-modern px-3 py-1.5 rounded-lg text-xs font-bold ${isViewingHistory ? "bg-amber-100 text-amber-800 border border-amber-200" : "bg-white text-slate-600 border border-[#e5e8eb] hover:bg-slate-50"}`}>📅 이전 자료 {history.length>0 ? `(${history.length})` : ""}</button>
+                  <button onClick={() => setShowDisclaimer(true)} className="btn-modern px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-600 border border-[#e5e8eb] hover:bg-slate-50">면책</button>
+                  <button onClick={() => setShowHelp(true)} className="btn-modern px-3 py-1.5 rounded-lg text-xs font-bold bg-[#3182f6] text-white hover:bg-[#2b7fff]">도움말</button>
                 </div>
               </div>
             </header>
@@ -620,9 +620,9 @@ const { useState, useMemo, useEffect } = React;
                 {activeTab === "system" && (
                   <div className="mt-4 space-y-4">
                     <div className="rounded-2xl p-5 text-white shadow-xl relative overflow-hidden" style={{ background: "linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #92400e 100%)", boxShadow: "0 12px 32px rgba(245,158,11,0.25)" }}>
-                      <div className="flex items-center justify-between relative z-10"><div><h3 className="text-base font-extrabold tracking-tight flex items-center gap-2">🔄 Retrain Dashboard v60.2 • 6개월 재학습 REAL <span className={`px-2.5 py-1 rounded-full text-xs font-mono ${isRetrainLive ? "bg-white text-amber-700" : "bg-white/20"}`}>{isRetrainLive ? "● LIVE" : "○ DEMO"}</span></h3><div className="mt-1 text-xs text-amber-100 font-mono">RidgeCV α=[0.1,0.5,1.0,2.0] + 180D Rolling + 70% new 30% old blending • yfinance REAL</div></div><span className="px-3 py-1.5 rounded-full bg-white/20 backdrop-blur border border-white/20 text-xs font-mono font-bold">retrain_model.py + retrain.yml</span></div>
+                      <div className="flex items-center justify-between relative z-10"><div><h3 className="text-base font-extrabold tracking-tight flex items-center gap-2">🔄 Retrain Dashboard v60.2 • 6개월 재학습 REAL <span className={`px-2.5 py-1 rounded-full text-xs font-mono ${isRetrainLive ? "bg-white text-amber-700" : "bg-white/20"}`}>{isRetrainLive ? "● LIVE" : "○ DEMO"}</span></h3><div className="mt-1 text-xs text-amber-100 font-mono">매월 1일 • 180일 데이터 • 자동 재학습</div></div><span className="px-3 py-1.5 rounded-full bg-white/20 backdrop-blur border border-white/20 text-xs font-mono font-bold">매월 1일 자동</span></div>
                       <div className="mt-4 grid grid-cols-4 gap-3 relative z-10">
-                        <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3"><div className="text-xs font-mono text-amber-200 tracking-widest">최근 재학습</div><div className="mt-1 text-sm font-extrabold text-white">{retrainData.date}</div><div className="mt-1 text-xs text-amber-100">버전 {retrainData.version?.split('-')[0] || "v60.2"}</div></div>
+                        <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3"><div className="text-xs font-mono text-amber-200 tracking-widest">최근 재학습</div><div className="mt-1 text-sm font-extrabold text-white">{retrainData.date}</div><div className="mt-1 text-xs text-amber-100">버전 {("v1"('-')[0] || "v60.2"}</div></div>
                         <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3"><div className="text-xs font-mono text-amber-200 tracking-widest">평균 R²</div><div className="mt-1 text-sm font-extrabold text-white">{retrainData.avg_r2} <span className="text-xs font-normal">8개 업종</span></div><div className="mt-1 text-xs text-amber-100">R² >0.8 우수 • &lt;0.7 재검토</div></div>
                         <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-3"><div className="text-xs font-mono text-amber-200 tracking-widest">베타 변화</div><div className="mt-1 text-sm font-extrabold text-white">{retrainData.changes}개 팩터</div><div className="mt-1 text-xs text-amber-100">|Δβ| >0.02 기준</div></div>
                         <div className="rounded-xl bg-white text-amber-900 p-3 shadow-lg"><div className="text-xs font-mono text-amber-700 tracking-widest">다음 재학습</div><div className="mt-1 text-sm font-extrabold">{retrainData.next_retrain}</div><div className="mt-1 text-xs text-amber-700">매월 1일 11:00 KST</div></div>
@@ -657,20 +657,13 @@ const { useState, useMemo, useEffect } = React;
                       </div>
                     </div>
 
-                    <div className="rounded-2xl bg-slate-900 text-slate-200 p-4 font-mono text-xs">
-                      <div className="font-bold text-white">시스템 정보 • v61.3 100% REAL KRX + 15007 CSV REAL • Trader Centric • 5 Tabs 통합</div>
-                      <div className="mt-2">• daily-update.yml: 07:30 KST • QC Gate + 10 Factors + 64 Picks + Regime + Retrain fetch</div>
-                      <div>• performance-update.yml: 16:00 KST • Regime + Performance + Meta</div>
-                      <div>• retrain.yml: 매월 1일 11:00 KST • RidgeCV 180D REAL</div>
-                      <div className="mt-2 pt-2 border-t border-white/10">• Filter: 추천 탭에서 DART ON/OFF • 왼쪽 INDUSTRIES + 오른쪽 FACTOR로 필터링 • 5개 탭으로 축소 완료</div>
                     </div>
-                  </div>
                 )}
               </main>
 
               <aside className="col-span-12 md:col-span-4 space-y-4 md:sticky md:top-20 md:h-[calc(100vh-6rem)] md:overflow-auto">
                 <div className="rounded-2xl border bg-white p-4 shadow-sm">
-                  <div className="flex items-center justify-between"><h3 className="text-sm font-extrabold tracking-tight">Today's Factor Z-Scores</h3><span className="text-xs font-mono px-2.5 py-1 rounded-full bg-emerald-600 text-white font-bold">{selectedDate} • v61.3 REAL • 100% REAL KRX • 15007 CSV REAL</span></div>
+                  <div className="flex items-center justify-between"><h3 className="text-sm font-bold">오늘의 팩터</h3><span className="text-xs text-slate-400">{selectedDate}</span></div>
                   <div className="mt-1 text-xs text-slate-500">오른쪽 추천 선택 • 클릭하면 중앙 필터 • {selectedFactor ? `${selectedFactor} 필터 중` : "필터 없음"}</div>
                   {selectedFactor && <button onClick={() => setSelectedFactor(null)} className="mt-2 w-full text-xs py-1.5 rounded-full bg-slate-900 text-white hover:bg-slate-800">✕ {selectedFactor} 필터 해제 • 전체 보기</button>}
                   <div className="mt-4">
