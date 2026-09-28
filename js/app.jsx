@@ -357,7 +357,7 @@ const { useState, useMemo, useEffect } = React;
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#e5e8eb]">
                     <span className="text-xs text-slate-500">KOSPI R²</span>
                     <span className="text-sm font-bold">0.89</span>
-                    <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">+{predictedReturn.toFixed(2)}%</span>
+                    <span className={`text-xs font-mono px-2 py-0.5 rounded-full border ${predictedReturn>=0 ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-red-50 text-red-700 border-red-100"}`}>{predictedReturn>0 ? `+${predictedReturn.toFixed(2)}%` : `${predictedReturn.toFixed(2)}%`}</span>
                   </div>
                   {isViewingHistory && <button onClick={returnToLatest} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">↩ 최신으로</button>}
                   <button onClick={() => setShowHistory(true)} className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${isViewingHistory ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-white text-slate-600 border-[#e5e8eb] hover:bg-slate-50"}`}>📅 이전 자료 {history.length>0 ? `(${history.length})` : ""}</button>
@@ -367,7 +367,7 @@ const { useState, useMemo, useEffect } = React;
               </div>
             </header>
 
-            <div className="max-w-screen-2xl mx-auto px-4 md:px-6 pt-0 pb-4 grid grid-cols-12 gap-4">
+            <div className="max-w-screen-2xl mx-auto px-4 md:px-6 pt-4 pb-4 grid grid-cols-12 gap-4">
 
               <aside className="col-span-12 md:col-span-2 space-y-4 md:sticky md:top-[88px] md:h-[calc(100vh-6rem)] md:overflow-auto">
                 <div className="rounded-2xl bg-[#e0f2fe] text-[#0c4a6e] p-4 border border-[#bae6fd]">
@@ -392,7 +392,7 @@ const { useState, useMemo, useEffect } = React;
               <div className="col-span-12 md:col-span-10 grid grid-cols-12 gap-4">
               <main className="col-span-12 lg:col-span-8">
                 {/* 탭은 상단 헤더로 이동 - 여기서는 모바일용 작은 탭 표시 */}
-                <div className="xl:hidden flex items-center gap-1 p-1 rounded-full bg-[#f1f5f9] border border-[#e5e8eb] w-fit flex-wrap mb-3">
+                <div className="xl:hidden flex items-center gap-1 p-1 rounded-full bg-[#f1f5f9] border border-[#e5e8eb] w-fit flex-wrap mb-4">
                   {[
                     { id: "recommend", label: "추천", icon: "🎯", count: filteredPicks.length, color: "#1e3a8a" },
                     { id: "top", label: "오늘 Top 예측", icon: "📊", count: 8, color: "#f59e0b" },
