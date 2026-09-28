@@ -29,7 +29,7 @@ const { useState, useMemo, useEffect } = React;
                     const isSelected = doc.date === selectedDate;
                     return (
                       <button key={doc.date} onClick={() => { onSelect(doc.date); onClose(); }}
-                        className={`w-full text-left rounded-xl border p-3.5 flex items-center justify-between transition-all btn-modern ${isSelected ? "bg-[#1e3a8a] text-white border-[#1e3a8a] shadow-lg" : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50"}`}>
+                        className={`w-full text-left rounded-xl border p-3.5 flex items-center justify-between transition-all btn-modern ${isSelected ? "bg-[#1e3a8a] text-white border-[#1e3a8a]" : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50"}`}>
                         <div className="flex items-center gap-3">
                           <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold ${isSelected ? "bg-white/15" : "bg-slate-100"}`}>📊</div>
                           <div>
@@ -337,14 +337,8 @@ const { useState, useMemo, useEffect } = React;
                   <div className="text-sm font-bold" style={{color: "#1e3a8a"}}>KOSPI Quant Terminal <span className="text-xs font-normal text-slate-500 ml-1">v61.6</span></div>
                 </div>
                 <div className="flex items-center gap-3">
-                  {/* KOSPI R² 박스 - 첨부 이미지 스타일 */}
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#e5e8eb] shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
-                    <span className="text-xs text-slate-500">KOSPI R²</span>
-                    <span className="text-sm font-bold">0.89</span>
-                    <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">+{predictedReturn.toFixed(2)}%</span>
-                  </div>
-                  {/* 중앙 탭을 상단으로 이동 - KOSPI R² 옆 */}
-                  <div className="hidden xl:flex items-center gap-1 p-1 rounded-full bg-[#f1f5f9] border border-[#e5e8eb] shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
+                  {/* 탭을 먼저, KOSPI R²를 옆으로 - 위치 교체 */}
+                  <div className="hidden xl:flex items-center gap-1 p-1 rounded-full bg-[#f1f5f9] border border-[#e5e8eb]">
                     {[
                       { id: "recommend", label: "추천", icon: "🎯", count: filteredPicks.length, color: "#1e3a8a" },
                       { id: "top", label: "오늘 Top 예측", icon: "📊", count: 8, color: "#f59e0b" },
@@ -353,11 +347,17 @@ const { useState, useMemo, useEffect } = React;
                       { id: "market", label: "마켓", icon: "🌐", count: currentMeta?.top_valid?.length || 5, color: "#059669" },
                     ].map((tab) => (
                       <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                        className={`px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all ${activeTab === tab.id ? "text-white shadow-md" : "text-slate-600 hover:bg-white"}`}
-                        style={activeTab === tab.id ? { background: tab.color, boxShadow: `0 4px 12px ${tab.color}30` } : {}}>
+                        className={`px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all ${activeTab === tab.id ? "text-white" : "text-slate-600 hover:bg-white"}`}
+                        style={activeTab === tab.id ? { background: tab.color } : {}}>
                         <span>{tab.icon}</span> {tab.label} <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs font-mono ${activeTab === tab.id ? "bg-white/20" : "bg-white border"}`}>{tab.count}</span>
                       </button>
                     ))}
+                  </div>
+                  {/* KOSPI R² 박스 - 탭 옆으로 이동 */}
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#e5e8eb]">
+                    <span className="text-xs text-slate-500">KOSPI R²</span>
+                    <span className="text-sm font-bold">0.89</span>
+                    <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">+{predictedReturn.toFixed(2)}%</span>
                   </div>
                   {isViewingHistory && <button onClick={returnToLatest} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">↩ 최신으로</button>}
                   <button onClick={() => setShowHistory(true)} className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${isViewingHistory ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-white text-slate-600 border-[#e5e8eb] hover:bg-slate-50"}`}>📅 이전 자료 {history.length>0 ? `(${history.length})` : ""}</button>
@@ -370,7 +370,7 @@ const { useState, useMemo, useEffect } = React;
             <div className="max-w-screen-2xl mx-auto px-4 md:px-6 pt-0 pb-4 grid grid-cols-12 gap-4">
 
               <aside className="col-span-12 md:col-span-2 space-y-4 md:sticky md:top-[88px] md:h-[calc(100vh-6rem)] md:overflow-auto">
-                <div className="rounded-2xl bg-[#e0f2fe] text-[#0c4a6e] p-4 shadow-[0_8px_24px_rgba(14,165,233,0.12)] border border-[#bae6fd]">
+                <div className="rounded-2xl bg-[#e0f2fe] text-[#0c4a6e] p-4 border border-[#bae6fd]">
                   <div className="flex items-center justify-between"><h3 className="text-xs font-bold tracking-widest text-[#0369a1]">INDUSTRIES • 8</h3><span className="w-2 h-2 rounded-full bg-[#0ea5e9] animate-pulse"></span></div>
                   <div className="mt-1 text-xs text-[#0284c7]">업종 선택 • 중앙 필터</div>
                   <div className="mt-4 space-y-2">
@@ -378,7 +378,7 @@ const { useState, useMemo, useEffect } = React;
                       const isSelected = ind.id === selectedIndustry;
                       const pred = contributions.filter(c => Object.keys(ind.betas).includes(c.factor)).reduce((s,c) => s + c.contrib, 0);
                       return (
-                        <button key={ind.id} onClick={() => setSelectedIndustry(ind.id)} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all text-left border ${isSelected ? "bg-white text-[#0c4a6e] shadow-md border-[#7dd3fc]" : "bg-white/70 hover:bg-white text-[#475569] border-white/50 hover:border-[#7dd3fc]"}`}>
+                        <button key={ind.id} onClick={() => setSelectedIndustry(ind.id)} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all text-left border ${isSelected ? "bg-white text-[#0c4a6e] border-[#7dd3fc]" : "bg-white/70 hover:bg-white text-[#475569] border-white/50 hover:border-[#7dd3fc]"}`}>
                           <div className="flex items-center gap-2.5"><div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: `${ind.color}15`, color: ind.color }}>{ind.icon}</div><div><div className="text-xs font-bold">{ind.short}</div><div className="text-xs text-slate-500">R² {ind.r2}</div></div></div>
                           <div className="text-right"><div className={`text-xs font-mono font-bold ${pred>=0 ? "text-emerald-600" : "text-red-600"}`}>{pred>0 ? "+" : ""}{pred.toFixed(2)}%</div><div className={`w-2 h-2 rounded-full ml-auto mt-1 ${isSelected ? "bg-[#0ea5e9]" : "bg-slate-300"}`}></div></div>
                         </button>
@@ -392,7 +392,7 @@ const { useState, useMemo, useEffect } = React;
               <div className="col-span-12 md:col-span-10 grid grid-cols-12 gap-4">
               <main className="col-span-12 lg:col-span-8">
                 {/* 탭은 상단 헤더로 이동 - 여기서는 모바일용 작은 탭 표시 */}
-                <div className="xl:hidden flex items-center gap-1 p-1 rounded-full bg-[#f1f5f9] border border-[#e5e8eb] shadow-sm w-fit flex-wrap mb-3">
+                <div className="xl:hidden flex items-center gap-1 p-1 rounded-full bg-[#f1f5f9] border border-[#e5e8eb] w-fit flex-wrap mb-3">
                   {[
                     { id: "recommend", label: "추천", icon: "🎯", count: filteredPicks.length, color: "#1e3a8a" },
                     { id: "top", label: "오늘 Top 예측", icon: "📊", count: 8, color: "#f59e0b" },
@@ -401,7 +401,7 @@ const { useState, useMemo, useEffect } = React;
                     { id: "market", label: "마켓", icon: "🌐", count: currentMeta?.top_valid?.length || 5, color: "#059669" },
                   ].map((tab) => (
                     <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${activeTab === tab.id ? "text-white shadow-md" : "text-slate-600 hover:bg-white"}`}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${activeTab === tab.id ? "text-white" : "text-slate-600 hover:bg-white"}`}
                       style={activeTab === tab.id ? { background: tab.color } : {}}>
                       <span>{tab.icon}</span> {tab.label}
                     </button>
@@ -410,7 +410,7 @@ const { useState, useMemo, useEffect } = React;
 
                 {activeTab === "recommend" && (
                   <div className="mt-4 space-y-4">
-                    <div className="rounded-2xl p-4 text-white" style={{ background: `linear-gradient(135deg, ${currentIndustry.color} 0%, ${currentIndustry.color}dd 100%)`, boxShadow: `0 8px 24px ${currentIndustry.color}30` }}>
+                    <div className="rounded-2xl p-4 text-white" style={{ background: `linear-gradient(135deg, ${currentIndustry.color} 0%, ${currentIndustry.color}dd 100%)`}30` }}>
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <h3 className="text-sm font-extrabold tracking-tight flex items-center gap-2 flex-wrap">{currentIndustry.name} 8종목 <span className="text-xs font-mono opacity-80 bg-white/20 px-2.5 py-1 rounded-full whitespace-nowrap">전체 64종 중 {currentIndustry.short} Top 8 • KRX β·모멘텀</span></h3>
                         <span className="text-xs font-mono bg-white/20 backdrop-blur px-2.5 py-1 rounded-full whitespace-nowrap ml-auto">{selectedDate} 18:00 KST • 일요일</span>
@@ -423,7 +423,7 @@ const { useState, useMemo, useEffect } = React;
                       </div>
                     </div>
 
-                    <div className="rounded-2xl bg-white border border-slate-200 p-3 shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
+                    <div className="rounded-2xl bg-white border border-slate-200 p-3">
                       <div className="flex items-center justify-between flex-wrap gap-2">
                         <div className="flex items-center gap-2"><span className="w-7 h-7 rounded-lg bg-red-50 border border-red-100 flex items-center justify-center">🛡️</span><span className="text-xs font-bold">DART 필터 • 1단계 최적 필터</span><span className="text-xs font-mono text-slate-500">부실주 제거 • 개별 기업 특성 기반</span></div>
                         <div className="flex items-center gap-2">
@@ -456,7 +456,7 @@ const { useState, useMemo, useEffect } = React;
                                   <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ background: `${ind.color}10`, color: ind.color }}>{ind?.short}</span>
                                   <span className="text-xs font-mono px-2 py-1 rounded-full bg-slate-100 border text-slate-600">{p.ticker}</span>
                                 </div>
-                                <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full text-white shadow-md" style={{ background: `linear-gradient(135deg, ${ind.color} 0%, ${ind.color}cc 100%)` }}>Score {p.score}</span>
+                                <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full text-white" style={{ background: `linear-gradient(135deg, ${ind.color} 0%, ${ind.color}cc 100%)` }}>Score {p.score}</span>
                               </div>
                               <div className="mt-3 text-base font-extrabold tracking-tight">{p.name}</div>
                               <div className="text-xs text-slate-500 mt-1 font-mono">{p.reason}</div>
@@ -474,7 +474,7 @@ const { useState, useMemo, useEffect } = React;
 
                 {activeTab === "top" && (
                   <div className="mt-4 space-y-4">
-                    <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
+                    <div className="rounded-2xl bg-white border border-slate-200 p-4">
                       <h3 className="text-sm font-bold flex items-center gap-2">📊 오늘 Top 예측 (α·β) • 8개 업종 랭킹</h3>
                       <div className="mt-1 text-xs text-slate-500">예측수익률 기준 정렬 • Top1이 오늘 최강 업종 • 클릭하면 해당 업종 필터</div>
                       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -482,7 +482,7 @@ const { useState, useMemo, useEffect } = React;
                           const isSelected = item.id === selectedIndustry;
                           const isTop = idx === 0;
                           return (
-                            <div key={item.id} onClick={() => setSelectedIndustry(item.id)} className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all border ${isSelected ? "bg-[#1e3a8a] text-white border-[#1e3a8a] shadow-md" : "bg-slate-50 hover:bg-white border-slate-200"}`}>
+                            <div key={item.id} onClick={() => setSelectedIndustry(item.id)} className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all border ${isSelected ? "bg-[#1e3a8a] text-white border-[#1e3a8a]" : "bg-slate-50 hover:bg-white border-slate-200"}`}>
                               <div className="flex items-center gap-3">
                                 <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${isTop ? "bg-amber-400 text-[#1e3a8a]" : isSelected ? "bg-white text-[#1e3a8a]" : "bg-white border"}`}>{idx+1}</span>
                                 <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: isSelected ? "rgba(255,255,255,0.15)" : `${item.color}15`, color: isSelected ? "white" : item.color }}>{item.icon}</div>
@@ -502,7 +502,7 @@ const { useState, useMemo, useEffect } = React;
 
                 {activeTab === "all64" && (
                   <div className="mt-4 space-y-4">
-                    <div className="rounded-2xl p-5 text-white shadow-xl" style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #1e293b 50%, #334155 100%)" }}>
+                    <div className="rounded-2xl p-5 text-white" style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #1e293b 50%, #334155 100%)" }}>
                       <div className="flex items-center justify-between"><h3 className="text-base font-extrabold">📋 전체 64종 • 8×8 Industry 전체 보기</h3><span className="px-3 py-1 rounded-full bg-white/15 text-xs font-mono">{all64Filtered.length}종 {selectedFactor ? `• ${selectedFactor} 필터` : ""}</span></div>
                       <div className="mt-2 text-xs text-slate-300">왼쪽 산업 선택 + 오른쪽 팩터 선택으로 필터링 • Score 높은 순 • 트레이더 스캔용</div>
                       <div className="mt-3 grid grid-cols-4 gap-2">
@@ -516,7 +516,7 @@ const { useState, useMemo, useEffect } = React;
                       {all64Filtered.slice(0,32).map((p) => {
                         const ind = industries.find(i => i.id === p.industryId);
                         return (
-                          <div key={`${p.industryId}-${p.ticker}-all`} className="rounded-xl border bg-white p-3 shadow-sm hover:shadow-md transition-shadow">
+                          <div key={`${p.industryId}-${p.ticker}-all`} className="rounded-xl border bg-white p-3 hover: transition-shadow">
                             <div className="flex items-center justify-between"><span className="text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: ind.color }}>{ind.short}</span><span className="text-xs font-mono">{p.ticker}</span><span className="text-xs font-bold">Score {p.score}</span></div>
                             <div className="mt-2 text-sm font-bold">{p.name}</div>
                             <div className="text-xs text-slate-500 font-mono">{p.reason}</div>
@@ -530,7 +530,7 @@ const { useState, useMemo, useEffect } = React;
 
                 {activeTab === "performance" && (
                   <div className="mt-4 space-y-4">
-                    <div className="rounded-2xl border bg-white overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.06)]" style={{ borderColor: "#e2e8f0" }}>
+                    <div className="rounded-2xl border bg-white overflow-hidden" style={{ borderColor: "#e2e8f0" }}>
                       <div className="p-4 border-b bg-gradient-to-r from-violet-50 to-purple-50">
                         <div className="flex items-center justify-between"><h3 className="text-sm font-extrabold">📈 지난주 성과 • {currentIndustry.short} 8종</h3><span className="text-xs font-mono px-2 py-1 rounded-full bg-violet-600 text-white">Hit {pastPicksAvg.hit}/8 • Avg {pastPicksAvg.avg}%</span></div>
                         <div className="mt-1 text-xs text-slate-500">실제 종가 기반 • vs KOSPI 초과 수익 • 95% REAL yfinance</div>
@@ -550,7 +550,7 @@ const { useState, useMemo, useEffect } = React;
                       </div>
                     </div>
 
-                    <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
+                    <div className="rounded-2xl bg-white border border-slate-200 p-4">
                       <h4 className="text-sm font-extrabold">📊 성과 IC • Factor Validity • Hit Rate</h4>
                       <div className="mt-3 grid grid-cols-2 gap-3">
                         <div className="p-3 rounded-xl bg-violet-50 border border-violet-200"><div className="text-xs text-violet-700">평균 Hit Rate</div><div className="text-lg font-extrabold text-violet-900">66.8% <span className="text-xs font-normal">(+4.4%p DART)</span></div><div className="text-xs text-violet-600">필터 전 62.4% → 후 66.8%</div></div>
@@ -580,7 +580,7 @@ const { useState, useMemo, useEffect } = React;
 
                 {activeTab === "market" && (
                   <div className="mt-4 space-y-4">
-                    <div className="rounded-2xl p-5 text-white shadow-xl" style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #1e293b 100%)" }}>
+                    <div className="rounded-2xl p-5 text-white" style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #1e293b 100%)" }}>
                       <div className="flex items-center justify-between"><h3 className="text-base font-extrabold">🌐 마켓 레짐 • Regime Dashboard REAL</h3><span className={`px-3 py-1 rounded-full text-xs font-bold ${currentRegime.regime==="normal" ? "bg-emerald-500" : currentRegime.regime==="caution" ? "bg-amber-500" : "bg-red-500"} text-white`}>{currentRegime.confidence || currentRegime.regime} • {currentRegime.window}일 윈도우</span></div>
                       <div className="mt-2 text-xs text-slate-300">VIX {currentRegime.vix || 16.5} • OVX • DXY • TNX • KRW • KOSPI • SP500 REAL • GPR proxy = (VIX+OVX)/2</div>
                       <div className="mt-4 grid grid-cols-4 gap-2">
@@ -596,7 +596,7 @@ const { useState, useMemo, useEffect } = React;
                       <div className="mt-3 text-xs text-slate-400">평시 120일 → 고변동 90일 → 전시 60일 자동 축소 • {currentRegime.description || "정상 시장"}</div>
                     </div>
 
-                    <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
+                    <div className="rounded-2xl bg-white border border-slate-200 p-4">
                       <h4 className="text-sm font-extrabold">📈 KOSPI 모델 + Meta 유효 통합</h4>
                       <div className="mt-3 grid grid-cols-2 gap-3">
                         <div className="p-3 rounded-xl bg-slate-50 border"><div className="text-xs text-slate-500">KOSPI 예측</div><div className="text-sm font-bold">+0.49% α·β</div><div className="text-xs text-slate-400">R² 0.89 Adj 0.87 • Ridge λ=0.5</div></div>
@@ -627,9 +627,8 @@ const { useState, useMemo, useEffect } = React;
                     <div className="text-xs text-slate-400">DXY 103.8 • Regime</div>
                   </div>
                 </div>
-                <div className="rounded-2xl border bg-white p-4 shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
+                <div className="rounded-2xl border bg-white p-4">
                   <div className="flex items-center justify-between"><h3 className="text-sm font-bold">오늘의 팩터</h3><span className="text-xs text-slate-400">{selectedDate}</span></div>
-                  <div className="mt-1 text-xs text-slate-500">오른쪽 추천 선택 • 클릭하면 중앙 필터 • {selectedFactor ? `${selectedFactor} 필터 중` : "필터 없음"}</div>
                   {selectedFactor && <button onClick={() => setSelectedFactor(null)} className="mt-2 w-full text-xs py-1.5 rounded-full bg-[#1e3a8a] text-white hover:bg-[#23408e]">✕ {selectedFactor} 필터 해제 • 전체 보기</button>}
                   <div className="mt-4">
                     <div className="grid grid-cols-12 text-xs font-mono text-slate-400 pb-2 border-b font-bold tracking-widest"><div className="col-span-6">FACTOR</div><div className="col-span-2 text-right">Z</div><div className="col-span-2 text-right">β</div><div className="col-span-2 text-right">기여도</div></div>
