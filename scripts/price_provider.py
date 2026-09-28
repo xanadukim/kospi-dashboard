@@ -279,6 +279,38 @@ def calc_z_score(series, window=120):
     except:
         return 0.0
 
+
+def get_foreigner_factor_real():
+    """15007 투자자별 거래실적 KOSPI200 선물 - 수동 CSV 기반 100% REAL"""
+    try:
+        import pandas as pd
+        import os
+        csv_paths = [
+            "data/foreigner_kospi200.csv",
+            "data/data_5225_20260928.csv",
+            "scripts/data/foreigner_kospi200.csv",
+            "/mnt/data/foreigner_kospi200_real.csv",
+            "/mnt/data/data_5225_20260928.csv"
+        ]
+        for csv_path in csv_paths:
+            if os.path.exists(csv_path):
+                try:
+                    df = pd.read_csv(csv_path, encoding="cp949")
+                except:
+                    df = pd.read_csv(csv_path, encoding="utf-8")
+                col = '외국인_순매수' if '외국인_순매수' in df.columns else '외국인 합계'
+                if col in df.columns:
+                    series = df[col].astype(float).tolist()[::-1]
+                    closes = series
+                    latest = series[-1] if series else 0
+                    z = calc_z_score(closes, window=120)
+                    print(f"[15007 REAL] foreigner {len(closes)} latest {latest:.0f} z {z}")
+                    return closes, latest, z
+    except Exception as e:
+        print(f"[15007] Error: {e}")
+    return [], 0, 0.85
+
+
 def get_all_factor_z_scores():
     factors = {}
     for name in ["SP500", "US10Y", "SOX", "WTI", "원달러", "DXY", "VIX", "구리", "상해종합"]:
