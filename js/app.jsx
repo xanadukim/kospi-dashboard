@@ -390,7 +390,7 @@ const { useState, useMemo, useEffect } = React;
               </aside>
 
               <div className="col-span-12 md:col-span-10 grid grid-cols-12 gap-4">
-              <main className="col-span-12 lg:col-span-8">
+              <main className="col-span-12 lg:col-span-8 lg:sticky lg:top-[88px] lg:h-[calc(100vh-6rem)] lg:overflow-auto pr-1">
                 {/* 탭은 상단 헤더로 이동 - 여기서는 모바일용 작은 탭 표시 */}
                 <div className="xl:hidden flex items-center gap-1 p-1 rounded-full bg-[#f1f5f9] border border-[#e5e8eb] w-fit flex-wrap mb-4">
                   {[
@@ -428,7 +428,7 @@ const { useState, useMemo, useEffect } = React;
                         <div className="flex items-center gap-2"><span className="w-7 h-7 rounded-lg bg-red-50 border border-red-100 flex items-center justify-center">🛡️</span><span className="text-xs font-bold">DART 필터 • 1단계 최적 필터</span><span className="text-xs font-mono text-slate-500">부실주 제거 • 개별 기업 특성 기반</span></div>
                         <div className="flex items-center gap-2">
                           <button onClick={() => setFilterEnabled(!filterEnabled)} className={`text-xs px-3 py-1.5 rounded-full font-bold transition-all ${filterEnabled ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-500"}`}>{filterEnabled ? "ON • Hit +4.4%p" : "OFF"}</button>
-                          <span className="text-xs px-2 py-1 rounded-full bg-[#1e3a8a] text-white font-mono">v54 완화</span>
+                          
                         </div>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-1.5">
@@ -512,7 +512,7 @@ const { useState, useMemo, useEffect } = React;
                         })}
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {all64Filtered.slice(0,32).map((p) => {
                         const ind = industries.find(i => i.id === p.industryId);
                         return (
@@ -540,7 +540,7 @@ const { useState, useMemo, useEffect } = React;
                         <div className="rounded-xl bg-slate-50 border p-3 text-center"><div className="text-xs text-slate-500">vs KOSPI</div><div className={`text-sm font-bold ${parseFloat(pastPicksAvg.vsKospi)>=0 ? "text-emerald-600" : "text-red-600"}`}>{pastPicksAvg.vsKospi>0 ? "+" : ""}{pastPicksAvg.vsKospi}%</div></div>
                         <div className="rounded-xl bg-slate-50 border p-3 text-center"><div className="text-xs text-slate-500">Hit Rate</div><div className="text-sm font-bold">{pastPicksAvg.hit}/8 ({(pastPicksAvg.hit/8*100).toFixed(0)}%)</div></div>
                       </div>
-                      <div className="p-3 space-y-2">
+                      <div className="p-3 grid grid-cols-1 md:grid-cols-2 gap-2">
                         {pastPicks.map((r) => (
                           <div key={r.ticker} className="flex items-center justify-between p-2.5 rounded-xl border bg-white hover:bg-slate-50">
                             <div className="flex items-center gap-2"><span className="text-xs font-mono px-2 py-0.5 rounded-full bg-slate-100">{r.ticker}</span><span className="text-sm font-bold">{r.name}</span><span className={`text-xs px-1.5 py-0.5 rounded-full ${r.status==="성공" ? "bg-emerald-100 text-emerald-700" : r.status==="보류" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}`}>{r.status}</span></div>
@@ -556,7 +556,7 @@ const { useState, useMemo, useEffect } = React;
                         <div className="p-3 rounded-xl bg-violet-50 border border-violet-200"><div className="text-xs text-violet-700">평균 Hit Rate</div><div className="text-lg font-extrabold text-violet-900">66.8% <span className="text-xs font-normal">(+4.4%p DART)</span></div><div className="text-xs text-violet-600">필터 전 62.4% → 후 66.8%</div></div>
                         <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200"><div className="text-xs text-emerald-700">평균 IC</div><div className="text-lg font-extrabold text-emerald-900">0.15</div><div className="text-xs text-emerald-600">목표 0.12 유지 중</div></div>
                       </div>
-                      <div className="mt-3 space-y-2">
+                      <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
                         {(currentMeta?.top_valid || ["S&P500","구리","SOX / 필라"]).map((f,i) => {
                           const isObj = typeof f === 'object' && f !== null;
                           const name = isObj ? (f.factor || f.name || 'Unknown') : f;
