@@ -330,58 +330,39 @@ const { useState, useMemo, useEffect } = React;
 
         return (
           <div className="min-h-screen bg-[#f8fafc]">
-            <header className="sticky top-0 z-30 naver-header" style={{ background: "white", borderBottom: "1px solid #e5e8eb" }}>
-              <div className="max-w-screen-2xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
-                <div className="flex items-center gap-4">
+            <header className="sticky top-0 z-30" style={{ background: "white", borderBottom: "1px solid #e5e8eb", height: "56px" }}>
+              <div className="max-w-screen-2xl mx-auto px-4 md:px-6 h-14 flex items-center justify-between">
+                <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg flex items-center justify-center font-extrabold text-xs" style={{ background: "#3182f6", color: "white" }}>KQ</div>
-                  <div>
-                    <div className="text-sm font-bold leading-tight tracking-tight" style={{color: "#191f28"}}>KOSPI Quant Terminal <span className="text-xs font-normal text-slate-500 ml-1">v61.6</span></div>
-                    <div className="text-xs text-slate-500 hidden md:flex items-center gap-2">
-                    <span>오늘의 예측 • {currentIndustry.short} {predictedReturn>0 ? "+" : ""}{predictedReturn.toFixed(2)}%</span>
-                    <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                    <span className="text-slate-400">업데이트 {lastRefresh.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})}</span>
-                  </div>
-                  </div>
-                  <div className="hidden md:flex items-center gap-3 ml-6 pl-6 border-l border-white/15">
-                    <span className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: "#e6f9f0", color: "#0a7a42", border: "1px solid #b5e6cc" }}>● MARKET OPEN</span>
-                    <span className="text-xs text-slate-500">{selectedDate} • {getDayName(selectedDate)}</span>
-                  </div>
+                  <div className="text-sm font-bold" style={{color: "#191f28"}}>KOSPI Quant Terminal <span className="text-xs font-normal text-slate-500 ml-1">v61.6</span></div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {isViewingHistory && <button onClick={returnToLatest} className="btn-modern px-3.5 py-2 rounded-full text-xs font-bold" style={{ background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)", color: "#0f172a" }}>↩ 최신으로</button>}
-                  <button onClick={() => setShowHistory(true)} className={`btn-modern px-3 py-1.5 rounded-lg text-xs font-bold ${isViewingHistory ? "bg-amber-100 text-amber-800 border border-amber-200" : "bg-white text-slate-600 border border-[#e5e8eb] hover:bg-slate-50"}`}>📅 이전 자료 {history.length>0 ? `(${history.length})` : ""}</button>
-                  <button onClick={() => setShowDisclaimer(true)} className="btn-modern px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-600 border border-[#e5e8eb] hover:bg-slate-50">면책</button>
-                  <button onClick={() => setShowHelp(true)} className="btn-modern px-3 py-1.5 rounded-lg text-xs font-bold bg-[#3182f6] text-white hover:bg-[#2b7fff]">도움말</button>
+                  {/* 3개 핵심 지표 - 최상단 이전자료 왼쪽으로 */}
+                  <div className="hidden lg:flex items-center gap-2 mr-2">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#f8f9fa] border border-[#e5e8eb]">
+                      <span className="text-xs text-slate-500">KOSPI R²</span>
+                      <span className="text-xs font-bold">0.89</span>
+                      <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100">+{predictedReturn.toFixed(2)}%</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#f8f9fa] border border-[#e5e8eb]">
+                      <span className="text-xs text-slate-500">외국인</span>
+                      <span className="text-xs font-bold">1327억 <span className="text-emerald-600">순매수</span></span>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#f8f9fa] border border-[#e5e8eb]">
+                      <span className="text-xs text-slate-500">US 10Y</span>
+                      <span className="text-xs font-bold">4.72%</span>
+                      <span className="text-xs text-red-500">+0.04</span>
+                    </div>
+                  </div>
+                  {isViewingHistory && <button onClick={returnToLatest} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">↩ 최신으로</button>}
+                  <button onClick={() => setShowHistory(true)} className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${isViewingHistory ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-white text-slate-600 border-[#e5e8eb] hover:bg-slate-50"}`}>📅 이전 자료 {history.length>0 ? `(${history.length})` : ""}</button>
+                  <button onClick={() => setShowDisclaimer(true)} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-600 border border-[#e5e8eb] hover:bg-slate-50">면책</button>
+                  <button onClick={() => setShowHelp(true)} className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#3182f6] text-white hover:bg-[#2b7fff]">도움말</button>
                 </div>
               </div>
             </header>
 
             <div className="max-w-screen-2xl mx-auto px-4 md:px-6 py-4 grid grid-cols-12 gap-4">
-              <div className="col-span-12 grid grid-cols-12 gap-3">
-                <div className="col-span-12 md:col-span-3 rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                  <div className="flex items-center justify-between"><div className="text-xs font-bold tracking-widest text-slate-500">KOSPI 모델 R²</div><span className="text-xs px-2 py-0.5 rounded-full bg-slate-900 text-white font-mono">RIDGE λ=0.5</span></div>
-                  <div className="mt-2 flex items-baseline gap-2"><span className="text-2xl font-extrabold">0.89</span><span className="text-xs text-slate-500">Adj. 0.87</span><span className="ml-auto text-xs font-mono px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">+0.49% α·β</span></div>
-                  <div className="mt-1 text-xs text-slate-500">오늘 예측 수익률 ({currentIndustry.short})</div>
-                </div>
-                <div className="col-span-6 md:col-span-3 rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                  <div className="text-xs font-bold tracking-widest text-slate-500">외국인 선물 예상</div>
-                  <div className="mt-2 text-sm font-bold">1327억 <span className="text-emerald-600">순매수</span></div>
-                  <div className="mt-1 text-xs text-slate-400">KOSPI200 선물 • DART 연동</div>
-                </div>
-                <div className="col-span-6 md:col-span-3 rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-                  <div className="flex justify-between"><span className="text-xs font-bold tracking-widest text-slate-500">US 10Y 현재</span><span className="text-xs font-mono text-slate-400">DXY 103.8</span></div>
-                  <div className="mt-2 flex items-baseline gap-2"><span className="text-sm font-bold">4.72%</span><span className="text-xs text-red-500">+0.04</span><span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">Regime {currentRegime.regime}</span></div>
-                </div>
-                <div className="col-span-12 md:col-span-3 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 p-4 shadow-sm">
-                  <div className="flex items-center justify-between"><span className="text-xs font-bold tracking-widest text-amber-800">트레이더 필터</span><button onClick={() => { setSelectedFactor(null); setSelectedIndustry("elec"); }} className="text-xs px-2 py-0.5 rounded-full bg-white border border-amber-200 text-amber-700 hover:bg-amber-100">초기화</button></div>
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {selectedIndustry && <span className="text-xs px-2 py-1 rounded-full bg-slate-900 text-white font-bold">{currentIndustry.short} 선택</span>}
-                    {selectedFactor && <span className="text-xs px-2 py-1 rounded-full bg-emerald-600 text-white font-bold">{selectedFactor} 필터 <button onClick={() => setSelectedFactor(null)} className="ml-1">✕</button></span>}
-                    <span className={`text-xs px-2 py-1 rounded-full border font-mono ${filterEnabled ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-50 text-slate-500"}`}>🛡️ DART {filterEnabled ? "ON" : "OFF"}</span>
-                  </div>
-                  <div className="mt-2 text-xs text-amber-700">왼쪽 산업 + 오른쪽 팩터 클릭 → 중앙 추천 필터링</div>
-                </div>
-              </div>
 
               <aside className="col-span-12 md:col-span-2 space-y-4 md:sticky md:top-20 md:h-[calc(100vh-6rem)] md:overflow-auto">
                 <div className="rounded-2xl bg-slate-900 text-white p-4 shadow-xl">
