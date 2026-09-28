@@ -29,7 +29,7 @@ const { useState, useMemo, useEffect } = React;
                     const isSelected = doc.date === selectedDate;
                     return (
                       <button key={doc.date} onClick={() => { onSelect(doc.date); onClose(); }}
-                        className={`w-full text-left rounded-xl border p-3.5 flex items-center justify-between transition-all btn-modern ${isSelected ? "bg-[#0f172a] text-white border-[#0f172a] shadow-lg" : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50"}`}>
+                        className={`w-full text-left rounded-xl border p-3.5 flex items-center justify-between transition-all btn-modern ${isSelected ? "bg-[#1e3a8a] text-white border-[#1e3a8a] shadow-lg" : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50"}`}>
                         <div className="flex items-center gap-3">
                           <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold ${isSelected ? "bg-white/15" : "bg-slate-100"}`}>📊</div>
                           <div>
@@ -61,7 +61,7 @@ const { useState, useMemo, useEffect } = React;
                   </h2>
                   <div className="text-xs font-mono text-slate-500 mt-1">데이터 출처 및 법적 고지</div>
                 </div>
-                <button onClick={onClose} className="w-9 h-9 rounded-full bg-slate-900 text-white hover:bg-slate-800 btn-modern">✕</button>
+                <button onClick={onClose} className="w-9 h-9 rounded-full bg-[#1e3a8a] text-white hover:bg-[#23408e] btn-modern">✕</button>
               </div>
               <div className="mt-6 space-y-6 text-sm leading-relaxed">
                 <div className="p-4 rounded-xl bg-red-50 border border-red-200">
@@ -90,7 +90,7 @@ const { useState, useMemo, useEffect } = React;
                 </div>
 
                 <div className="p-3 rounded-xl bg-slate-50 border text-xs">
-                  <div className="font-bold text-slate-900">법적 고지 • 출처 명시</div>
+                  <div className="font-bold text-[#1e3a8a]">법적 고지 • 출처 명시</div>
                   <div className="mt-2 text-slate-600 leading-relaxed">
                     본 대시보드는 개인 연구용으로 제작되었습니다. FRED, yfinance, KRX, DART 데이터는 각 출처의 이용 약관을 따릅니다. 
                     Firebase Firestore는 읽기 전용(read=true, write=false)으로 설정되어 있으며 쓰기는 Admin SDK만 가능합니다. 
@@ -117,11 +117,11 @@ const { useState, useMemo, useEffect } = React;
                   </h2>
                   <div className="text-xs font-mono text-slate-500 mt-1">v61.5 Trader Centric • 5 Tabs • Left-Right 필터 • 07:30 KST 자동 업데이트</div>
                 </div>
-                <button onClick={onClose} className="w-9 h-9 rounded-full bg-slate-900 text-white hover:bg-slate-800 btn-modern">✕</button>
+                <button onClick={onClose} className="w-9 h-9 rounded-full bg-[#1e3a8a] text-white hover:bg-[#23408e] btn-modern">✕</button>
               </div>
               <div className="mt-6 space-y-5 text-sm">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="p-3 rounded-xl bg-slate-900 text-white"><div className="text-xs font-bold">1. 왼쪽 INDUSTRIES</div><div className="text-xs mt-1 text-slate-300">8개 업종 선택 → 중앙 필터 • R² 0.71~0.91 • 전기전자 0.91 최고</div></div>
+                  <div className="p-3 rounded-xl bg-[#1e3a8a] text-white"><div className="text-xs font-bold">1. 왼쪽 INDUSTRIES</div><div className="text-xs mt-1 text-slate-300">8개 업종 선택 → 중앙 필터 • R² 0.71~0.91 • 전기전자 0.91 최고</div></div>
                   <div className="p-3 rounded-xl bg-white border"><div className="text-xs font-bold">2. 중앙 5 Tabs</div><div className="text-xs mt-1 text-slate-600">추천(8) / 전체64 / 성과 / 마켓 / 시스템 • Factor Beta 바</div></div>
                   <div className="p-3 rounded-xl bg-white border"><div className="text-xs font-bold">3. 오른쪽 FACTOR</div><div className="text-xs mt-1 text-slate-600">Z-Score 클릭 → 중앙 필터링 • 구리, 상해, S&P500 등 10개</div></div>
                 </div>
@@ -330,11 +330,11 @@ const { useState, useMemo, useEffect } = React;
 
         return (
           <div className="min-h-screen bg-[#f8fafc]">
-            <header className="sticky top-0 z-30" style={{ background: "white", borderBottom: "1px solid #e5e8eb", height: "56px" }}>
-              <div className="max-w-screen-2xl mx-auto px-4 md:px-6 h-14 flex items-center justify-between">
+            <header className="sticky top-0 z-30" style={{ background: "white", borderBottom: "1px solid #e5e8eb", height: "72px" }}>
+              <div className="max-w-screen-2xl mx-auto px-4 md:px-6 h-[72px] flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg flex items-center justify-center font-extrabold text-xs" style={{ background: "#3182f6", color: "white" }}>KQ</div>
-                  <div className="text-sm font-bold" style={{color: "#191f28"}}>KOSPI Quant Terminal <span className="text-xs font-normal text-slate-500 ml-1">v61.6</span></div>
+                  <div className="text-sm font-bold" style={{color: "#1e3a8a"}}>KOSPI Quant Terminal <span className="text-xs font-normal text-slate-500 ml-1">v61.6</span></div>
                 </div>
                 <div className="flex items-center gap-2">
                   {/* 3개 핵심 지표 - 최상단 이전자료 왼쪽으로 */}
@@ -362,10 +362,10 @@ const { useState, useMemo, useEffect } = React;
               </div>
             </header>
 
-            <div className="max-w-screen-2xl mx-auto px-4 md:px-6 py-4 grid grid-cols-12 gap-4">
+            <div className="max-w-screen-2xl mx-auto px-4 md:px-6 pt-0 pb-4 grid grid-cols-12 gap-4">
 
-              <aside className="col-span-12 md:col-span-2 space-y-4 md:sticky md:top-20 md:h-[calc(100vh-6rem)] md:overflow-auto">
-                <div className="rounded-2xl bg-slate-900 text-white p-4 shadow-xl">
+              <aside className="col-span-12 md:col-span-2 space-y-4 md:sticky md:top-[88px] md:h-[calc(100vh-6rem)] md:overflow-auto">
+                <div className="rounded-2xl bg-[#1e3a8a] text-white p-4 shadow-xl">
                   <div className="flex items-center justify-between"><h3 className="text-xs font-bold tracking-widest">INDUSTRIES • 8</h3><span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span></div>
                   <div className="mt-1 text-xs text-slate-400">왼쪽 추천 선택 • 클릭하면 중앙 필터</div>
                   <div className="mt-4 space-y-2">
@@ -373,9 +373,9 @@ const { useState, useMemo, useEffect } = React;
                       const isSelected = ind.id === selectedIndustry;
                       const pred = contributions.filter(c => Object.keys(ind.betas).includes(c.factor)).reduce((s,c) => s + c.contrib, 0);
                       return (
-                        <button key={ind.id} onClick={() => setSelectedIndustry(ind.id)} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all text-left ${isSelected ? "bg-white text-slate-900 shadow-lg" : "bg-white/10 hover:bg-white/15 text-white/90"}`}>
+                        <button key={ind.id} onClick={() => setSelectedIndustry(ind.id)} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all text-left ${isSelected ? "bg-white text-[#1e3a8a] shadow-lg" : "bg-white/10 hover:bg-white/15 text-white/90"}`}>
                           <div className="flex items-center gap-2.5"><div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: isSelected ? `${ind.color}15` : "rgba(255,255,255,0.1)", color: isSelected ? ind.color : "white" }}>{ind.icon}</div><div><div className="text-xs font-bold">{ind.short}</div><div className={`text-xs ${isSelected ? "text-slate-500" : "text-white/60"}`}>R² {ind.r2}</div></div></div>
-                          <div className="text-right"><div className={`text-xs font-mono font-bold ${pred>=0 ? (isSelected ? "text-emerald-600" : "text-emerald-300") : (isSelected ? "text-red-600" : "text-red-300")}`}>{pred>0 ? "+" : ""}{pred.toFixed(2)}%</div><div className={`w-2 h-2 rounded-full ml-auto mt-1 ${isSelected ? "bg-slate-900" : "bg-white/30"}`}></div></div>
+                          <div className="text-right"><div className={`text-xs font-mono font-bold ${pred>=0 ? (isSelected ? "text-emerald-600" : "text-emerald-300") : (isSelected ? "text-red-600" : "text-red-300")}`}>{pred>0 ? "+" : ""}{pred.toFixed(2)}%</div><div className={`w-2 h-2 rounded-full ml-auto mt-1 ${isSelected ? "bg-[#1e3a8a]" : "bg-white/30"}`}></div></div>
                         </button>
                       );
                     })}
@@ -390,8 +390,8 @@ const { useState, useMemo, useEffect } = React;
                       const isSelected = item.id === selectedIndustry;
                       const isTop = idx === 0;
                       return (
-                        <div key={item.id} onClick={() => setSelectedIndustry(item.id)} className={`flex items-center justify-between px-2.5 py-2 rounded-xl cursor-pointer transition-all ${isSelected ? "bg-slate-900 text-white shadow-md" : "bg-slate-50 hover:bg-slate-100"}`}>
-                          <div className="flex items-center gap-2"><span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${isTop ? "bg-amber-400 text-slate-900" : isSelected ? "bg-white text-slate-900" : "bg-white border"}`}>{idx+1}</span><span className="text-xs font-bold">{item.short}</span></div>
+                        <div key={item.id} onClick={() => setSelectedIndustry(item.id)} className={`flex items-center justify-between px-2.5 py-2 rounded-xl cursor-pointer transition-all ${isSelected ? "bg-[#1e3a8a] text-white shadow-md" : "bg-slate-50 hover:bg-slate-100"}`}>
+                          <div className="flex items-center gap-2"><span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${isTop ? "bg-amber-400 text-[#1e3a8a]" : isSelected ? "bg-white text-[#1e3a8a]" : "bg-white border"}`}>{idx+1}</span><span className="text-xs font-bold">{item.short}</span></div>
                           <span className={`text-xs font-mono font-bold ${item.pred>=0 ? (isSelected ? "text-emerald-300" : "text-emerald-600") : (isSelected ? "text-red-300" : "text-red-600")}`}>{item.pred>0 ? "+" : ""}{item.pred.toFixed(2)}%</span>
                         </div>
                       );
@@ -403,7 +403,7 @@ const { useState, useMemo, useEffect } = React;
               <main className="col-span-12 md:col-span-6">
                 <div className="flex items-center gap-1.5 p-1 rounded-full bg-white border border-slate-200 shadow-sm w-fit flex-wrap sticky top-20 z-10">
                   {[
-                    { id: "recommend", label: "추천", icon: "🎯", count: filteredPicks.length, color: "#0f172a" },
+                    { id: "recommend", label: "추천", icon: "🎯", count: filteredPicks.length, color: "#1e3a8a" },
                     { id: "all64", label: "전체 64", icon: "📋", count: all64Filtered.length, color: "#334155" },
                     { id: "performance", label: "성과", icon: "📈", count: pastPicks.length, color: "#7c3aed" },
                     { id: "market", label: "마켓", icon: "🌐", count: currentMeta?.top_valid?.length || 5, color: "#059669" },
@@ -420,7 +420,7 @@ const { useState, useMemo, useEffect } = React;
                 <div className="mt-3 text-xs font-mono text-slate-500 flex items-center gap-2">
                   Selected: <span className="font-bold px-2 py-1 rounded-full text-white" style={{ background: currentIndustry.color }}>{currentIndustry.name}</span>
                   {selectedFactor && <><span className="font-bold px-2 py-1 rounded-full bg-emerald-600 text-white">+ {selectedFactor} 필터</span><button onClick={() => setSelectedFactor(null)} className="px-2 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-xs">✕ 해제</button></>}
-                  <span className="ml-auto text-xs px-2 py-1 rounded-full bg-slate-900 text-white">{activeTab}</span>
+                  <span className="ml-auto text-xs px-2 py-1 rounded-full bg-[#1e3a8a] text-white">{activeTab}</span>
                 </div>
 
                 {activeTab === "recommend" && (
@@ -443,7 +443,7 @@ const { useState, useMemo, useEffect } = React;
                         <div className="flex items-center gap-2"><span className="w-7 h-7 rounded-lg bg-red-50 border border-red-100 flex items-center justify-center">🛡️</span><span className="text-xs font-bold">DART 필터 • 1단계 최적 필터</span><span className="text-xs font-mono text-slate-500">부실주 제거 • 개별 기업 특성 기반</span></div>
                         <div className="flex items-center gap-2">
                           <button onClick={() => setFilterEnabled(!filterEnabled)} className={`text-xs px-3 py-1.5 rounded-full font-bold transition-all ${filterEnabled ? "bg-emerald-600 text-white shadow" : "bg-slate-100 text-slate-500"}`}>{filterEnabled ? "ON • Hit +4.4%p" : "OFF"}</button>
-                          <span className="text-xs px-2 py-1 rounded-full bg-slate-900 text-white font-mono">v54 완화</span>
+                          <span className="text-xs px-2 py-1 rounded-full bg-[#1e3a8a] text-white font-mono">v54 완화</span>
                         </div>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-1.5">
@@ -489,7 +489,7 @@ const { useState, useMemo, useEffect } = React;
 
                 {activeTab === "all64" && (
                   <div className="mt-4 space-y-4">
-                    <div className="rounded-2xl p-5 text-white shadow-xl" style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)" }}>
+                    <div className="rounded-2xl p-5 text-white shadow-xl" style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #1e293b 50%, #334155 100%)" }}>
                       <div className="flex items-center justify-between"><h3 className="text-base font-extrabold">📋 전체 64종 • 8×8 Industry 전체 보기</h3><span className="px-3 py-1 rounded-full bg-white/15 text-xs font-mono">{all64Filtered.length}종 {selectedFactor ? `• ${selectedFactor} 필터` : ""}</span></div>
                       <div className="mt-2 text-xs text-slate-300">왼쪽 산업 선택 + 오른쪽 팩터 선택으로 필터링 • Score 높은 순 • 트레이더 스캔용</div>
                       <div className="mt-3 grid grid-cols-4 gap-2">
@@ -567,7 +567,7 @@ const { useState, useMemo, useEffect } = React;
 
                 {activeTab === "market" && (
                   <div className="mt-4 space-y-4">
-                    <div className="rounded-2xl p-5 text-white shadow-xl" style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)" }}>
+                    <div className="rounded-2xl p-5 text-white shadow-xl" style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #1e293b 100%)" }}>
                       <div className="flex items-center justify-between"><h3 className="text-base font-extrabold">🌐 마켓 레짐 • Regime Dashboard REAL</h3><span className={`px-3 py-1 rounded-full text-xs font-bold ${currentRegime.regime==="normal" ? "bg-emerald-500" : currentRegime.regime==="caution" ? "bg-amber-500" : "bg-red-500"} text-white`}>{currentRegime.confidence || currentRegime.regime} • {currentRegime.window}일 윈도우</span></div>
                       <div className="mt-2 text-xs text-slate-300">VIX {currentRegime.vix || 16.5} • OVX • DXY • TNX • KRW • KOSPI • SP500 REAL • GPR proxy = (VIX+OVX)/2</div>
                       <div className="mt-4 grid grid-cols-4 gap-2">
@@ -634,7 +634,7 @@ const { useState, useMemo, useEffect } = React;
                       <div className="mt-4 grid grid-cols-3 gap-3">
                         <div className="rounded-xl bg-slate-50 border p-3"><div className="text-xs text-slate-400">필터 없을 때</div><div className="text-sm font-bold">Hit 62.4% • 수익 +1.84% • MDD -3.2%</div></div>
                         <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3"><div className="text-xs text-emerald-700">필터 적용 후</div><div className="text-sm font-bold text-emerald-700">Hit 66.8% • 수익 +2.21% • MDD -2.4%</div></div>
-                        <div className="rounded-xl bg-slate-900 text-white p-3"><div className="text-xs text-slate-400">개선 효과</div><div className="text-sm font-bold">+4.4%p • +0.37%p • -0.8%p • 탈락률 15%</div></div>
+                        <div className="rounded-xl bg-[#1e3a8a] text-white p-3"><div className="text-xs text-slate-400">개선 효과</div><div className="text-sm font-bold">+4.4%p • +0.37%p • -0.8%p • 탈락률 15%</div></div>
                       </div>
                     </div>
 
@@ -642,11 +642,11 @@ const { useState, useMemo, useEffect } = React;
                 )}
               </main>
 
-              <aside className="col-span-12 md:col-span-4 space-y-4 md:sticky md:top-20 md:h-[calc(100vh-6rem)] md:overflow-auto">
+              <aside className="col-span-12 md:col-span-4 space-y-4 md:sticky md:top-[88px] md:h-[calc(100vh-6rem)] md:overflow-auto">
                 <div className="rounded-2xl border bg-white p-4 shadow-sm">
                   <div className="flex items-center justify-between"><h3 className="text-sm font-bold">오늘의 팩터</h3><span className="text-xs text-slate-400">{selectedDate}</span></div>
                   <div className="mt-1 text-xs text-slate-500">오른쪽 추천 선택 • 클릭하면 중앙 필터 • {selectedFactor ? `${selectedFactor} 필터 중` : "필터 없음"}</div>
-                  {selectedFactor && <button onClick={() => setSelectedFactor(null)} className="mt-2 w-full text-xs py-1.5 rounded-full bg-slate-900 text-white hover:bg-slate-800">✕ {selectedFactor} 필터 해제 • 전체 보기</button>}
+                  {selectedFactor && <button onClick={() => setSelectedFactor(null)} className="mt-2 w-full text-xs py-1.5 rounded-full bg-[#1e3a8a] text-white hover:bg-[#23408e]">✕ {selectedFactor} 필터 해제 • 전체 보기</button>}
                   <div className="mt-4">
                     <div className="grid grid-cols-12 text-xs font-mono text-slate-400 pb-2 border-b font-bold tracking-widest"><div className="col-span-6">FACTOR</div><div className="col-span-2 text-right">Z</div><div className="col-span-2 text-right">β</div><div className="col-span-2 text-right">기여도</div></div>
                     {contributions.map((c) => {
@@ -672,7 +672,7 @@ const { useState, useMemo, useEffect } = React;
                     {Object.entries(zScores).map(([f,z]) => {
                       const isSelected = selectedFactor === f;
                       return (
-                        <button key={f} onClick={() => setSelectedFactor(isSelected ? null : f)} className={`w-full flex items-center justify-between p-2 rounded-xl border transition-all ${isSelected ? "bg-slate-900 text-white border-slate-900" : "bg-slate-50 hover:bg-white border-slate-200"}`}>
+                        <button key={f} onClick={() => setSelectedFactor(isSelected ? null : f)} className={`w-full flex items-center justify-between p-2 rounded-xl border transition-all ${isSelected ? "bg-[#1e3a8a] text-white border-slate-900" : "bg-slate-50 hover:bg-white border-slate-200"}`}>
                           <span className="text-xs font-bold">{f}</span>
                           <span className={`text-xs font-mono px-2 py-0.5 rounded-full ${z>1 ? "bg-emerald-100 text-emerald-700" : z<-1 ? "bg-red-100 text-red-700" : "bg-white text-slate-600 border"}`}>{z>0 ? "+" : ""}{z.toFixed(2)}</span>
                         </button>
