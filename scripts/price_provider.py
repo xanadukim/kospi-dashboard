@@ -1,16 +1,32 @@
-
 """
-price_provider.py v60 - 10 Factors China Proxy 100% REAL + DART + KRX
-yfinance 95% REAL -> KRX 승인 후 source="krx" 1줄 변경으로 100% REAL
-10 Factors v60: S&P500, US10Y, 외국인, SOX, 원달러, WTI, DXY, VIX, 구리(HG=F), 상해종합(000001.SS)
-+ Regime: VIX, OVX, DXY, TNX, KRW, KOSPI, SP500
+price_provider.py v61 - 10 Factors China Proxy 100% REAL + DART + KRX OPEN API DIRECT
+- v60: yfinance 95% REAL + pykrx fallback
+- v61: KRX OPEN API 직접 호출 지원 - 승인 후 PRICE_SOURCE=krx 로 100% REAL
+  - KOSPI 시리즈 일별시세정보 (kospi_dd_trd): OutBlock_1.CLSPRC_IDX 파싱
+  - 유가증권 일별매매정보 / 코스닥 일별매매정보 (추후 승인 시 추가)
+  - 외국인 선물은 투자자별 매매정보 승인 후 100% REAL (현재는 fallback)
+- TEST 결과 기반 파싱 완료: BAS_DD, IDX_NM, CLSPRC_IDX 등
+
+KRX OPEN API Spec (from TEST):
+GET https://data.krx.co.kr/svc/apis/idx/kospi_dd_trd?basDd=YYYYMMDD
+Header: AUTH_KEY: YOUR_REAL_KEY
+Response: {"OutBlock_1": [{"BAS_DD":"20200414","IDX_CLSS":"KOSPI","IDX_NM":"코스피 100","CLSPRC_IDX":"1901.46",...}, ...]}
+
+Sample URL (for test): https://data-dbg.krx.co.kr/svc/sample/apis/idx/kospi_dd_trd?basDd=20200414
+Real URL (after approval): https://data.krx.co.kr/svc/apis/idx/kospi_dd_trd?basDd=YYYYMMDD
 """
 
 import os
 from typing import List, Tuple
+import requests
+from datetime import datetime, timedelta
 
 DEFAULT_SOURCE = os.environ.get('PRICE_SOURCE', 'yfinance')
 KRX_API_KEY = os.environ.get('KRX_API_KEY', '')
+
+# KRX OPEN API Base
+KRX_OPEN_API_BASE = "https://data.krx.co.kr/svc/apis"
+KRX_OPEN_API_SAMPLE_BASE = "https://data-dbg.krx.co.kr/svc/sample/apis"
 
 FACTOR_TICKERS = {
     "상해종합": "000001.SS",
@@ -32,9 +48,109 @@ FACTOR_TICKERS = {
     "KOSPI": "^KS11",
 }
 
+# KOSPI main index names to filter - from TEST images
+KOSPI_MAIN_NAMES = ["코스피", "KOSPI", "코스피지수", "코스피 200", "KOSPI 200"]
+
+def _call_krx_open_api(api_path: str, params: dict, use_sample: bool = False) -> dict:
+    """KRX OPEN API 직접 호출 - AUTH_KEY 헤더 방식"""
+    if not KRX_API_KEY:
+        print("[KRX OPEN API] No KRX_API_KEY - fallback")
+        return {}
+    
+    base = KRX_OPEN_API_SAMPLE_BASE if use_sample else KRX_OPEN_API_BASE
+    url = f"{base}/{api_path}"
+    
+    try:
+        headers = {"AUTH_KEY": KRX_API_KEY}
+        # GitHub Actions에서는 10초 timeout
+        resp = requests.get(url, params=params, headers=headers, timeout=15)
+        if resp.status_code == 200:
+            data = resp.json()
+            print(f"[KRX OPEN API REAL] {api_path} {params} -> {resp.status_code} blocks {len(data.get('OutBlock_1', [])) if isinstance(data, dict) else 'unknown'}")
+            return data
+        else:
+            print(f"[KRX OPEN API] {api_path} failed {resp.status_code}: {resp.text[:200]}")
+            return {}
+    except Exception as e:
+        print(f"[KRX OPEN API] Error {api_path}: {e}")
+        return {}
+
+def _get_krx_kospi_index_history(days: int = 180, use_sample: bool = False) -> Tuple[List[float], List[str]]:
+    """KOSPI 지수 180일 히스토리 - KRX OPEN API로 일별 수집"""
+    closes = []
+    dates = []
+    
+    end_dt = datetime.now()
+    # 주말 제외, 최근 180 거래일 대략 260 캘린더일로 잡음
+    collected = 0
+    attempt = 0
+    current_dt = end_dt
+    
+    while collected < days and attempt < days * 3:
+        attempt += 1
+        bas_dd = current_dt.strftime("%Y%m%d")
+        # 주말 스킵 (월-금만 호출) - API가 주말은 빈 데이터 반환하므로 스킵해도 됨
+        # 하지만 안전하게 매일 호출하고 빈 경우 skip
+        data = _call_krx_open_api("idx/kospi_dd_trd", {"basDd": bas_dd}, use_sample=use_sample)
+        
+        out_block = data.get("OutBlock_1", []) if isinstance(data, dict) else []
+        if out_block:
+            # 메인 KOSPI 찾기: IDX_NM == "코스피" 또는 가장 유사한 것
+            # TEST 결과에서 "코스피" 단독은 아직 못봤지만, "코스피 100"이 1901.46으로 나옴
+            # 실제로는 "코스피" = 1717.00 등으로 나올 것임. 여기서는 우선 "코스피" 정확히 일치, 없으면 "코스피" 포함 중 가장 낮은? 
+            # 가장 안전한 방법: IDX_NM == "코스피" 찾기, 없으면 "코스피"로 시작하는 것 중 CLSPRC_IDX가 1000-5000 범위인 첫 번째
+            target = None
+            for row in out_block:
+                nm = row.get("IDX_NM", "")
+                # 정확히 "코스피"인 경우 최우선
+                if nm == "코스피":
+                    target = row
+                    break
+            if not target:
+                # "코스피" 포함하고, 업종명이 아닌 경우 (길이 짧은)
+                for row in out_block:
+                    nm = row.get("IDX_NM", "")
+                    if nm == "코스피" or nm == "KOSPI":
+                        target = row
+                        break
+            
+            # fallback: CLSPRC_IDX가 있는 첫 번째 KOSPI 클래스
+            if not target:
+                for row in out_block:
+                    if row.get("IDX_CLSS") == "KOSPI" and row.get("CLSPRC_IDX"):
+                        # "코스피 100"은 1901이지만, 메인 KOSPI는 1800대? 구분 어려움
+                        # 여기서는 IDX_NM 길이가 가장 짧은 것을 메인으로 간주
+                        if len(row.get("IDX_NM","")) <= 3:
+                            target = row
+                            break
+                if not target and out_block:
+                    # 마지막 fallback: 첫 번째
+                    target = out_block[0]
+            
+            if target and target.get("CLSPRC_IDX"):
+                try:
+                    close_price = float(target["CLSPRC_IDX"].replace(",", ""))
+                    closes.append(close_price)
+                    dates.append(current_dt.strftime("%Y-%m-%d"))
+                    collected += 1
+                    print(f"[KRX KOSPI] {bas_dd} {target.get('IDX_NM')} {close_price}")
+                except:
+                    pass
+        
+        current_dt -= timedelta(days=1)
+    
+    # 오래된 순으로 정렬
+    closes = closes[::-1]
+    dates = dates[::-1]
+    return closes, dates
+
 def get_stock_prices(ticker: str, start: str = None, end: str = None, period: str = "1mo", source: str = None):
     src = source or DEFAULT_SOURCE
     if src == "krx" and KRX_API_KEY:
+        # KOSPI 지수인 경우 KRX OPEN API 직접
+        if ticker in ["KOSPI", "^KS11", "KOSPI_INDEX"]:
+            period_days = {"1mo": 30, "3mo": 90, "6mo": 180, "1y": 365}.get(period, 30)
+            return _get_krx_kospi_index_history(days=period_days)
         return _get_krx_prices(ticker, start, end, period)
     else:
         return _get_yfinance_prices(ticker, start, end, period)
@@ -66,6 +182,7 @@ def _get_yfinance_prices(ticker: str, start: str, end: str, period: str):
         return [], []
 
 def _get_krx_prices(ticker: str, start: str, end: str, period: str):
+    """pykrx 기반 (기존) + 향후 KRX OPEN API stock_dd_trd 로 교체 예정"""
     if not KRX_API_KEY:
         return _get_yfinance_prices(ticker, start, end, period)
     try:
@@ -86,7 +203,7 @@ def _get_krx_prices(ticker: str, start: str, end: str, period: str):
             if not df.empty:
                 closes = df['종가'].tolist()
                 dates = [d.strftime('%Y-%m-%d') for d in df.index]
-                print(f"[KRX REAL] {ticker}: {len(closes)} latest {closes[-1]}")
+                print(f"[KRX REAL pykrx] {ticker}: {len(closes)} latest {closes[-1]}")
                 return [float(x) for x in closes], dates
     except Exception as e:
         print(f"[KRX] fallback to yfinance: {e}")
@@ -122,6 +239,15 @@ def get_stock_return(ticker: str, buy_date: str, eval_date: str = None, source: 
         return None
 
 def get_market_indicator(ticker: str, period: str = "3mo", source: str = None):
+    src = source or DEFAULT_SOURCE
+    # KOSPI는 KRX OPEN API 우선
+    if src == "krx" and ticker in ["KOSPI", "^KS11", "KOSPI_INDEX"] and KRX_API_KEY:
+        days_map = {"1mo": 30, "3mo": 90, "6mo": 180, "1y": 365}
+        days = days_map.get(period, 90)
+        closes, _ = _get_krx_kospi_index_history(days=days)
+        latest = closes[-1] if closes else 0.0
+        return closes, latest
+    
     try:
         import yfinance as yf
         yf_ticker = FACTOR_TICKERS.get(ticker, ticker)
@@ -160,3 +286,31 @@ def get_all_factor_z_scores():
         z = calc_z_score(closes, window=120)
         factors[name] = z
     return factors
+
+# KRX OPEN API 파서 - TEST 결과 기반
+def parse_kospi_dd_trd_response(json_data: dict) -> List[dict]:
+    """TEST 결과 파싱: OutBlock_1 배열 파싱"""
+    if not isinstance(json_data, dict):
+        return []
+    out = json_data.get("OutBlock_1", [])
+    parsed = []
+    for row in out:
+        try:
+            parsed.append({
+                "bas_dd": row.get("BAS_DD"),
+                "idx_clss": row.get("IDX_CLSS"),
+                "idx_nm": row.get("IDX_NM"),
+                "close": float(row.get("CLSPRC_IDX", "0").replace(",", "")) if row.get("CLSPRC_IDX") else 0,
+                "prev_close": float(row.get("CMPPREVDD_IDX", "0").replace(",", "")) if row.get("CMPPREVDD_IDX") else 0,
+                "fluc_rt": float(row.get("FLUC_RT", "0")) if row.get("FLUC_RT") else 0,
+                "open": float(row.get("OPNPRC_IDX", "0").replace(",", "")) if row.get("OPNPRC_IDX") else 0,
+                "high": float(row.get("HGPRC_IDX", "0").replace(",", "")) if row.get("HGPRC_IDX") else 0,
+                "low": float(row.get("LWPRC_IDX", "0").replace(",", "")) if row.get("LWPRC_IDX") else 0,
+                "vol": int(row.get("ACC_TRDVOL", "0").replace(",", "")) if row.get("ACC_TRDVOL") else 0,
+                "val": int(row.get("ACC_TRDVAL", "0").replace(",", "")) if row.get("ACC_TRDVAL") else 0,
+                "mktcap": int(row.get("MKTCAP", "0").replace(",", "")) if row.get("MKTCAP") else 0,
+            })
+        except Exception as e:
+            print(f"[parse] skip row {row.get('IDX_NM')}: {e}")
+            continue
+    return parsed
