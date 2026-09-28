@@ -1,4 +1,4 @@
-// js/config.js - Firebase & App Config - v60 China Proxy - SECURITY PATCH v60.1
+// js/config.js - Firebase & App Config - v61.3 100% REAL KRX - SECURITY PATCH v61.3 - apiKey public
 // 분리된 설정 파일 - 수정 시 여기만 수정
 // SECURITY: apiKey는 Firebase 공식 문서상 공개 키입니다 (https://firebase.google.com/docs/projects/api-keys)
 //          비밀키가 아닙니다. 진짜 비밀은 FIREBASE_SERVICE_ACCOUNT이며 GitHub Secrets에만 보관됩니다.

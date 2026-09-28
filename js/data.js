@@ -1,4 +1,4 @@
-// js/data.js - Industries & Factor Meta - v60 China Proxy + DART + Regime (구리+상해)
+// js/data.js - Industries & Factor Meta - v61.3 100% REAL KRX + 15007 CSV REAL + DART + Regime (구리+상해)
 // 분리된 데이터 파일 - 베타 수정 시 여기만 수정
 
 var industries = [
