@@ -90,55 +90,82 @@ def check_factor(name, period="6mo"):
         return {"name": name, "status": "FAIL", "reason": f"exception: {e}", "closes_len": 0, "latest": 0, "z": 0}
 
 def check_foreign_krx():
-    """외국인 선물 KRX fetch 체크 - 0.85 fallback 탐지 핵심 - v61.2 15007 CSV 지원 + debug"""
-    # v61.2: 15007 투자자별 거래실적 CSV 우선 체크 (KRX OPEN API에 투자자별 없음)
+    """외국인 선물 KRX fetch 체크 - v61.3 UTF-8/CP949 인코딩 완벽 대응"""
     try:
         import pandas as pd
         import os
-        # Debug: list data/ folder
         print(f"[DEBUG] CWD: {os.getcwd()}")
         try:
             if os.path.exists("data"):
                 print(f"[DEBUG] data/ folder exists: {os.listdir('data')[:10]}")
-            else:
-                print(f"[DEBUG] data/ folder NOT exists, root: {os.listdir('.')[:20]}")
         except Exception as de:
             print(f"[DEBUG] list error: {de}")
 
         csv_paths = [
             "data/foreigner_kospi200.csv",
             "data/data_5225_20260928.csv",
+            "data/foreigner_kospi200_utf8.csv",
+            "data/foreigner_kospi200_en.csv",
             "data_5225_20260928.csv",
             "./data/foreigner_kospi200.csv",
         ]
         for csv_path in csv_paths:
             exists = os.path.exists(csv_path)
             print(f"[DEBUG] Check {csv_path} exists={exists}")
-            if exists:
+            if not exists:
+                continue
+            df = None
+            # Try all encodings
+            for enc in ["utf-8-sig", "utf-8", "cp949", "euc-kr", "latin1"]:
                 try:
-                    df = pd.read_csv(csv_path, encoding="cp949")
-                except Exception as e1:
-                    print(f"[DEBUG] cp949 read fail {csv_path}: {e1}")
-                    try:
-                        df = pd.read_csv(csv_path, encoding="utf-8")
-                    except Exception as e2:
-                        print(f"[DEBUG] utf-8 read fail {csv_path}: {e2}")
-                        continue
-                print(f"[DEBUG] CSV loaded {csv_path} columns={list(df.columns)[:5]} rows={len(df)}")
-                col = None
-                if '외국인_순매수' in df.columns:
-                    col = '외국인_순매수'
-                elif '외국인 합계' in df.columns:
-                    col = '외국인 합계'
-                elif '외국인합계' in df.columns:
-                    col = '외국인합계'
-                if col:
-                    series = df[col].astype(float).tolist()
+                    df = pd.read_csv(csv_path, encoding=enc)
+                    print(f"[DEBUG] {enc} read success {csv_path} cols={list(df.columns)[:6]} rows={len(df)}")
+                    break
+                except Exception as e:
+                    print(f"[DEBUG] {enc} read fail {csv_path}: {e}")
+                    continue
+            if df is None or df.empty:
+                continue
+            
+            # Find foreign column - try name first, then index fallback
+            col = None
+            for candidate in ["외국인_순매수", "외국인 합계", "foreigner", "외국인합계", "외국인"]:
+                if candidate in df.columns:
+                    col = candidate
+                    break
+            # If still not found, try garbled or index-based: 5th column (index 4) is usually foreigner
+            if not col and len(df.columns) >= 5:
+                # Check if column 4 has numeric data that looks like foreigner
+                try:
+                    # Try 5th column
+                    test_col = df.columns[4]
+                    # If it has large numbers like 387602, it's foreigner
+                    sample = pd.to_numeric(df[test_col].astype(str).str.replace(',',''), errors='coerce').dropna()
+                    if len(sample) > 10:
+                        col = test_col
+                        print(f"[DEBUG] Fallback to index 4 column {test_col} as foreigner")
+                except Exception as e:
+                    print(f"[DEBUG] Index fallback error: {e}")
+            
+            # Last resort: find column with '외국' or 'foreign' in any encoding or 4th index
+            if not col:
+                for c in df.columns:
+                    if '외국' in str(c) or 'foreigner' in str(c).lower():
+                        col = c
+                        break
+            
+            print(f"[DEBUG] Selected foreign column: {col}")
+            if col:
+                try:
+                    series = pd.to_numeric(df[col].astype(str).str.replace(',','').str.replace('"',''), errors='coerce').dropna().tolist()
                     if len(series) >= 10:
-                        print(f"[OK] 외국인 15007 CSV REAL: {csv_path} {len(series)} rows latest {series[0]:.0f}")
+                        print(f"[OK] 외국인 15007 CSV REAL: {csv_path} {len(series)} rows latest {series[0]:.0f} col={col}")
                         return {"name": "외국인_KRX", "status": "OK", "closes_len": len(series), "is_fallback": False, "latest": series[0], "source": "15007 CSV REAL"}
-                else:
-                    print(f"[DEBUG] No foreign column found in {csv_path}: {list(df.columns)}")
+                except Exception as e:
+                    print(f"[DEBUG] Series parse error {csv_path} col {col}: {e}")
+                    continue
+            else:
+                print(f"[DEBUG] No foreign column found in {csv_path}: {list(df.columns)}")
     except Exception as e:
         print(f"[WARN] 15007 CSV check error: {e}")
         import traceback

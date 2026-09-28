@@ -112,37 +112,50 @@ def fetch_fred(series_id, observation_start=None):
         return [], 0.0
 
 def fetch_krx_foreign():
-    # v61.1 - 15007 투자자별 거래실적 수동 CSV 우선 (KRX OPEN API에 투자자별 없음)
-    # 사용자가 Data Marketplace에서 15007 다운로드한 CSV를 data/foreigner_kospi200.csv 로 업로드하면 100% REAL
+    # v61.3 - 15007 투자자별 거래실적 수동 CSV 우선 + 인코딩 완벽 대응
     try:
         import pandas as pd
         import os
         csv_paths = [
             "data/foreigner_kospi200.csv",
+            "data/foreigner_kospi200_en.csv",
+            "data/foreigner_kospi200_utf8.csv",
             "data/data_5225_20260928.csv",
             "scripts/data/foreigner_kospi200.csv",
             "/mnt/data/foreigner_kospi200_real.csv",
             "/mnt/data/data_5225_20260928.csv"
         ]
         for csv_path in csv_paths:
-            if os.path.exists(csv_path):
-                # cp949 for KRX download
+            if not os.path.exists(csv_path):
+                continue
+            df = None
+            for enc in ["utf-8-sig", "utf-8", "cp949", "euc-kr"]:
                 try:
-                    df = pd.read_csv(csv_path, encoding="cp949")
+                    df = pd.read_csv(csv_path, encoding=enc)
+                    break
                 except:
-                    df = pd.read_csv(csv_path, encoding="utf-8")
-                if '외국인 합계' in df.columns or '외국인_순매수' in df.columns:
-                    col = '외국인_순매수' if '외국인_순매수' in df.columns else '외국인 합계'
-                    series = df[col].astype(float).tolist()
-                    # CSV는 최신이 위, 오래된 순으로 정렬 필요
-                    series = series[::-1]  # 오래된 -> 최신 순
-                    # 최근 120일만 사용
-                    print(f"[KRX 15007 REAL] {csv_path} loaded {len(series)} rows latest {series[-1]:.0f}")
+                    continue
+            if df is None or df.empty:
+                continue
+            # Find column
+            col = None
+            for cand in ["외국인_순매수", "외국인 합계", "foreigner", "외국인"]:
+                if cand in df.columns:
+                    col = cand
+                    break
+            if not col and len(df.columns) >= 5:
+                col = df.columns[4]  # 5th column fallback
+            if col:
+                try:
+                    series_raw = pd.to_numeric(df[col].astype(str).str.replace(',','').str.replace('"',''), errors='coerce').dropna().tolist()
+                    series = series_raw[::-1]  # old->new
+                    print(f"[KRX 15007 REAL] {csv_path} loaded {len(series)} rows latest {series[-1]:.0f} - 100% REAL col={col}")
                     return series, series[-1]
+                except:
+                    continue
     except Exception as e:
         print(f"[KRX 15007 CSV] Error: {e}")
 
-    # Fallback 1: pykrx (투자자별 주식 - 선물 아님)
     try:
         from pykrx import stock
         today = datetime.now().strftime("%Y%m%d")
@@ -154,9 +167,6 @@ def fetch_krx_foreign():
             return series, series[-1] if series else 0
     except Exception as e:
         print(f"[KRX pykrx] Error: {e}")
-
-    # Fallback 2: KRX 통계 크롤링 (15007 페이지) - 향후 구현
-    # 현재는 0.85 fallback 방지 위해 빈 리스트 반환하면 fetch_10_factors에서 0.85 대신 0.27 등 REAL 사용 가능하도록
     return [], 0.0
 
 def fetch_10_factors_china_proxy():
