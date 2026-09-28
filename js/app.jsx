@@ -59,24 +59,86 @@ const { useState, useMemo, useEffect } = React;
                     <span className="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700">⚠️</span>
                     투자위험 고지 및 면책사항 • Legal Disclaimer
                   </h2>
-                  <div className="text-xs font-mono text-slate-500 mt-1">KOSPI Quant Terminal v61.3 • 2026-09-28 • 100% REAL KRX + 15007 CSV REAL • 데이터 출처 및 법적 고지</div>
+                  <div className="text-xs font-mono text-slate-500 mt-1">KOSPI Quant Terminal v61.5 • 2026-09-28 • 100% REAL KRX + 15007 CSV REAL • 데이터 출처 및 법적 고지</div>
                 </div>
                 <button onClick={onClose} className="w-9 h-9 rounded-full bg-slate-900 text-white hover:bg-slate-800 btn-modern">✕</button>
               </div>
               <div className="mt-6 space-y-6 text-sm leading-relaxed">
                 <div className="p-4 rounded-xl bg-red-50 border border-red-200">
                   <div className="font-extrabold text-red-900 text-sm flex items-center gap-2"><span>🚨</span> 본 서비스는 투자 조언이 아닙니다</div>
-                  <div className="mt-2 text-xs text-slate-700 leading-relaxed">예상 수익률, Score, 64 Picks는 과거 데이터 기반 통계적 예측이며 <b>투자 자문, 매수/매도 추천이 아닙니다.</b> 모든 투자 결정은 본인 판단과 책임 하에.</div>
+                  <div className="mt-2 text-xs text-slate-700 leading-relaxed">
+                    예상 수익률, Score, 64 Picks, Factor Betas, Z-Scores는 과거 데이터 기반 통계적 예측이며 <b>투자 자문, 매수/매도 추천이 아닙니다.</b> 
+                    모든 투자 결정은 본인 판단과 책임 하에 이루어져야 하며, 원금 손실이 발생할 수 있습니다. 본 모델의 R² 0.89는 과거 설명력이며 미래 수익을 보장하지 않습니다.
+                  </div>
                 </div>
+
+                <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
+                  <div className="font-bold text-amber-900 text-xs">⚠️ 투자 위험 고지</div>
+                  <div className="mt-2 text-xs text-slate-700 leading-relaxed space-y-1">
+                    <div>• 주식, 선물 등 투자 상품은 가격 변동으로 원금 손실 위험이 있습니다.</div>
+                    <div>• 외국인 선물 수급, 환율, 유가 등 10개 팩터는 외부 변수이며 급변할 수 있습니다.</div>
+                    <div>• DART 필터, Regime 모델은 통계적 보조 수단이며 100% 정확하지 않습니다. Hit Rate 66.8%는 과거 백테스트 결과입니다.</div>
+                    <div>• 본 대시보드는 07:30 KST 자동 업데이트되며 장중 급변은 반영되지 않을 수 있습니다.</div>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                  <div className="p-3 rounded-xl bg-blue-50 border border-blue-200"><div className="font-bold text-blue-900">FRED</div><div className="mt-1 text-slate-700">DGS10, DCOILWTICO, DTWEXBGS, VIXCLS</div></div>
-                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200"><div className="font-bold text-emerald-900">yfinance</div><div className="mt-1 text-slate-700">^GSPC, ^SOX, KRW=X, HG=F, 000001.SS</div></div>
+                  <div className="p-3 rounded-xl bg-blue-50 border border-blue-200"><div className="font-bold text-blue-900">FRED • US Macro</div><div className="mt-1 text-slate-700 leading-relaxed">DGS10(10Y 금리), DCOILWTICO(WTI 유가), DTWEXBGS(달러 DXY), VIXCLS(VIX) • St.Louis Fed API • 100% REAL</div></div>
+                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200"><div className="font-bold text-emerald-900">yfinance • Global</div><div className="mt-1 text-slate-700 leading-relaxed">^GSPC(S&P500), ^SOX(필라 반도체), KRW=X(원달러), HG=F(구리), 000001.SS(상해종합) • 100% REAL</div></div>
+                  <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-200"><div className="font-bold text-indigo-900">KRX OPEN API • 7개 승인</div><div className="mt-1 text-slate-700 leading-relaxed">KOSPI/KOSDAQ 시세, 외국인/기관 수급, KOSPI200 선물 • 15007 투자자별 거래실적 CSV(foreigner_kospi200.csv) 244일 REAL</div></div>
+                  <div className="p-3 rounded-xl bg-violet-50 border border-violet-200"><div className="font-bold text-violet-900">DART • 재무 필터</div><div className="mt-1 text-slate-700 leading-relaxed">금융감독원 전자공시 • PER, PBR, ROE, 부채비율, 유동비율, 영업이익률, 매출증가율 • 부실주 15% 사전 제거 • v54 완화 기준</div></div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-slate-50 border text-xs">
+                  <div className="font-bold text-slate-900">법적 고지 • 출처 명시</div>
+                  <div className="mt-2 text-slate-600 leading-relaxed">
+                    본 대시보드는 개인 연구용으로 제작되었습니다. FRED, yfinance, KRX, DART 데이터는 각 출처의 이용 약관을 따릅니다. 
+                    Firebase Firestore는 읽기 전용(read=true, write=false)으로 설정되어 있으며 쓰기는 Admin SDK만 가능합니다. 
+                    Google API Key는 Firebase 공개키이며 비밀키가 아닙니다. 비밀키는 GitHub Secrets에만 보관됩니다.<br/>
+                    KOSPI Quant Terminal v61.5 • 10 Factors China Proxy + DART + 64 Picks + Regime + Retrain • 6개월 운영 • © 2026 Quant Lab
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         );
       }
+
+      function HelpModal({ open, onClose }) {
+        if (!open) return null;
+        return (
+          <div className="fixed inset-0 z-[60] help-overlay flex items-center justify-center p-4" onClick={onClose}>
+            <div className="help-card bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-auto p-6" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between sticky top-0 bg-white pb-4 border-b z-10">
+                <div>
+                  <h2 className="text-sm font-extrabold tracking-tight flex items-center gap-2">
+                    <span className="w-8 h-8 rounded-xl bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-700">?</span>
+                    도움말 • KOSPI Quant Terminal 사용법
+                  </h2>
+                  <div className="text-xs font-mono text-slate-500 mt-1">v61.5 Trader Centric • 5 Tabs • Left-Right 필터 • 07:30 KST 자동 업데이트</div>
+                </div>
+                <button onClick={onClose} className="w-9 h-9 rounded-full bg-slate-900 text-white hover:bg-slate-800 btn-modern">✕</button>
+              </div>
+              <div className="mt-6 space-y-5 text-sm">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="p-3 rounded-xl bg-slate-900 text-white"><div className="text-xs font-bold">1. 왼쪽 INDUSTRIES</div><div className="text-xs mt-1 text-slate-300">8개 업종 선택 → 중앙 필터 • R² 0.71~0.91 • 전기전자 0.91 최고</div></div>
+                  <div className="p-3 rounded-xl bg-white border"><div className="text-xs font-bold">2. 중앙 5 Tabs</div><div className="text-xs mt-1 text-slate-600">추천(8) / 전체64 / 성과 / 마켓 / 시스템 • Factor Beta 바</div></div>
+                  <div className="p-3 rounded-xl bg-white border"><div className="text-xs font-bold">3. 오른쪽 FACTOR</div><div className="text-xs mt-1 text-slate-600">Z-Score 클릭 → 중앙 필터링 • 구리, 상해, S&P500 등 10개</div></div>
+                </div>
+                <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs leading-relaxed">
+                  <div className="font-bold text-blue-900">💡 트레이더 사용법</div>
+                  <div className="mt-1 text-slate-700">• 왼쪽 산업 클릭: 해당 산업 8종 추천 • 오른쪽 팩터 클릭: 해당 팩터에 민감한 종목만 필터 (예: 구리 클릭 → 화학·철강 위주) • DART ON/OFF: 부실주 제거 필터 • 07:30 체크리스트 4개 모두 ✓여야 신뢰도 높음</div>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 border text-xs">
+                  <div className="font-bold">DATA PIPELINE</div>
+                  <div className="mt-1 font-mono text-slate-600">yfinance(4) + FRED(3) + KRX OPEN API(2) + 15007 CSV(1) → StandardScaler → RidgeCV(λ) → Dashboard • Firebase Live • 매일 07:30 KST</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
 
       function App() {
         const [selectedIndustry, setSelectedIndustry] = useState("elec");
@@ -98,6 +160,7 @@ const { useState, useMemo, useEffect } = React;
         const [selectedDate, setSelectedDate] = useState("2026-09-28");
         const [showHistory, setShowHistory] = useState(false);
         const [showDisclaimer, setShowDisclaimer] = useState(false);
+        const [showHelp, setShowHelp] = useState(false);
         const [activeTab, setActiveTab] = useState("recommend");
         const [liveCount, setLiveCount] = useState(0);
         const [lastRefresh, setLastRefresh] = useState(new Date());
@@ -267,13 +330,17 @@ const { useState, useMemo, useEffect } = React;
 
         return (
           <div className="min-h-screen bg-[#f8fafc]">
-            <header className="sticky top-0 z-30" style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)", borderBottom: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 4px 24px rgba(0,0,0,0.18)" }}>
+            <header className="sticky top-0 z-30" style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #172554 100%)", borderBottom: "1px solid rgba(147,197,253,0.15)", boxShadow: "0 4px 24px rgba(30,58,138,0.35)" }}>
               <div className="max-w-screen-2xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center font-extrabold text-xs tracking-tight" style={{ background: "linear-gradient(135deg, #fff 0%, #e2e8f0 100%)", color: "#0f172a", boxShadow: "0 2px 10px rgba(255,255,255,0.2)" }}>KQ</div>
                   <div>
-                    <div className="text-xs font-extrabold leading-tight tracking-tight text-white">KOSPI Quant Terminal v61 • Trader Centric</div>
-                    <div className="text-xs font-mono text-slate-300">8×8 Industry • China Proxy + DART + Regime + Retrain • Firebase Live{liveCount>0 ? ` • ${liveCount}개` : ""} • 5 Tabs</div>
+                    <div className="text-xs font-extrabold leading-tight tracking-tight text-white">KOSPI Quant Terminal v61.5 • Trader Centric</div>
+                    <div className="text-xs font-mono text-blue-200 flex items-center gap-2">
+                    <span className="hidden md:inline">KRX REAL • 15007 CSV REAL • DART v54 • Ridge λ=0.5 • 120D • {liveCount>0 ? `${liveCount}개 스냅샷` : "Live"} • </span>
+                    <span className="px-2 py-0.5 rounded-full bg-white/10 border border-white/15">예측 {predictedReturn>0 ? "+" : ""}{predictedReturn.toFixed(2)}% • {currentIndustry.short}</span>
+                    <span className="hidden md:inline-flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>외국인 {zScores["외국인 선물"]?.toFixed(2) ?? "1.07"}σ</span>
+                  </div>
                   </div>
                   <div className="hidden md:flex items-center gap-3 ml-6 pl-6 border-l border-white/15">
                     <span className="px-3 py-1.5 rounded-full text-xs font-bold font-mono tracking-wide" style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.2) 100%)", border: "1px solid rgba(16,185,129,0.3)", color: "#6ee7b7" }}>● MARKET OPEN</span>
@@ -283,7 +350,8 @@ const { useState, useMemo, useEffect } = React;
                 <div className="flex items-center gap-2">
                   {isViewingHistory && <button onClick={returnToLatest} className="btn-modern px-3.5 py-2 rounded-full text-xs font-bold" style={{ background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)", color: "#0f172a" }}>↩ 최신으로</button>}
                   <button onClick={() => setShowHistory(true)} className={`btn-modern px-3.5 py-2 rounded-full text-xs font-bold ${isViewingHistory ? "bg-amber-400 text-slate-900" : "bg-white/10 text-white border border-white/15 hover:bg-white/15"}`}>📅 이전 자료 {history.length>0 ? `(${history.length})` : ""}</button>
-                  <button onClick={() => setShowDisclaimer(true)} className="btn-modern px-3 py-2 rounded-full text-xs font-bold bg-white/10 text-white border border-white/15">⚠️ 면책</button>
+                  <button onClick={() => setShowDisclaimer(true)} className="btn-modern px-3 py-2 rounded-full text-xs font-bold bg-white/10 text-white border border-white/15 hover:bg-white/20">⚠️ 면책</button>
+                  <button onClick={() => setShowHelp(true)} className="btn-modern px-3 py-2 rounded-full text-xs font-bold bg-white text-blue-900 hover:bg-blue-50 shadow">? 도움말</button>
                 </div>
               </div>
             </header>
@@ -315,7 +383,7 @@ const { useState, useMemo, useEffect } = React;
                 </div>
               </div>
 
-              <aside className="col-span-12 md:col-span-3 space-y-4 md:sticky md:top-20 md:h-[calc(100vh-6rem)] md:overflow-auto">
+              <aside className="col-span-12 md:col-span-2 space-y-4 md:sticky md:top-20 md:h-[calc(100vh-6rem)] md:overflow-auto">
                 <div className="rounded-2xl bg-slate-900 text-white p-4 shadow-xl">
                   <div className="flex items-center justify-between"><h3 className="text-xs font-bold tracking-widest">INDUSTRIES • 8</h3><span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span></div>
                   <div className="mt-1 text-xs text-slate-400">왼쪽 추천 선택 • 클릭하면 중앙 필터</div>
@@ -351,7 +419,7 @@ const { useState, useMemo, useEffect } = React;
                 </div>
               </aside>
 
-              <main className="col-span-12 md:col-span-5">
+              <main className="col-span-12 md:col-span-6">
                 <div className="flex items-center gap-1.5 p-1 rounded-full bg-white border border-slate-200 shadow-sm w-fit flex-wrap sticky top-20 z-10">
                   {[
                     { id: "recommend", label: "추천", icon: "🎯", count: filteredPicks.length, color: "#0f172a" },
