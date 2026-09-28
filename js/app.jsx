@@ -495,9 +495,22 @@ const { useState, useMemo, useEffect } = React;
                         <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200"><div className="text-xs text-emerald-700">평균 IC</div><div className="text-lg font-extrabold text-emerald-900">0.15</div><div className="text-xs text-emerald-600">목표 0.12 유지 중</div></div>
                       </div>
                       <div className="mt-3 space-y-2">
-                        {(currentMeta?.top_valid || ["S&P500","구리","SOX / 필라"]).map((f,i) => (
-                          <div key={f} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border"><span className="text-xs font-bold">{i+1}. {f}</span><span className="text-xs font-mono px-2 py-0.5 rounded-full bg-white border">P(valid) {(0.75 - i*0.05).toFixed(2)}</span></div>
-                        ))}
+                        {(currentMeta?.top_valid || ["S&P500","구리","SOX / 필라"]).map((f,i) => {
+                          const isObj = typeof f === 'object' && f !== null;
+                          const name = isObj ? (f.factor || f.name || 'Unknown') : f;
+                          const prob = isObj ? (f.prob ?? (0.75 - i*0.05)) : (0.75 - i*0.05);
+                          const color = isObj ? (f.color || '#7c3aed') : '#7c3aed';
+                          return (
+                            <div key={`${name}-${i}`} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border">
+                              <span className="text-xs font-bold flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full" style={{background: color}}></span>
+                                {i+1}. {name}
+                                {isObj && f.regime_match && <span className="ml-1 px-1 py-0.5 rounded text-[10px] bg-emerald-100 text-emerald-700">일치</span>}
+                              </span>
+                              <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-white border">P(valid) {typeof prob === 'number' ? prob.toFixed(2) : prob}</span>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
