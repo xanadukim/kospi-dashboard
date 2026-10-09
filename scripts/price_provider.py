@@ -280,35 +280,135 @@ def calc_z_score(series, window=120):
         return 0.0
 
 
-def get_foreigner_factor_real():
-    """15007 투자자별 거래실적 KOSPI200 선물 - 수동 CSV 기반 100% REAL"""
-    try:
-        import pandas as pd
-        import os
-        csv_paths = [
-            "data/foreigner_kospi200.csv",
-            "data/data_5225_20260928.csv",
-            "scripts/data/foreigner_kospi200.csv",
-            "/mnt/data/foreigner_kospi200_real.csv",
-            "/mnt/data/data_5225_20260928.csv"
-        ]
-        for csv_path in csv_paths:
-            if os.path.exists(csv_path):
+def get_foreigner_factor_real(min_samples: int = 20):
+    """
+    KOSPI200 외국인 순매수 시계열을 표준 CSV에서 읽는다.
+
+    표준 CSV 스키마:
+        date,institution,other_corp,individual,foreigner,total
+
+    운영 원칙:
+    - date와 foreigner 열이 반드시 있어야 한다.
+    - 난수, 0.85 fallback, 임의 추정값을 생성하지 않는다.
+    - 데이터가 부족하거나 훼손되면 빈 값과 MISSING 상태를 반환한다.
+
+    Returns:
+        values: 오래된 날짜 -> 최신 날짜 순의 외국인 순매수 시계열
+        latest: 최신 외국인 순매수값
+        z_score: 최근 120개 관측치 기준 Z-score
+        metadata: 데이터 출처와 품질 상태
+    """
+    import pandas as pd
+
+    csv_paths = [
+        "data/foreigner_kospi200.csv",
+        "scripts/data/foreigner_kospi200.csv",
+        "/mnt/data/foreigner_kospi200_real.csv",
+    ]
+
+    last_error = None
+
+    for csv_path in csv_paths:
+        if not os.path.exists(csv_path):
+            continue
+
+        try:
+            df = None
+
+            for encoding in ("utf-8-sig", "utf-8", "cp949", "euc-kr"):
                 try:
-                    df = pd.read_csv(csv_path, encoding="cp949")
-                except:
-                    df = pd.read_csv(csv_path, encoding="utf-8")
-                col = '외국인_순매수' if '외국인_순매수' in df.columns else '외국인 합계'
-                if col in df.columns:
-                    series = df[col].astype(float).tolist()[::-1]
-                    closes = series
-                    latest = series[-1] if series else 0
-                    z = calc_z_score(closes, window=120)
-                    print(f"[15007 REAL] foreigner {len(closes)} latest {latest:.0f} z {z}")
-                    return closes, latest, z
-    except Exception as e:
-        print(f"[15007] Error: {e}")
-    return [], 0, 0.85
+                    df = pd.read_csv(csv_path, encoding=encoding)
+                    break
+                except UnicodeDecodeError:
+                    continue
+
+            if df is None:
+                raise ValueError("CSV encoding could not be decoded")
+
+            required_columns = {"date", "foreigner"}
+            missing_columns = required_columns - set(df.columns)
+
+            if missing_columns:
+                raise ValueError(
+                    f"required columns missing: {sorted(missing_columns)}; "
+                    f"actual columns: {df.columns.tolist()}"
+                )
+
+            normalized = df[["date", "foreigner"]].copy()
+
+            normalized["date"] = pd.to_datetime(
+                normalized["date"],
+                errors="coerce",
+            )
+
+            normalized["foreigner"] = pd.to_numeric(
+                normalized["foreigner"]
+                .astype(str)
+                .str.replace(",", "", regex=False)
+                .str.replace('"', "", regex=False),
+                errors="coerce",
+            )
+
+            normalized = (
+                normalized
+                .dropna(subset=["date", "foreigner"])
+                .drop_duplicates(subset=["date"], keep="last")
+                .sort_values("date")
+            )
+
+            if len(normalized) < min_samples:
+                raise ValueError(
+                    f"insufficient observations: "
+                    f"{len(normalized)} < {min_samples}"
+                )
+
+            values = normalized["foreigner"].astype(float).tolist()
+            latest = values[-1]
+
+            if latest == 0:
+                raise ValueError("latest foreigner value is zero")
+
+            z_score = calc_z_score(values, window=120)
+            latest_date = normalized["date"].iloc[-1].strftime("%Y-%m-%d")
+
+            metadata = {
+                "status": "REAL",
+                "source": "local_csv",
+                "path": csv_path,
+                "column": "foreigner",
+                "rows": len(values),
+                "latest_date": latest_date,
+                "fallback_used": False,
+                "synthetic_data_used": False,
+            }
+
+            print(
+                f"[FOREIGNER REAL] path={csv_path} "
+                f"rows={len(values)} "
+                f"latest_date={latest_date} "
+                f"latest={latest:.0f} "
+                f"z={z_score:+.2f}"
+            )
+
+            return values, latest, z_score, metadata
+
+        except Exception as exc:
+            last_error = f"{csv_path}: {exc}"
+            print(f"[FOREIGNER REAL] rejected: {last_error}")
+
+    error_message = last_error or "no foreigner CSV found"
+
+    metadata = {
+        "status": "MISSING",
+        "source": "unavailable",
+        "reason": error_message,
+        "fallback_used": False,
+        "synthetic_data_used": False,
+    }
+
+    print(f"[FOREIGNER REAL] unavailable: {error_message}")
+
+    return [], 0.0, 0.0, metadata
 
 
 def get_all_factor_z_scores():
