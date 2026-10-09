@@ -115,19 +115,19 @@ const { useState, useMemo, useEffect } = React;
                     <span className="w-8 h-8 rounded-xl bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-700">?</span>
                     도움말 • KOSPI Quant Terminal 사용법
                   </h2>
-                  <div className="text-xs font-mono text-slate-500 mt-1">v61.5 Trader Centric • 5 Tabs • Left-Right 필터 • 07:30 KST 자동 업데이트</div>
+                  <div className="text-xs font-mono text-slate-500 mt-1">v62.0 Factor Clusters • 5 Tabs • Left-Right 필터 • 07:30 KST 자동 업데이트</div>
                 </div>
                 <button onClick={onClose} className="w-9 h-9 rounded-full bg-[#1e3a8a] text-white hover:bg-[#23408e] btn-modern">✕</button>
               </div>
               <div className="mt-6 space-y-5 text-sm">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="p-3 rounded-xl bg-[#1e3a8a] text-white"><div className="text-xs font-bold">1. 왼쪽 INDUSTRIES</div><div className="text-xs mt-1 text-slate-300">8개 업종 선택 → 중앙 필터 • R² 0.71~0.91 • 전기전자 0.91 최고</div></div>
-                  <div className="p-3 rounded-xl bg-white border"><div className="text-xs font-bold">2. 중앙 5 Tabs</div><div className="text-xs mt-1 text-slate-600">추천(8) / 전체64 / 성과 / 마켓 / 시스템 • Factor Beta 바</div></div>
-                  <div className="p-3 rounded-xl bg-white border"><div className="text-xs font-bold">3. 오른쪽 FACTOR</div><div className="text-xs mt-1 text-slate-600">Z-Score 클릭 → 중앙 필터링 • 구리, 상해, S&P500 등 10개</div></div>
+                  <div className="p-3 rounded-xl bg-[#1e3a8a] text-white"><div className="text-xs font-bold">1. 왼쪽 FACTOR CLUSTERS</div><div className="text-xs mt-1 text-slate-300">8개 클러스터 선택 → 중앙 필터 • R² 0.79~0.93 • 달러+2 0.93 최고 • K-means k=8 (Silhouette 0.0907)</div></div>
+                  <div className="p-3 rounded-xl bg-white border"><div className="text-xs font-bold">2. 중앙 5 Tabs</div><div className="text-xs mt-1 text-slate-600">추천(8) / 전체64 / 성과 / 마켓 / 시스템 • Factor Beta 바 • 190종 KOSPI200</div></div>
+                  <div className="p-3 rounded-xl bg-white border"><div className="text-xs font-bold">3. 오른쪽 FACTOR</div><div className="text-xs mt-1 text-slate-600">Z-Score 클릭 → 중앙 필터링 • 10 Factors (SP500, 외국인, SOX, US10Y, 원달러, WTI, DXY, VIX, 구리, 상해)</div></div>
                 </div>
                 <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs leading-relaxed">
                   <div className="font-bold text-blue-900">💡 트레이더 사용법</div>
-                  <div className="mt-1 text-slate-700">• 왼쪽 산업 클릭: 해당 산업 8종 추천 • 오른쪽 팩터 클릭: 해당 팩터에 민감한 종목만 필터 (예: 구리 클릭 → 화학·철강 위주) • DART ON/OFF: 부실주 제거 필터 • 07:30 체크리스트 4개 모두 ✓여야 신뢰도 높음</div>
+                  <div className="mt-1 text-slate-700">• 왼쪽 클러스터 클릭: 해당 클러스터 8종 추천 (예: VIX민감 → 변동성 민감 15종 중 Top 8) • 오른쪽 팩터 클릭: 해당 팩터에 민감한 종목만 필터 (예: 구리 클릭 → 구리 β 높은 클러스터 위주) • DART ON/OFF: 부실주 제거 필터 • 07:30 체크리스트 4개 모두 ✓여야 신뢰도 높음 • KOSPI200 190종 + GICS + KRICS pending 2026-10-26</div>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 border text-xs">
                   <div className="font-bold">DATA PIPELINE</div>
@@ -141,7 +141,7 @@ const { useState, useMemo, useEffect } = React;
 
 
       function App() {
-        const [selectedIndustry, setSelectedIndustry] = useState("elec");
+        const [selectedIndustry, setSelectedIndustry] = useState("fc1");
         const [selectedFactor, setSelectedFactor] = useState(null);
         const [filterEnabled, setFilterEnabled] = useState(true);
         const [zScores, setZScores] = useState({
@@ -371,12 +371,15 @@ const { useState, useMemo, useEffect } = React;
 
               <aside className="col-span-12 md:col-span-2 space-y-4 md:sticky md:top-[88px] md:h-[calc(100vh-6rem)] md:overflow-auto">
                 <div className="rounded-2xl bg-[#e0f2fe] text-[#0c4a6e] p-4 border border-[#bae6fd]">
-                  <div className="flex items-center justify-between"><h3 className="text-xs font-bold tracking-widest text-[#0369a1]">INDUSTRIES • 8</h3><span className="w-2 h-2 rounded-full bg-[#0ea5e9] animate-pulse"></span></div>
-                  <div className="mt-1 text-xs text-[#0284c7]">업종 선택 • 중앙 필터</div>
+                  <div className="flex items-center justify-between"><h3 className="text-xs font-bold tracking-widest text-[#0369a1]">FACTOR CLUSTERS • 8</h3><span className="w-2 h-2 rounded-full bg-[#0ea5e9] animate-pulse"></span></div>
+                  <div className="mt-1 text-xs text-[#0284c7]">클러스터 선택 • 중앙 필터</div>
                   <div className="mt-4 space-y-2">
                     {(typeof industries !== "undefined" ? industries : []).map((ind) => {
                       const isSelected = ind.id === selectedIndustry;
-                      const pred = contributions.filter(c => Object.keys(ind.betas).includes(c.factor)).reduce((s,c) => s + c.contrib, 0);
+                      const pred = Object.entries(ind.betas || {}).reduce((s, [f, b]) => {
+                        const z = zScores[f] ?? zScores[factorMeta[f]?.label] ?? 0;
+                        return s + b * z;
+                      }, 0);
                       return (
                         <button key={ind.id} onClick={() => setSelectedIndustry(ind.id)} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all text-left border ${isSelected ? "bg-white text-[#0c4a6e] border-[#7dd3fc]" : "bg-white/70 hover:bg-white text-[#475569] border-white/50 hover:border-[#7dd3fc]"}`}>
                           <div className="flex items-center gap-2.5"><div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: `${(ind?.color || '#3182f6')}15`, color: (ind?.color || '#3182f6') }}>{(ind?.icon || '◫')}</div><div><div className="text-xs font-bold">{(ind?.short || ind?.id || 'FC')}</div><div className="text-xs text-slate-500">R² {(ind?.r2 || 0.8)}</div></div></div>
@@ -475,8 +478,8 @@ const { useState, useMemo, useEffect } = React;
                 {activeTab === "top" && (
                   <div className="mt-4 space-y-4">
                     <div className="rounded-2xl bg-white border border-slate-200 p-4">
-                      <h3 className="text-sm font-bold flex items-center gap-2">📊 오늘 Top 예측 (α·β) • 8개 업종 랭킹</h3>
-                      <div className="mt-1 text-xs text-slate-500">예측수익률 기준 정렬 • Top1이 오늘 최강 업종 • 클릭하면 해당 업종 필터</div>
+                      <h3 className="text-sm font-bold flex items-center gap-2">📊 오늘 Top 예측 (α·β) • 8개 클러스터 랭킹</h3>
+                      <div className="mt-1 text-xs text-slate-500">예측수익률 기준 정렬 • Top1이 오늘 최강 클러스터 • 클릭하면 해당 클러스터 필터</div>
                       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
                         {(typeof industries !== "undefined" ? industries : []).map((ind) => ({ ...ind, pred: Object.entries(ind.betas).reduce((s,[f,b]) => s + (zScores[f] ?? 0)*b, 0) })).sort((a,b) => b.pred - a.pred).map((item, idx) => {
                           const isSelected = item.id === selectedIndustry;
