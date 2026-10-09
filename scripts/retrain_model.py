@@ -1,67 +1,124 @@
 """
-retrain_model.py v60.2 - 6개월 재학습 자동화 100% REAL + RidgeCV + Regime
-- 180일 롤링 윈도우로 8개 산업별 Ridge 회귀 재학습
-- Factor: 10개 (S&P500, US10Y, 외국인, SOX, 원달러, WTI, DXY, VIX, 구리, 상해종합)
-- Industry proxy: 각 업종 대표주 (삼성전자, 현대차 등) 수익률로 학습 - yfinance REAL
-- RidgeCV λ 최적화 [0.1,0.5,1.0,2.0] + VIF < 2.5 체크 + R² 추적 + 70% new 30% old blending
-- Firebase: retrain_history/{date}, beta_snapshots/{date}, beta_snapshots/latest, retrain_logs/{date}
-- js/data.js 자동 생성 (수동 커밋용) + Frontend에서 latest 베타 읽기 지원
-- 매월 1일 02:00 UTC (11:00 KST) 실행 - retrain.yml
+retrain_model.py v61.6-data-integrity
+
+운영 원칙:
+- 실제 데이터만 사용한다.
+- 외국인 팩터 또는 산업 대표 종목 가격이 부족하면 재학습을 중단한다.
+- 난수, 합성값, 0.85 fallback을 절대 사용하지 않는다.
+- 실패 시 beta_snapshots/latest를 덮어쓰지 않는다.
 """
 
-import os
 import json
-import numpy as np
+import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
 
-try:
-    from price_provider import get_market_indicator, get_stock_prices, calc_z_score
-except ImportError:
-    from scripts.price_provider import get_market_indicator, get_stock_prices, calc_z_score
+import numpy as np
 
-# Firebase
+try:
+    from price_provider import (
+        get_foreigner_factor_real,
+        get_market_indicator,
+        get_stock_prices,
+    )
+except ImportError:
+    from scripts.price_provider import (
+        get_foreigner_factor_real,
+        get_market_indicator,
+        get_stock_prices,
+    )
+
 try:
     import firebase_admin
     from firebase_admin import credentials, firestore
-    cred_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
-    if cred_json:
-        cred_dict = json.loads(cred_json)
-        if not firebase_admin._apps:
-            cred = credentials.Certificate(cred_dict)
-            firebase_admin.initialize_app(cred)
-        db = firestore.client()
-        print("[Firebase] retrain - connected v60.2")
-    else:
-        db = None
-        print("[Firebase] No cred - local mode v60.2")
-except Exception as e:
-    db = None
-    print(f"[Firebase] init error: {e}")
+except ImportError:
+    firebase_admin = None
+    credentials = None
+    firestore = None
 
-# 8개 산업 대표주 (proxy for industry return) - REAL
+
+RETRAIN_VERSION = "v61.6-data-integrity"
+WINDOW_DAYS = 180
+MIN_FACTOR_SAMPLES = 120
+MIN_INDUSTRY_SAMPLES = 120
+ALPHA_CANDIDATES = [0.1, 0.5, 1.0, 2.0]
+
+
 INDUSTRY_PROXY = {
-    "elec": "005930",  # 삼성전자
-    "auto": "005380",  # 현대차
-    "chem": "051910",  # LG화학
-    "fin": "055550",   # 신한지주
-    "bio": "068270",   # 셀트리온
-    "steel": "005490", # POSCO홀딩스
-    "const": "009540", # HD한국조선해양
-    "retail": "035420", # NAVER
+    "elec": "005930",
+    "auto": "005380",
+    "chem": "051910",
+    "fin": "055550",
+    "bio": "068270",
+    "steel": "005490",
+    "const": "009540",
+    "retail": "035420",
 }
 
-# 기존 베타 (fallback) - data.js에서 가져온 초기값 v60
+
 BASE_BETAS = {
-    "elec": {"S&P500": 0.42, "외국인 선물": 0.28, "SOX / 필라": 0.35, "US 10Y": -0.18, "구리": 0.15, "상해종합": 0.10, "DXY": -0.08, "VIX": -0.06},
-    "auto": {"원달러": 0.25, "WTI": -0.15, "S&P500": 0.20, "구리": 0.12, "상해종합": 0.14, "DXY": 0.10},
-    "chem": {"구리": 0.32, "상해종합": 0.22, "WTI": -0.18, "원달러": -0.10, "S&P500": 0.12},
-    "fin": {"US 10Y": -0.30, "DXY": 0.18, "외국인 선물": 0.15, "VIX": -0.15, "S&P500": 0.10},
-    "bio": {"US 10Y": -0.22, "S&P500": 0.18, "VIX": -0.18, "DXY": -0.06},
-    "steel": {"구리": 0.35, "상해종합": 0.28, "원달러": 0.15, "WTI": 0.14, "S&P500": 0.08, "DXY": 0.10},
-    "const": {"구리": 0.22, "상해종합": 0.18, "원달러": 0.15, "WTI": 0.08, "DXY": 0.08},
-    "retail": {"S&P500": 0.22, "외국인 선물": 0.18, "상해종합": 0.12, "구리": 0.08, "VIX": -0.10},
+    "elec": {
+        "S&P500": 0.42,
+        "외국인 선물": 0.28,
+        "SOX / 필라": 0.35,
+        "US 10Y": -0.18,
+        "구리": 0.15,
+        "상해종합": 0.10,
+        "DXY": -0.08,
+        "VIX": -0.06,
+    },
+    "auto": {
+        "원달러": 0.25,
+        "WTI": -0.15,
+        "S&P500": 0.20,
+        "구리": 0.12,
+        "상해종합": 0.14,
+        "DXY": 0.10,
+    },
+    "chem": {
+        "구리": 0.32,
+        "상해종합": 0.22,
+        "WTI": -0.18,
+        "원달러": -0.10,
+        "S&P500": 0.12,
+    },
+    "fin": {
+        "US 10Y": -0.30,
+        "DXY": 0.18,
+        "외국인 선물": 0.15,
+        "VIX": -0.15,
+        "S&P500": 0.10,
+    },
+    "bio": {
+        "US 10Y": -0.22,
+        "S&P500": 0.18,
+        "VIX": -0.18,
+        "DXY": -0.06,
+    },
+    "steel": {
+        "구리": 0.35,
+        "상해종합": 0.28,
+        "원달러": 0.15,
+        "WTI": 0.14,
+        "S&P500": 0.08,
+        "DXY": 0.10,
+    },
+    "const": {
+        "구리": 0.22,
+        "상해종합": 0.18,
+        "원달러": 0.15,
+        "WTI": 0.08,
+        "DXY": 0.08,
+    },
+    "retail": {
+        "S&P500": 0.22,
+        "외국인 선물": 0.18,
+        "상해종합": 0.12,
+        "구리": 0.08,
+        "VIX": -0.10,
+    },
 }
+
 
 FACTOR_CANONICAL = {
     "S&P500": "SP500",
@@ -73,305 +130,715 @@ FACTOR_CANONICAL = {
     "DXY": "DXY",
     "VIX": "VIX",
     "구리": "구리",
-    "상해종합": "상해종합"
+    "상해종합": "상해종합",
 }
 
-def fetch_factor_history(days: int = 180) -> Tuple[Dict[str, List[float]], Dict[str, List[float]]]:
-    """180일 팩터 수익률 히스토리 REAL - yfinance + pykrx"""
-    print(f"[Retrain] Fetching {days}d factor history - 10 factors REAL")
-    factor_closes = {}
-    factor_returns = {}
-    
-    for name in ["SP500", "US10Y", "SOX", "원달러", "WTI", "DXY", "VIX", "구리", "상해종합"]:
-        try:
-            closes, _ = get_market_indicator(name, period="6mo")
-            if closes:
-                closes = closes[-days:]
-                factor_closes[name] = closes
-                rets = [(closes[i] - closes[i-1])/closes[i-1]*100 if closes[i-1] != 0 else 0 for i in range(1, len(closes))]
-                factor_returns[name] = rets
-                print(f"[Retrain] {name}: {len(closes)} closes, latest {closes[-1]:.2f} avg ret {np.mean(rets):+.3f}%")
-        except Exception as e:
-            print(f"[Retrain] Factor {name} fetch error: {e}")
-    
-    # 외국인 선물 proxy - SP500 기반 + 노이즈 (pykrx 실패 시)
-    if "SP500" in factor_returns:
-        sp_rets = factor_returns["SP500"]
-        factor_returns["외국인"] = [r*0.8 + np.random.normal(0, 0.3) for r in sp_rets]
-        factor_closes["외국인"] = factor_closes.get("SP500", [])
-    
-    return factor_closes, factor_returns
 
-def fetch_industry_returns(days: int = 180) -> Dict[str, List[float]]:
-    """8개 산업 대표주 수익률 - REAL yfinance"""
-    print(f"[Retrain] Fetching industry proxy returns - {days}d REAL")
-    industry_returns = {}
-    
-    for ind_id, ticker in INDUSTRY_PROXY.items():
+def init_firebase():
+    """Firebase Admin SDK를 초기화한다. 자격증명이 없으면 로컬 모드로 실행한다."""
+    if firebase_admin is None:
+        print("[Firebase] firebase-admin not installed; local mode")
+        return None
+
+    credential_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT", "")
+
+    if not credential_json:
+        print("[Firebase] no service account; local mode")
+        return None
+
+    try:
+        credential_dict = json.loads(credential_json)
+
+        if not firebase_admin._apps:
+            credential = credentials.Certificate(credential_dict)
+            firebase_admin.initialize_app(credential)
+
+        print("[Firebase] retrain connected")
+        return firestore.client()
+
+    except Exception as exc:
+        print(f"[Firebase] init error: {exc}")
+        return None
+
+
+db = init_firebase()
+
+
+def to_returns(closes: List[float]) -> List[float]:
+    """가격 시계열을 일간 단순 수익률(%)로 변환한다."""
+    if len(closes) < 2:
+        return []
+
+    returns = []
+
+    for index in range(1, len(closes)):
+        previous = float(closes[index - 1])
+        current = float(closes[index])
+
+        if previous == 0:
+            continue
+
+        returns.append((current - previous) / previous * 100)
+
+    return returns
+
+
+def fetch_factor_history(
+    days: int = WINDOW_DAYS,
+) -> Tuple[Dict[str, List[float]], Dict[str, List[float]], Dict]:
+    """
+    재학습용 팩터 시계열을 실제 데이터에서만 가져온다.
+
+    하나라도 최소 표본 기준을 충족하지 못하면 RuntimeError를 발생시켜
+    재학습 workflow가 실패하도록 만든다.
+    """
+    print(f"[Retrain] loading {days} days of REAL factor history")
+
+    factor_closes: Dict[str, List[float]] = {}
+    factor_returns: Dict[str, List[float]] = {}
+
+    market_factors = [
+        "SP500",
+        "US10Y",
+        "SOX",
+        "원달러",
+        "WTI",
+        "DXY",
+        "VIX",
+        "구리",
+        "상해종합",
+    ]
+
+    for factor_name in market_factors:
+        closes, _ = get_market_indicator(factor_name, period="1y")
+        closes = [
+            float(value)
+            for value in closes
+            if value is not None
+        ][-days:]
+
+        if len(closes) < MIN_FACTOR_SAMPLES:
+            raise RuntimeError(
+                f"factor {factor_name} has insufficient closes: "
+                f"{len(closes)} < {MIN_FACTOR_SAMPLES}"
+            )
+
+        returns = to_returns(closes)
+
+        if len(returns) < MIN_FACTOR_SAMPLES - 1:
+            raise RuntimeError(
+                f"factor {factor_name} has insufficient returns: "
+                f"{len(returns)} < {MIN_FACTOR_SAMPLES - 1}"
+            )
+
+        factor_closes[factor_name] = closes
+        factor_returns[factor_name] = returns
+
+        print(
+            f"[Retrain] factor={factor_name} "
+            f"closes={len(closes)} returns={len(returns)} "
+            f"latest={closes[-1]:.4f}"
+        )
+
+    foreigner_values, foreigner_latest, _, foreigner_meta = (
+        get_foreigner_factor_real(
+            min_samples=MIN_FACTOR_SAMPLES
+        )
+    )
+
+    if foreigner_meta.get("status") != "REAL":
+        raise RuntimeError(
+            "foreigner factor unavailable: "
+            f"{foreigner_meta.get('reason', 'unknown error')}"
+        )
+
+    foreigner_values = [
+        float(value)
+        for value in foreigner_values
+        if value is not None
+    ][-days:]
+
+    foreigner_returns = to_returns(foreigner_values)
+
+    if len(foreigner_returns) < MIN_FACTOR_SAMPLES - 1:
+        raise RuntimeError(
+            "foreigner factor has insufficient returns: "
+            f"{len(foreigner_returns)} < {MIN_FACTOR_SAMPLES - 1}"
+        )
+
+    factor_closes["외국인"] = foreigner_values
+    factor_returns["외국인"] = foreigner_returns
+
+    print(
+        f"[Retrain] factor=외국인 "
+        f"rows={len(foreigner_values)} "
+        f"returns={len(foreigner_returns)} "
+        f"latest={foreigner_latest:.0f} "
+        f"latest_date={foreigner_meta.get('latest_date')}"
+    )
+
+    data_meta = {
+        "data_status": "REAL_ONLY",
+        "synthetic_data_used": False,
+        "fallback_used": False,
+        "foreigner": foreigner_meta,
+    }
+
+    return factor_closes, factor_returns, data_meta
+
+
+def fetch_industry_returns(days: int = WINDOW_DAYS) -> Dict[str, List[float]]:
+    """
+    8개 산업 대표주의 실제 수익률만 반환한다.
+
+    일부 종목 데이터가 부족해도 난수를 만들지 않는다.
+    하나라도 실패하면 재학습 전체를 실패 처리한다.
+    """
+    print("[Retrain] loading REAL industry proxy returns")
+
+    industry_returns: Dict[str, List[float]] = {}
+    failed_industries = []
+
+    for industry_id, ticker in INDUSTRY_PROXY.items():
         try:
-            closes, _ = get_stock_prices(ticker, period="6mo")
-            if closes and len(closes) >= 20:
-                closes = closes[-days:]
-                rets = [(closes[i] - closes[i-1])/closes[i-1]*100 if closes[i-1] != 0 else 0 for i in range(1, len(closes))]
-                industry_returns[ind_id] = rets
-                print(f"[Retrain] {ind_id} {ticker}: {len(rets)} returns, avg {np.mean(rets):+.3f}% std {np.std(rets):.2f}%")
-            else:
-                print(f"[Retrain] {ind_id} {ticker}: no data, synthetic")
-                industry_returns[ind_id] = [np.random.normal(0, 1.2) for _ in range(days-1)]
-        except Exception as e:
-            print(f"[Retrain] Industry {ind_id} error: {e}, synthetic")
-            industry_returns[ind_id] = [np.random.normal(0, 1.2) for _ in range(days-1)]
-    
+            closes, _ = get_stock_prices(ticker, period="1y")
+
+            closes = [
+                float(value)
+                for value in closes
+                if value is not None
+            ][-days:]
+
+            if len(closes) < MIN_INDUSTRY_SAMPLES:
+                raise ValueError(
+                    f"insufficient closes: "
+                    f"{len(closes)} < {MIN_INDUSTRY_SAMPLES}"
+                )
+
+            returns = to_returns(closes)
+
+            if len(returns) < MIN_INDUSTRY_SAMPLES - 1:
+                raise ValueError(
+                    f"insufficient returns: "
+                    f"{len(returns)} < {MIN_INDUSTRY_SAMPLES - 1}"
+                )
+
+            industry_returns[industry_id] = returns
+
+            print(
+                f"[Retrain] industry={industry_id} "
+                f"ticker={ticker} "
+                f"returns={len(returns)} "
+                f"latest={closes[-1]:.0f}"
+            )
+
+        except Exception as exc:
+            failed_industries.append(
+                f"{industry_id}({ticker}): {exc}"
+            )
+
+    if failed_industries:
+        raise RuntimeError(
+            "industry proxy retrieval failed; retraining aborted: "
+            + " | ".join(failed_industries)
+        )
+
     return industry_returns
 
-def ridge_regression(X: np.ndarray, y: np.ndarray, alpha: float = 0.5) -> Tuple[np.ndarray, float]:
-    """Ridge 회귀 - numpy 구현"""
-    try:
-        n_features = X.shape[1]
-        A = X.T @ X + alpha * np.eye(n_features)
-        b = X.T @ y
-        betas = np.linalg.solve(A, b)
-        y_pred = X @ betas
-        ss_res = np.sum((y - y_pred) ** 2)
-        ss_tot = np.sum((y - np.mean(y)) ** 2)
-        r2 = 1 - ss_res / ss_tot if ss_tot > 0 else 0
-        return betas, r2
-    except Exception as e:
-        print(f"[Ridge] Error: {e}")
-        return np.zeros(X.shape[1]), 0.0
 
-def train_industry_model(factor_returns: Dict[str, List[float]], industry_rets: List[float], industry_id: str) -> Dict:
-    """한 업종 Ridge 재학습 - REAL"""
+def ridge_regression(
+    x_matrix: np.ndarray,
+    y_values: np.ndarray,
+    alpha: float,
+) -> Tuple[np.ndarray, float]:
+    """NumPy 기반 Ridge 회귀와 학습 구간 R²를 계산한다."""
     try:
-        min_len = min(len(industry_rets), min([len(v) for v in factor_returns.values() if v] or [len(industry_rets)]))
-        if min_len < 30:
-            print(f"[Retrain] {industry_id}: too short {min_len}, fallback")
-            return {"betas": BASE_BETAS.get(industry_id, {}), "r2": 0.75, "method": "fallback short", "samples": min_len}
-        
-        factor_names = list(BASE_BETAS.get(industry_id, {}).keys())
-        if not factor_names:
-            factor_names = ["S&P500", "구리", "상해종합", "원달러", "WTI", "DXY"][:6]
-        
-        X_data = []
-        for fname in factor_names:
-            canonical = FACTOR_CANONICAL.get(fname, fname)
-            f_rets = factor_returns.get(canonical) or factor_returns.get(fname) or [0]*min_len
-            X_data.append(f_rets[-min_len:])
-        
-        X = np.array(X_data).T
-        y = np.array(industry_rets[-min_len:])
-        
-        X_mean = np.mean(X, axis=0)
-        X_std = np.std(X, axis=0) + 1e-8
-        X_norm = (X - X_mean) / X_std
-        
-        best_alpha = 0.5
-        best_r2 = -1
-        best_betas = None
-        
-        for alpha in [0.1, 0.5, 1.0, 2.0]:
-            betas, r2 = ridge_regression(X_norm, y, alpha=alpha)
-            if r2 > best_r2:
-                best_r2 = r2
-                best_alpha = alpha
-                best_betas = betas
-        
-        betas_original = best_betas / X_std
-        
-        betas_dict = {}
-        for i, fname in enumerate(factor_names):
-            b = float(np.clip(betas_original[i], -0.6, 0.6))
-            old_b = BASE_BETAS.get(industry_id, {}).get(fname, 0)
-            b_blended = 0.7 * b + 0.3 * old_b
-            betas_dict[fname] = round(b_blended, 3)
-        
-        print(f"[Retrain] {industry_id}: alpha {best_alpha} R2 {best_r2:.3f} betas {betas_dict}")
-        
-        return {
-            "betas": betas_dict,
-            "r2": round(float(best_r2), 3),
-            "alpha": best_alpha,
-            "samples": min_len,
-            "method": f"RidgeCV {best_alpha} {min_len}D REAL",
-            "factor_names": factor_names
-        }
-    except Exception as e:
-        print(f"[Retrain] {industry_id} train error: {e}")
-        import traceback
-        traceback.print_exc()
-        return {"betas": BASE_BETAS.get(industry_id, {}), "r2": 0.75, "method": f"fallback error", "samples": 0}
+        feature_count = x_matrix.shape[1]
+
+        matrix_a = (
+            x_matrix.T @ x_matrix
+            + alpha * np.eye(feature_count)
+        )
+        matrix_b = x_matrix.T @ y_values
+
+        betas = np.linalg.solve(matrix_a, matrix_b)
+        predictions = x_matrix @ betas
+
+        residual_sum = np.sum((y_values - predictions) ** 2)
+        total_sum = np.sum((y_values - np.mean(y_values)) ** 2)
+
+        r_squared = (
+            1 - residual_sum / total_sum
+            if total_sum > 0
+            else 0.0
+        )
+
+        return betas, float(r_squared)
+
+    except Exception as exc:
+        raise RuntimeError(f"ridge regression failed: {exc}") from exc
+
+
+def train_industry_model(
+    factor_returns: Dict[str, List[float]],
+    industry_returns: List[float],
+    industry_id: str,
+) -> Dict:
+    """
+    산업별 대표 종목 수익률로 Ridge 모델을 학습한다.
+
+    주의:
+    - 이 단계에서는 날짜 기반 정렬이 아직 구현되지 않았다.
+    - 다음 단계에서 모든 시계열을 기준일로 inner join해야 한다.
+    """
+    factor_names = list(BASE_BETAS[industry_id].keys())
+
+    required_factor_returns = []
+
+    for factor_name in factor_names:
+        canonical_name = FACTOR_CANONICAL[factor_name]
+        values = factor_returns.get(canonical_name, [])
+
+        if not values:
+            raise RuntimeError(
+                f"{industry_id}: factor data missing for {factor_name}"
+            )
+
+        required_factor_returns.append(values)
+
+    sample_count = min(
+        len(industry_returns),
+        *[len(values) for values in required_factor_returns],
+    )
+
+    if sample_count < MIN_INDUSTRY_SAMPLES - 1:
+        raise RuntimeError(
+            f"{industry_id}: insufficient common sample count: "
+            f"{sample_count}"
+        )
+
+    x_columns = [
+        values[-sample_count:]
+        for values in required_factor_returns
+    ]
+
+    x_matrix = np.array(x_columns, dtype=float).T
+    y_values = np.array(
+        industry_returns[-sample_count:],
+        dtype=float,
+    )
+
+    x_mean = np.mean(x_matrix, axis=0)
+    x_std = np.std(x_matrix, axis=0)
+
+    if np.any(x_std < 1e-8):
+        raise RuntimeError(
+            f"{industry_id}: at least one factor has near-zero variance"
+        )
+
+    x_normalized = (x_matrix - x_mean) / x_std
+
+    best_alpha = None
+    best_r_squared = -np.inf
+    best_betas = None
+
+    for alpha in ALPHA_CANDIDATES:
+        candidate_betas, candidate_r_squared = ridge_regression(
+            x_normalized,
+            y_values,
+            alpha,
+        )
+
+        if candidate_r_squared > best_r_squared:
+            best_alpha = alpha
+            best_r_squared = candidate_r_squared
+            best_betas = candidate_betas
+
+    if best_betas is None:
+        raise RuntimeError(
+            f"{industry_id}: no valid ridge model produced"
+        )
+
+    original_scale_betas = best_betas / x_std
+    blended_betas = {}
+
+    for index, factor_name in enumerate(factor_names):
+        new_beta = float(
+            np.clip(original_scale_betas[index], -0.6, 0.6)
+        )
+        base_beta = BASE_BETAS[industry_id][factor_name]
+
+        blended_beta = (
+            0.7 * new_beta
+            + 0.3 * base_beta
+        )
+
+        blended_betas[factor_name] = round(
+            float(blended_beta),
+            3,
+        )
+
+    print(
+        f"[Retrain] industry={industry_id} "
+        f"alpha={best_alpha} "
+        f"r2={best_r_squared:.3f} "
+        f"samples={sample_count}"
+    )
+
+    return {
+        "betas": blended_betas,
+        "r2": round(float(best_r_squared), 3),
+        "alpha": best_alpha,
+        "samples": sample_count,
+        "method": "Ridge real-only inputs; no synthetic fallback",
+        "factor_names": factor_names,
+        "data_status": "REAL_ONLY",
+        "synthetic_data_used": False,
+        "fallback_used": False,
+    }
+
 
 def build_retrain_snapshot():
-    """전체 재학습 스냅샷"""
-    print("=== Retrain v60.2 - 6개월 재학습 시작 - REAL ===")
-    date_str = datetime.now().strftime("%Y-%m-%d")
-    
-    factor_closes, factor_returns = fetch_factor_history(days=180)
-    industry_returns = fetch_industry_returns(days=180)
-    
+    """전체 산업 재학습 결과 스냅샷을 생성한다."""
+    print("=== Retrain v61.6 data-integrity: REAL_ONLY ===")
+
+    date_string = datetime.now().strftime("%Y-%m-%d")
+
+    factor_closes, factor_returns, data_meta = (
+        fetch_factor_history(WINDOW_DAYS)
+    )
+
+    industry_returns = fetch_industry_returns(WINDOW_DAYS)
+
     retrained = {}
-    r2_list = []
-    
-    for ind_id in INDUSTRY_PROXY.keys():
-        result = train_industry_model(factor_returns, industry_returns.get(ind_id, []), ind_id)
-        retrained[ind_id] = result
-        r2_list.append(result.get("r2", 0))
-    
-    avg_r2 = float(np.mean(r2_list)) if r2_list else 0.80
-    
+    r_squared_values = []
+
+    for industry_id in INDUSTRY_PROXY:
+        result = train_industry_model(
+            factor_returns,
+            industry_returns[industry_id],
+            industry_id,
+        )
+
+        retrained[industry_id] = result
+        r_squared_values.append(result["r2"])
+
+    average_r_squared = (
+        float(np.mean(r_squared_values))
+        if r_squared_values
+        else 0.0
+    )
+
     beta_changes = {}
-    for ind_id, result in retrained.items():
-        old = BASE_BETAS.get(ind_id, {})
-        new = result.get("betas", {})
+
+    for industry_id, result in retrained.items():
+        previous_betas = BASE_BETAS[industry_id]
+        new_betas = result["betas"]
+
         changes = {}
-        for f, new_b in new.items():
-            old_b = old.get(f, 0)
-            diff = new_b - old_b
-            if abs(diff) > 0.02:
-                changes[f] = {"old": old_b, "new": new_b, "diff": round(diff, 3)}
+
+        for factor_name, new_beta in new_betas.items():
+            old_beta = previous_betas.get(factor_name, 0.0)
+            difference = round(new_beta - old_beta, 3)
+
+            if abs(difference) > 0.02:
+                changes[factor_name] = {
+                    "old": old_beta,
+                    "new": new_beta,
+                    "diff": difference,
+                }
+
         if changes:
-            beta_changes[ind_id] = changes
-    
+            beta_changes[industry_id] = changes
+
     snapshot = {
-        "date": date_str,
+        "date": date_string,
         "timestamp": datetime.now().isoformat(),
-        "version": "v60.2-retrain-6mo-RidgeCV-REAL",
-        "window": 180,
-        "method": "RidgeCV alpha=[0.1,0.5,1.0,2.0] + StandardScaler + 70% new 30% old blending - yfinance REAL",
+        "version": RETRAIN_VERSION,
+        "window": WINDOW_DAYS,
+        "method": (
+            "Ridge alpha selection [0.1,0.5,1.0,2.0] + "
+            "StandardScaler + 70% new / 30% base blending; "
+            "REAL_ONLY inputs; no synthetic fallback"
+        ),
         "industries": retrained,
-        "avg_r2": round(avg_r2, 3),
-        "r2_list": {k: v.get("r2", 0) for k, v in retrained.items()},
+        "avg_r2": round(average_r_squared, 3),
+        "r2_list": {
+            industry_id: result["r2"]
+            for industry_id, result in retrained.items()
+        },
         "beta_changes": beta_changes,
-        "beta_changes_count": sum(len(v) for v in beta_changes.values()),
-        "factor_closes_count": {k: len(v) for k, v in factor_closes.items()},
+        "beta_changes_count": sum(
+            len(changes)
+            for changes in beta_changes.values()
+        ),
+        "factor_closes_count": {
+            factor_name: len(values)
+            for factor_name, values in factor_closes.items()
+        },
         "proxy_tickers": INDUSTRY_PROXY,
-        "next_retrain": (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d"),
-        "retrain_type": "monthly" if datetime.now().day == 1 else "manual",
-        "china_proxy": "구리(HG=F) + 상해종합(000001.SS) - REAL"
+        "next_retrain": (
+            datetime.now() + timedelta(days=30)
+        ).strftime("%Y-%m-%d"),
+        "retrain_type": (
+            "monthly"
+            if datetime.now().day == 1
+            else "manual"
+        ),
+        "data_status": "REAL_ONLY",
+        "synthetic_data_used": False,
+        "fallback_used": False,
+        "retrain_gate": "PASSED",
+        "foreigner_metadata": data_meta["foreigner"],
+        "china_proxy": (
+            "구리(HG=F) + 상해종합(000001.SS); "
+            "source status validated before training"
+        ),
     }
-    
-    print(f"[Retrain] Done - avg R2 {avg_r2:.3f} - changes {snapshot['beta_changes_count']} - next {snapshot['next_retrain']}")
-    return snapshot, factor_closes
+
+    print(
+        f"[Retrain] completed "
+        f"avg_r2={snapshot['avg_r2']:.3f} "
+        f"changes={snapshot['beta_changes_count']}"
+    )
+
+    return snapshot
+
 
 def save_to_firebase(snapshot: Dict):
-    if not db:
-        with open(f"retrain_{snapshot['date']}.json", "w", encoding="utf-8") as f:
-            json.dump(snapshot, f, ensure_ascii=False, indent=2)
-        print(f"[Retrain] Local saved retrain_{snapshot['date']}.json")
+    """
+    정상 재학습 결과만 Firestore에 저장한다.
+
+    build_retrain_snapshot()에서 오류가 나면 이 함수까지 도달하지 않으므로,
+    beta_snapshots/latest는 기존 정상값을 유지한다.
+    """
+    if db is None:
+        output_name = f"retrain_{snapshot['date']}.json"
+
+        with open(
+            output_name,
+            "w",
+            encoding="utf-8",
+        ) as output_file:
+            json.dump(
+                snapshot,
+                output_file,
+                ensure_ascii=False,
+                indent=2,
+            )
+
+        print(f"[Retrain] local snapshot saved: {output_name}")
         return
-    
-    date_str = snapshot["date"]
-    try:
-        db.collection("retrain_history").document(date_str).set(snapshot, merge=True)
-        print(f"[Firebase] saved retrain_history/{date_str} - avg R2 {snapshot['avg_r2']}")
-        
-        beta_only = {ind_id: data["betas"] for ind_id, data in snapshot["industries"].items()}
-        beta_doc = {
-            "date": date_str,
-            "timestamp": datetime.now(),
-            "betas": beta_only,
-            "r2": snapshot["r2_list"],
-            "avg_r2": snapshot["avg_r2"],
-            "version": snapshot["version"],
-            "changes": snapshot["beta_changes_count"]
-        }
-        db.collection("beta_snapshots").document(date_str).set(beta_doc, merge=True)
-        print(f"[Firebase] saved beta_snapshots/{date_str}")
-        
-        db.collection("beta_snapshots").document("latest").set(beta_doc, merge=True)
-        print(f"[Firebase] saved beta_snapshots/latest - avg R2 {snapshot['avg_r2']}")
-        
-        log_doc = {
-            "date": date_str,
-            "avg_r2": snapshot["avg_r2"],
-            "changes": snapshot["beta_changes_count"],
-            "industries": list(snapshot["industries"].keys()),
-            "next_retrain": snapshot["next_retrain"],
-            "version": snapshot["version"]
-        }
-        db.collection("retrain_logs").document(date_str).set(log_doc, merge=True)
-        print(f"[Firebase] saved retrain_logs/{date_str}")
-        
-    except Exception as e:
-        print(f"[Firebase] retrain save error: {e}")
-        import traceback
-        traceback.print_exc()
 
-def generate_data_js(snapshot: Dict, output_path: str = "js/data.js.new"):
-    try:
-        industries = []
-        base_meta = {
-            "elec": {"name": "전기전자/반도체", "short": "전기전자", "icon": "◫", "color": "#2563eb", "grad": "grad-elec", "desc": "나스닥/외국인 + 중국 프록시(구리/상해) 민감"},
-            "auto": {"name": "자동차/운수장비", "short": "자동차", "icon": "◩", "color": "#0f766e", "grad": "grad-auto", "desc": "환율/유가 + 중국 수요(구리/상해) 민감 수출주"},
-            "chem": {"name": "화학/2차전지", "short": "화학·전지", "icon": "⬡", "color": "#9333ea", "grad": "grad-chem", "desc": "중국 경기 대리변수 구리/상해에 가장 민감"},
-            "fin": {"name": "금융/증권", "short": "금융", "icon": "₩", "color": "#1e293b", "grad": "grad-fin", "desc": "금리 + 달러 + VIX 민감, 중국 프록시 간접"},
-            "bio": {"name": "바이오/의약품", "short": "바이오", "icon": "⚕", "color": "#e11d48", "grad": "grad-bio", "desc": "금리 하락/ VIX 하락 수혜"},
-            "steel": {"name": "철강/소재/에너지", "short": "철강·소재", "icon": "⬣", "color": "#a16207", "grad": "grad-steel", "desc": "구리/상해종합 - 중국 경기 직결"},
-            "const": {"name": "건설/조선/기계", "short": "건설·조선", "icon": "⌖", "color": "#334155", "grad": "grad-const", "desc": "중국 인프라 수요 = 구리/상해종합"},
-            "retail": {"name": "유통/IT서비스", "short": "유통·IT", "icon": "◎", "color": "#0891b2", "grad": "grad-retail", "desc": "내수+플랫폼 + 중국 소비 심리"},
-        }
-        for ind_id in ["elec", "auto", "chem", "fin", "bio", "steel", "const", "retail"]:
-            ind_data = snapshot["industries"].get(ind_id, {})
-            betas = ind_data.get("betas", BASE_BETAS.get(ind_id, {}))
-            r2 = ind_data.get("r2", 0.80)
-            meta = base_meta.get(ind_id, {})
-            industries.append({
-                "id": ind_id,
-                "name": meta.get("name", ind_id),
-                "short": meta.get("short", ind_id),
-                "icon": meta.get("icon", "◫"),
-                "r2": r2,
-                "color": meta.get("color", "#2563eb"),
-                "grad": meta.get("grad", "grad-elec"),
-                "betas": betas,
-                "desc": meta.get("desc", "")
-            })
-        
-        js_content = f"""// js/data.js - Industries & Factor Meta - v60.2 Retrain {snapshot['date']} AUTO GENERATED REAL
-// Retrain: {snapshot['method']}
-// Avg R2: {snapshot['avg_r2']} • Window: {snapshot['window']}D • Changes: {snapshot['beta_changes_count']} • REAL yfinance
-// Source: retrain_model.py v60.2 REAL - RidgeCV + {snapshot['industries'].get('elec', {}).get('samples', 180)} samples
-// Next: {snapshot['next_retrain']} • China Proxy: 구리+상해
+    date_string = snapshot["date"]
 
-var industries = {json.dumps(industries, ensure_ascii=False, indent=8)};
+    db.collection("retrain_history").document(
+        date_string
+    ).set(snapshot, merge=True)
 
-var factorMeta = {{
-        "S&P500": {{ label: "S&P500", desc: "전일 수익률 Z" }},
-        "외국인 선물": {{ label: "외국인 선물", desc: "KOSPI200 선물 순매수" }},
-        "SOX / 필라": {{ label: "SOX / 필라", desc: "반도체 지수 모멘텀" }},
-        "US 10Y": {{ label: "US 10Y", desc: "금리 변동 Z" }},
-        원달러: {{ label: "원/달러", desc: "환율 변동 Z" }},
-        WTI: {{ label: "WTI", desc: "유가 변동 Z" }},
-        DXY: {{ label: "DXY", desc: "달러 인덱스 Z" }},
-        VIX: {{ label: "VIX", desc: "변동성 지수 Z" }},
-        구리: {{ label: "구리", desc: "China Proxy 1 - 경기민감 REAL" }},
-        상해종합: {{ label: "상해종합", desc: "China Proxy 2 - SSE REAL" }},
-        외국인: {{ label: "외국인 선물", desc: "외국인 수급" }},
-        반도체팩터: {{ label: "SOX / 필라", desc: "반도체 모멘텀" }},
-        SP500: {{ label: "S&P500", desc: "전일 수익률" }},
-}};
+    beta_only = {
+        industry_id: result["betas"]
+        for industry_id, result in snapshot["industries"].items()
+    }
+
+    beta_document = {
+        "date": date_string,
+        "timestamp": datetime.now(),
+        "betas": beta_only,
+        "r2": snapshot["r2_list"],
+        "avg_r2": snapshot["avg_r2"],
+        "version": snapshot["version"],
+        "changes": snapshot["beta_changes_count"],
+        "data_status": snapshot["data_status"],
+        "synthetic_data_used": False,
+        "fallback_used": False,
+        "retrain_gate": "PASSED",
+        "foreigner_metadata": snapshot["foreigner_metadata"],
+    }
+
+    db.collection("beta_snapshots").document(
+        date_string
+    ).set(beta_document, merge=True)
+
+    db.collection("beta_snapshots").document(
+        "latest"
+    ).set(beta_document, merge=True)
+
+    log_document = {
+        "date": date_string,
+        "avg_r2": snapshot["avg_r2"],
+        "changes": snapshot["beta_changes_count"],
+        "industries": list(snapshot["industries"].keys()),
+        "next_retrain": snapshot["next_retrain"],
+        "version": snapshot["version"],
+        "data_status": snapshot["data_status"],
+        "synthetic_data_used": False,
+        "fallback_used": False,
+        "retrain_gate": "PASSED",
+        "createdAt": firestore.SERVER_TIMESTAMP,
+    }
+
+    db.collection("retrain_logs").document(
+        date_string
+    ).set(log_document, merge=True)
+
+    print(
+        f"[Firebase] retrain saved: "
+        f"beta_snapshots/latest "
+        f"avg_r2={snapshot['avg_r2']:.3f}"
+    )
+
+
+def generate_data_js(
+    snapshot: Dict,
+    output_path: str = "js/data.js.new",
+):
+    """
+    기존 프런트엔드 호환을 위한 data.js.new를 생성한다.
+
+    이 파일은 자동 배포하지 않는다.
+    생성 결과는 검토 후 별도 커밋으로 js/data.js에 반영한다.
+    """
+    base_meta = {
+        "elec": {
+            "name": "전기전자/반도체",
+            "short": "전기전자",
+            "icon": "◫",
+            "color": "#2563eb",
+            "grad": "grad-elec",
+            "desc": "나스닥/외국인 + 중국 프록시 민감",
+        },
+        "auto": {
+            "name": "자동차/운수장비",
+            "short": "자동차",
+            "icon": "◩",
+            "color": "#0f766e",
+            "grad": "grad-auto",
+            "desc": "환율/유가 + 중국 수요 민감 수출주",
+        },
+        "chem": {
+            "name": "화학/2차전지",
+            "short": "화학·전지",
+            "icon": "⬡",
+            "color": "#9333ea",
+            "grad": "grad-chem",
+            "desc": "구리/상해종합 중국 경기 프록시 민감",
+        },
+        "fin": {
+            "name": "금융/증권",
+            "short": "금융",
+            "icon": "₩",
+            "color": "#1e293b",
+            "grad": "grad-fin",
+            "desc": "금리·달러·VIX 민감",
+        },
+        "bio": {
+            "name": "바이오/의약품",
+            "short": "바이오",
+            "icon": "⚕",
+            "color": "#e11d48",
+            "grad": "grad-bio",
+            "desc": "금리 하락·VIX 하락 민감",
+        },
+        "steel": {
+            "name": "철강/소재/에너지",
+            "short": "철강·소재",
+            "icon": "⬣",
+            "color": "#a16207",
+            "grad": "grad-steel",
+            "desc": "구리·상해종합 중국 경기 민감",
+        },
+        "const": {
+            "name": "건설/조선/기계",
+            "short": "건설·조선",
+            "icon": "⌖",
+            "color": "#334155",
+            "grad": "grad-const",
+            "desc": "중국 인프라 수요 민감",
+        },
+        "retail": {
+            "name": "유통/IT서비스",
+            "short": "유통·IT",
+            "icon": "◎",
+            "color": "#0891b2",
+            "grad": "grad-retail",
+            "desc": "내수·플랫폼·중국 소비 심리",
+        },
+    }
+
+    industries = []
+
+    for industry_id in INDUSTRY_PROXY:
+        model_result = snapshot["industries"][industry_id]
+        meta = base_meta[industry_id]
+
+        industries.append(
+            {
+                "id": industry_id,
+                "name": meta["name"],
+                "short": meta["short"],
+                "icon": meta["icon"],
+                "r2": model_result["r2"],
+                "color": meta["color"],
+                "grad": meta["grad"],
+                "betas": model_result["betas"],
+                "desc": meta["desc"],
+            }
+        )
+
+    js_content = f"""// AUTO GENERATED: {snapshot["version"]}
+// Date: {snapshot["date"]}
+// Data policy: REAL_ONLY, no synthetic fallback
+// Review this file before replacing js/data.js.
+
+var industries = {json.dumps(industries, ensure_ascii=False, indent=2)};
 
 var retrainMeta = {{
-  date: "{snapshot['date']}",
-  avg_r2: {snapshot['avg_r2']},
-  changes: {snapshot['beta_changes_count']},
-  next_retrain: "{snapshot['next_retrain']}",
-  version: "{snapshot['version']}",
-  window: {snapshot['window']},
-  beta_changes: {json.dumps(snapshot['beta_changes'], ensure_ascii=False, indent=2)}
+  date: "{snapshot["date"]}",
+  avg_r2: {snapshot["avg_r2"]},
+  changes: {snapshot["beta_changes_count"]},
+  version: "{snapshot["version"]}",
+  data_status: "{snapshot["data_status"]}",
+  synthetic_data_used: false,
+  fallback_used: false
 }};
 """
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        with open(output_path, "w", encoding="utf-8") as f:
-            f.write(js_content)
-        print(f"[Retrain] Generated {output_path} - {len(industries)} industries")
-    except Exception as e:
-        print(f"[Retrain] generate data.js error: {e}")
-        import traceback
-        traceback.print_exc()
+
+    output_directory = os.path.dirname(output_path)
+
+    if output_directory:
+        os.makedirs(output_directory, exist_ok=True)
+
+    with open(
+        output_path,
+        "w",
+        encoding="utf-8",
+    ) as output_file:
+        output_file.write(js_content)
+
+    print(
+        f"[Retrain] generated candidate JS: "
+        f"{output_path}"
+    )
+
 
 if __name__ == "__main__":
-    snapshot, closes = build_retrain_snapshot()
+    snapshot = build_retrain_snapshot()
     save_to_firebase(snapshot)
-    generate_data_js(snapshot, "js/data.js.new")
-    print(json.dumps({"date": snapshot["date"], "avg_r2": snapshot["avg_r2"], "changes": snapshot["beta_changes_count"], "r2_list": snapshot["r2_list"]}, ensure_ascii=False, indent=2))
+    generate_data_js(snapshot)
+
+    print(
+        json.dumps(
+            {
+                "date": snapshot["date"],
+                "version": snapshot["version"],
+                "avg_r2": snapshot["avg_r2"],
+                "changes": snapshot["beta_changes_count"],
+                "data_status": snapshot["data_status"],
+                "synthetic_data_used": False,
+                "fallback_used": False,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
