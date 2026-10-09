@@ -46,6 +46,15 @@ FACTOR_TICKERS = {
     "구리": "HG=F",
     "OVX": "^OVX",
     "KOSPI": "^KS11",
+    "KOSPI200": "^KS200",
+    "KOSPI200_INDEX": "^KS200",
+}
+
+# v62 KOSPI200 - KOSPI200 지수 추가
+KOSPI200_TICKERS = {
+    "KOSPI200": "^KS200",
+    "KOSPI200_INDEX": "^KS200",
+    "^KS200": "^KS200",
 }
 
 # KOSPI main index names to filter - from TEST images
@@ -318,6 +327,41 @@ def get_all_factor_z_scores():
         z = calc_z_score(closes, window=120)
         factors[name] = z
     return factors
+
+# v62 KOSPI200 전용 - KOSPI200 지수 히스토리
+def get_kospi200_history(days: int = 180) -> Tuple[List[float], List[str]]:
+    """KOSPI200 지수 히스토리 - yfinance ^KS200 + KRX fallback"""
+    try:
+        # yfinance 우선
+        closes, latest = get_market_indicator("KOSPI200", period="6mo" if days>90 else "3mo")
+        if closes and len(closes) >= days*0.7:
+            print(f"[KOSPI200 v62] ^KS200 {len(closes)} closes latest {closes[-1]:.2f}")
+            return closes[-days:], [f"d-{i}" for i in range(len(closes[-days:]))]
+    except Exception as e:
+        print(f"[KOSPI200] yfinance error: {e}")
+    # fallback KOSPI
+    return get_market_indicator("KOSPI", period="6mo")
+
+def get_avg_market_cap_trading_value(ticker: str, days: int = 60):
+    """KOSPI200 규칙용 - 일평균 시가총액, 거래대금 - pykrx 기반"""
+    try:
+        from pykrx import stock
+        import pandas as pd
+        from datetime import datetime, timedelta
+        end = datetime.now().strftime("%Y%m%d")
+        start = (datetime.now() - timedelta(days=days+20)).strftime("%Y%m%d")
+        # 시가총액
+        df_cap = stock.get_market_cap_by_date(start, end, ticker)
+        # 거래대금 = 거래량 * 종가 근사
+        df_ohlcv = stock.get_market_ohlcv_by_date(start, end, ticker)
+        if not df_ohlcv.empty and not df_cap.empty:
+            # 최근 days 거래일 평균
+            recent_cap = df_cap.tail(days)['시가총액'].mean() if '시가총액' in df_cap.columns else 0
+            recent_value = (df_ohlcv.tail(days)['거래대금'].mean() if '거래대금' in df_ohlcv.columns else df_ohlcv.tail(days)['거래량'].mean()*df_ohlcv.tail(days)['종가'].mean())
+            return float(recent_cap), float(recent_value)
+    except Exception as e:
+        print(f"[KOSPI200 avg] {ticker} error: {e}")
+    return 0.0, 0.0
 
 # KRX OPEN API 파서 - TEST 결과 기반
 def parse_kospi_dd_trd_response(json_data: dict) -> List[dict]:

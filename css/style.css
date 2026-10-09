@@ -237,3 +237,33 @@ body {
   border: 1px solid var(--border);
   border-radius: 12px;
 }
+
+
+/* v62 FACTOR CLUSTERS - 8개 클러스터별 색상 - FIXED from #2563eb 고정 이슈 */
+.grad-vix { background: #f04452; }
+.grad-dxy-pos { background: #3182f6; }
+.grad-dxy-neg { background: #1e3a8a; }
+.grad-copper-neg { background: #ff8a00; }
+.grad-sp500-neg { background: #1a7f37; }
+.grad-copper-pos { background: #8b5cf6; }
+.grad-shanghai-neg { background: #06b6d4; }
+.grad-dxy-pos2 { background: #0e7490; }
+
+/* v62 pick-card per cluster */
+.pick-card.fc1 { border-top: 2px solid #f04452; }
+.pick-card.fc2 { border-top: 2px solid #3182f6; }
+.pick-card.fc3 { border-top: 2px solid #1e3a8a; }
+.pick-card.fc4 { border-top: 2px solid #ff8a00; }
+.pick-card.fc5 { border-top: 2px solid #1a7f37; }
+.pick-card.fc6 { border-top: 2px solid #8b5cf6; }
+.pick-card.fc7 { border-top: 2px solid #06b6d4; }
+.pick-card.fc8 { border-top: 2px solid #0e7490; }
+
+.pick-card.fc1::before { background: #f04452; }
+.pick-card.fc2::before { background: #3182f6; }
+.pick-card.fc3::before { background: #1e3a8a; }
+.pick-card.fc4::before { background: #ff8a00; }
+.pick-card.fc5::before { background: #1a7f37; }
+.pick-card.fc6::before { background: #8b5cf6; }
+.pick-card.fc7::before { background: #06b6d4; }
+.pick-card.fc8::before { background: #0e7490; }
