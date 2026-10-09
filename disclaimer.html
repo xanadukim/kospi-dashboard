@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>투자위험 고지 및 면책사항 - KOSPI Quant Terminal v60</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Noto Sans KR', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <div class="max-w-4xl mx-auto px-4 md:px-6 py-8">
+    <header class="mb-8">
+      <a href="index.html" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white text-xs font-bold hover:bg-slate-800">
+        ← 대시보드로 돌아가기
+      </a>
+      <h1 class="mt-6 text-2xl font-extrabold tracking-tight flex items-center gap-3">
+        <span class="w-10 h-10 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-700">⚠️</span>
+        투자위험 고지 및 면책사항
+      </h1>
+      <div class="mt-2 text-sm font-mono text-slate-500">
+        KOSPI Quant Terminal v60 • 10 Factors China Proxy + DART + Regime + Retrain • 2026-09-27 • Legal Disclaimer v60.1
+      </div>
+    </header>
+
+    <div class="space-y-6">
+      <div class="p-5 rounded-2xl bg-red-50 border-2 border-red-200 shadow-sm">
+        <div class="font-extrabold text-red-900 text-base flex items-center gap-2">
+          🚨 본 서비스는 투자 조언이 아닙니다 • Not Investment Advice
+        </div>
+        <div class="mt-3 text-sm leading-relaxed text-slate-800">
+          KOSPI Quant Terminal v60이 제공하는 <b>예상 수익률 (+1.29%, +0.7%, +2.4% 등), Score, 64 Picks, 산업별 예측 수익률, TODAY'S INDUSTRY RANK</b>는
+          과거 데이터 기반의 통계적 모델 예측값이며, <b>자본시장법상 투자자문, 투자일임, 매수/매도 추천에 해당하지 않습니다.</b><br/><br/>
+          모든 투자 결정은 이용자 본인의 독립적인 판단과 책임 하에 이루어져야 하며, 본 서비스는 어떠한 수익도 보장하지 않습니다.
+          <b>원금 손실이 발생할 수 있습니다.</b>
+        </div>
+        <div class="mt-3 p-3 rounded-xl bg-white border border-red-200 text-xs font-mono">
+          법적 근거: 자본시장과 금융투자업에 관한 법률 제17조(투자권유), 제18조(투자광고), 제19조(투자자문업) • 금융소비자보호법 제19조(설명의무)
+        </div>
+      </div>
+
+      <div class="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
+        <h2 class="font-extrabold text-base flex items-center gap-2">
+          <span class="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center text-xs">1</span>
+          투자 위험 고지 (Risk Disclosure)
+        </h2>
+        <div class="mt-4 space-y-3 text-sm leading-relaxed text-slate-700">
+          <div class="p-3 rounded-xl bg-slate-50 border">
+            <b>• 원금 손실 위험:</b> 주식, ETF, 선물 등 모든 금융투자상품은 원금 손실 위험이 있으며, 과거 성과(백테스트 IC 0.12, Hit Rate 64.8%)가 미래 수익을 보장하지 않습니다.
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border">
+            <b>• 예상 +1.29%의 의미:</b> Ridge 회귀 모델이 계산한 1주일 기대 수익률 예측값입니다. RMSE 0.38%p, 방향 적중 75% 수준이며, 실제 수익률은 -3% ~ +3% 범위에서 크게 벗어날 수 있습니다. 모델은 120일 롤링, 10개 팩터 기반이며, 전쟁, 금리 급등, 정책 변화 등 블랙스완에 취약합니다.
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border">
+            <b>• 64 Picks의 한계:</b> 퀀트적 아이디어이며, 동일 업종/팩터(예: 원달러 Target 3종 이상) 집중 시 분산 효과가 사라집니다. Score 7.5↑ Strong Buy는 통계적 확신도이며 매수 추천이 아닙니다.
+          </div>
+          <div class="p-3 rounded-xl bg-amber-50 border border-amber-200">
+            <b>💡 분산 투자 권장:</b> 한 종목당 전체 자산의 5% 이하, 한 업종당 20% 이하, 손절 -3% 원칙, 레버리지 금지. 본 서비스는 교육/연구용입니다.
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
+        <h2 class="font-extrabold text-base flex items-center gap-2">
+          <span class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs">2</span>
+          데이터 출처 및 정확성 (Data Sources & Accuracy)
+        </h2>
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4 rounded-xl bg-blue-50 border border-blue-200">
+            <div class="font-bold text-blue-900 text-sm">FRED (Federal Reserve Economic Data)</div>
+            <div class="mt-2 text-xs leading-relaxed text-slate-700">
+              <div>• DGS10: US 10Y Treasury Constant Maturity Rate</div>
+              <div>• DCOILWTICO: WTI Crude Oil Prices</div>
+              <div>• DTWEXBGS: Trade Weighted U.S. Dollar Index</div>
+              <div>• VIXCLS: CBOE VIX</div>
+            </div>
+            <div class="mt-2 text-[11px] font-mono text-slate-500">
+              출처: fred.stlouisfed.org • License: CC0 Public Domain • 지연: 1일<br/>
+              FRED API Terms: api.stlouisfed.org/docs/fred • 비상업적 이용 허용
+            </div>
+          </div>
+          <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
+            <div class="font-bold text-emerald-900 text-sm">yfinance + Yahoo Finance</div>
+            <div class="mt-2 text-xs leading-relaxed text-slate-700">
+              <div>• ^GSPC: S&P500, ^SOX: 필라델피아 반도체</div>
+              <div>• KRW=X: 원/달러, HG=F: 구리 선물 (China Proxy 1)</div>
+              <div>• 000001.SS: 상해종합지수 (China Proxy 2)</div>
+              <div>• ^KS11: KOSPI 지수</div>
+            </div>
+            <div class="mt-2 text-[11px] font-mono text-slate-500">
+              출처: finance.yahoo.com • 비공식 API • 15분 지연 • 데이터 오류 가능성 있음<br/>
+              Yahoo Terms: finance.yahoo.com • 개인 연구용으로만 사용
+            </div>
+          </div>
+          <div class="p-4 rounded-xl bg-amber-50 border border-amber-200">
+            <div class="font-bold text-amber-900 text-sm">KRX / pykrx (한국거래소)</div>
+            <div class="mt-2 text-xs leading-relaxed text-slate-700">
+              <div>• 외국인 선물 순매수 (KOSPI200 선물)</div>
+              <div>• KOSPI/KOSDAQ OHLCV, 시가총액</div>
+              <div>• 현재 승인 대기 중: 0.85 fallback 사용</div>
+              <div>• 승인 후 100% REAL 전환: PRICE_SOURCE=krx</div>
+            </div>
+            <div class="mt-2 text-[11px] font-mono text-slate-500">
+              출처: KRX OPEN API (data.krx.co.kr) • pykrx 1.0.47<br/>
+              KRX API 약관 준수 • 상업적 이용 시 별도 승인 필요 • pykrx MIT License
+            </div>
+          </div>
+          <div class="p-4 rounded-xl bg-violet-50 border border-violet-200">
+            <div class="font-bold text-violet-900 text-sm">DART (금융감독원 전자공시)</div>
+            <div class="mt-2 text-xs leading-relaxed text-slate-700">
+              <div>• PER, PBR, ROE, 영업이익률, 부채비율</div>
+              <div>• 유동비율, 매출증가율 등 7개 재무 필터</div>
+              <div>• Fundamental Filter v54 RELAXED: ROE>-10%, 부채<400%</div>
+              <div>• 삼성전자 등 13개 화이트리스트 보호</div>
+            </div>
+            <div class="mt-2 text-[11px] font-mono text-slate-500">
+              출처: opendart.fss.or.kr • DART OPEN API • API 키 필요 • 공시 지연 반영<br/>
+              DART 약관 준수 • 재무제표는 분기 지연 있음
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 p-3 rounded-xl bg-slate-900 text-slate-200 font-mono text-xs">
+          <div>데이터 지연: FRED 1일, yfinance 15분, KRX 일별(승인 후 실시간), DART 분기 • 오류 시 Z-score 0 처리 • Firebase data_quality_logs에 QC 로그 저장</div>
+          <div class="mt-1 text-slate-400">Health Score 90/100 = KRX pending 정상, 100/100 = KRX 승인 후 완전 정상 • FAIL 0개면 PASS</div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
+        <h2 class="font-extrabold text-base flex items-center gap-2">
+          <span class="w-7 h-7 rounded-lg bg-amber-600 text-white flex items-center justify-center text-xs">3</span>
+          모델 한계 및 가정 (Model Limitations)
+        </h2>
+        <div class="mt-4 space-y-3 text-sm leading-relaxed text-slate-700">
+          <div class="p-3 rounded-xl bg-slate-50 border">
+            <b>10 Factors v60:</b> S&P500(^GSPC), US10Y(DGS10), 외국인 선물(KRX), SOX(^SOX), 원달러(KRW=X), WTI(DCOILWTICO), DXY(DTWEXBGS), VIX(VIXCLS), 구리(HG=F), 상해종합(000001.SS)
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border">
+            <b>가정:</b> 팩터 간 선형 관계, 120일 롤링 정상성, VIF &lt; 2.5 (다중공선성 제거), 3σ Winsorize (이상치 제거), StandardScaler 정규화, RidgeCV λ=0.5
+          </div>
+          <div class="p-3 rounded-xl bg-amber-50 border border-amber-200">
+            <b>한계:</b> 중국 PMI 대신 구리/상해종합 프록시 사용 (상관계수 0.68) • 외국인 선물은 KRX 승인 전 0.85 고정 • OVX, GPR 등 전시 팩터는 Regime 트리거 시만 활성화
+          </div>
+          <div class="p-3 rounded-xl bg-blue-50 border border-blue-200">
+            <b>검증:</b> 2023-2026 백테스트 IC 0.12, Hit Rate 64.8%, MDD -4.2%, 연환산 8.2% • 실전에서는 슬리피지 0.15%, 세금 0.23%, 수수료 0.015% 미반영 • 6개월 재학습으로 β 진화
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
+        <h2 class="font-extrabold text-base flex items-center gap-2">
+          <span class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs">4</span>
+          면책 조항 (Disclaimer) • 법적 책임의 한계
+        </h2>
+        <div class="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-sm leading-relaxed text-slate-700 space-y-2">
+          <div>1. 본 서비스는 정보 제공 및 교육/연구 목적이며, 특정 금융투자상품의 매수/매도를 권유하지 않습니다.</div>
+          <div>2. 운영자(Quant Lab, xanadukim)는 이용자의 투자 결정 및 손실에 대해 어떠한 민사/형사상 법적 책임도 지지 않습니다.</div>
+          <div>3. 데이터 출처(FRED, Yahoo, KRX, DART)의 오류, 지연, 중단, API 변경으로 인한 손해에 대해 책임지지 않습니다.</div>
+          <div>4. GitHub Actions 자동화로 제공되며, GitHub 서버 중단, Firebase 할당량 초과 시 데이터 갱신이 지연될 수 있습니다.</div>
+          <div>5. 본 서비스는 개인 연구용이며, 상업적 재배포, API 크롤링, 무단 복제, 2차 저작물 작성을 금지합니다.</div>
+          <div>6. 퀀트 모델은 과거 데이터 기반이며, 미래를 보장하지 않습니다. 과적합 위험이 있습니다.</div>
+          <div class="font-bold text-slate-900">7. 투자 전 반드시 금융투자협회(www.kofia.or.kr), 금융감독원(fss.or.kr), 한국거래소(krx.co.kr) 등 공인 기관의 정보를 추가 확인하고, 필요 시 공인 금융투자전문가와 상담하세요.</div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 shadow-xl">
+        <div class="text-xs font-bold tracking-widest opacity-80">CONTACT & LICENSE & VERSION</div>
+        <div class="mt-3 space-y-1.5 text-xs font-mono leading-relaxed">
+          <div>• GitHub: github.com/xanadukim/kospi-dashboard • Issues로 버그 리포트 및 문의</div>
+          <div>• Data License: FRED API Terms, Yahoo Finance ToS, KRX OPEN API 약관, DART API 약관 준수 • pykrx MIT</div>
+          <div>• Code License: MIT License (개인 학습용) • Firebase: Firestore Rules read=true, write=false • Admin SDK만 쓰기 가능</div>
+          <div>• Security: FIREBASE_SERVICE_ACCOUNT는 GitHub Secrets에만 보관, apiKey는 공개 키 (Firebase 공식 문서상 비밀 아님)</div>
+          <div class="mt-3 pt-3 border-t border-white/10 text-slate-400">
+            Last Updated: 2026-09-27 • v60 China Proxy + DART + Regime + Retrain • 12주 플랜 4번 완료<br/>
+            1번 보안 ✅, 2번 성과 추적 ✅, 3번 데이터 품질 체크 ✅, 4번 면책 페이지 ✅ (현재)<br/>
+            다음: 5번 Regime Dashboard 고도화, 6번 Retrain 자동화
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center py-4">
+        <div class="text-xs font-mono text-slate-500">
+          본 고지를 확인했음을 전제로 서비스를 이용합니다 • 투자 결정은 본인 책임 • © 2026 Quant Lab<br/>
+          KOSPI Quant Terminal v60 - 10 Factors China Proxy + DART + 64 Picks + Regime + Retrain
+        </div>
+        <div class="mt-4">
+          <a href="index.html" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-slate-900 text-white text-sm font-bold hover:bg-slate-800">
+            ← 대시보드로 돌아가기
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

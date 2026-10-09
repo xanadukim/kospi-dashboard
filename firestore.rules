@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. factor_snapshots: 대시보드 메인 데이터
+    // - 읽기: 누구나 가능 (public dashboard)
+    // - 쓰기: 절대 불가 - daily_update.py는 Admin SDK(Service Account)로 우회하므로 Rules 영향 없음
+    // - 삭제: 절대 불가
+    match /factor_snapshots/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // 2. performance_snapshots: 9/28 이후 성과 추적용 (예정)
+    match /performance_snapshots/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // 3. regime_snapshots: 마켓 레짐
+    match /regime_snapshots/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // 4. performance_tracking: 개별 종목 성과
+    match /performance_tracking/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // 5. factor_validity: 팩터 유효성
+    match /factor_validity/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // 6. meta_summaries, model_versions, config 등
+    match /{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}
