@@ -1,1 +1,0 @@
-function useMarketData(){ const [currentRegime,setCurrentRegime]=React.useState({regime:"normal",confidence:"평시",window:120,vix:16.5}); const [currentMeta,setCurrentMeta]=React.useState({top_valid:[],avg_p_valid:0.72}); return {currentRegime,currentMeta}; }

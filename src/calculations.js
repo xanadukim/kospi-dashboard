@@ -1,1 +1,0 @@
-function calcPred(z,betas){ return Object.entries(betas).reduce((s,[f,b])=>s+(z[f]||0)*b,0); }

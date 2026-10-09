@@ -1,1 +1,0 @@
-function formatDate(d){return d||"2026-09-28";} function formatPct(v){return (v||0).toFixed(2)+"%";}

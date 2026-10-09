@@ -1,1 +1,0 @@
-function useHistory(){ const [history,setHistory]=React.useState([]); return {history,setHistory}; }
