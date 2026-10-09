@@ -3,40 +3,57 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>KOSPI Quant Terminal v62.0 - Factor Clusters</title>
+    <title>KOSPI Quant Terminal v62.0 FINAL CLEAN - Factor Clusters</title>
     <link rel="icon" href="data:," />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+KR:wght@400;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/style.css" />
     <style>
-      /* Trader Centric v61 - sticky panels + modern scroll */
       .trader-sticky { position: sticky; top: 5rem; }
       ::-webkit-scrollbar { width: 6px; height: 6px; }
       ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
       ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      .z-badge { padding: 2px 6px; border-radius: 9999px; font-size: 11px; font-family: monospace; border: 1px solid #e5e8eb; }
+      .z-strong-pos { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+      .z-strong-neg { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+      .z-pos { background: #f0fdf4; color: #15803d; }
+      .z-neg { background: #fef2f2; color: #b91c1c; }
+      .z-neutral { background: #f8fafc; color: #64748b; }
+      .help-overlay { background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); }
+      .btn-modern { transition: all 0.15s; }
     </style>
   </head>
   <body class="text-slate-900">
     <div id="root"></div>
 
-    <script
-      crossorigin
-      src="https://unpkg.com/react@18/umd/react.development.js"
-    ></script>
-    <script
-      crossorigin
-      src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
-    ></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+    <!-- v62 Core Data - Industries, factorMeta, factorClusters (from github-final, newest) -->
     <script src="js/config.js"></script>
     <script src="js/data.js"></script>
     <script src="js/regime.js"></script>
     <script src="js/retrain.js"></script>
-    <script type="text/babel" src="js/app.jsx"></script>
+
+    <!-- v62 FINAL CLEAN - Modular 17 files (split.zip base + bug fixes) -->
+    <script type="text/babel" src="src/constants.js"></script>
+    <script type="text/babel" src="src/format.js"></script>
+    <script type="text/babel" src="src/historymodal.jsx"></script>
+    <script type="text/babel" src="src/disclaimermodal.jsx"></script>
+    <script type="text/babel" src="src/helpmodal.jsx"></script>
+    <script type="text/babel" src="src/header.jsx"></script>
+    <script type="text/babel" src="src/sidebar.jsx"></script>
+    <script type="text/babel" src="src/factorpanel.jsx"></script>
+    <script type="text/babel" src="src/recommendtab.jsx"></script>
+    <script type="text/babel" src="src/toppredictionstab.jsx"></script>
+    <script type="text/babel" src="src/all64tab.jsx"></script>
+    <script type="text/babel" src="src/performancetab.jsx"></script>
+    <script type="text/babel" src="src/markettab.jsx"></script>
+
+    <!-- Main App - filteredPicks useMemo FIXED -->
+    <script type="text/babel" src="src/app.jsx"></script>
   </body>
 </html>
