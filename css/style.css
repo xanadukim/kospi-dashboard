@@ -1,0 +1,269 @@
+:root {
+  --font-kr: "Noto Sans KR", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --naver-blue: #3182f6;
+  --naver-blue-light: #e8f3ff;
+  --border: #e5e8eb;
+  --bg: #f8f9fa;
+  --text-main: #1e3a8a;
+  --text-sub: #6b7684;
+}
+
+body {
+  font-family: var(--font-kr);
+  background: #ffffff;
+  min-height: 100vh;
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-mono {
+  font-family: var(--font-mono) !important;
+}
+
+/* Naver-style flat cards */
+.card-hover {
+  transition: all 0.2s ease;
+  border: 1px solid var(--border);
+}
+.card-hover:hover {
+  border-color: #d1d6db;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.help-overlay {
+  backdrop-filter: blur(8px);
+  background: rgba(0,0,0,0.35);
+}
+.help-card {
+  animation: helpIn 0.25s ease;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+}
+@keyframes helpIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Industry colors - flat Naver style */
+.grad-elec { background: #3182f6; }
+.grad-auto { background: #00b386; }
+.grad-chem { background: #8b5cf6; }
+.grad-fin { background: #1e3a8a; }
+.grad-bio { background: #f04452; }
+.grad-steel { background: #ff8a00; }
+.grad-const { background: #5a6a7a; }
+.grad-retail { background: #00a8cc; }
+
+/* Buttons - Naver flat */
+.btn-modern {
+  position: relative;
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+.btn-modern:hover {
+  transform: none;
+  box-shadow: none;
+  filter: brightness(0.97);
+}
+.btn-modern:active {
+  transform: scale(0.98);
+}
+.btn-active {
+  background: var(--naver-blue);
+  color: white;
+}
+.btn-inactive {
+  background: white;
+  border: 1px solid var(--border);
+  color: var(--text-sub);
+}
+.btn-inactive:hover {
+  background: #f8f9fa;
+  border-color: #d1d6db;
+  color: var(--text-main);
+}
+
+/* Checklist - Naver clean */
+.check-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.15s;
+}
+.check-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+}
+.check-card.c1::before { background: #ff8a00; }
+.check-card.c2::before { background: #3182f6; }
+.check-card.c3::before { background: #00b386; }
+.check-card.c4::before { background: #8b5cf6; }
+.check-card:hover {
+  border-color: #d1d6db;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+/* Metric cards - Naver */
+.metric-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+/* Picks card - Naver flat */
+.pick-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  position: relative;
+  transition: all 0.15s;
+}
+.pick-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+}
+.pick-card.elec::before { background: #3182f6; }
+.pick-card.auto::before { background: #00b386; }
+.pick-card.chem::before { background: #8b5cf6; }
+.pick-card.fin::before { background: #1e3a8a; }
+.pick-card.bio::before { background: #f04452; }
+.pick-card.steel::before { background: #ff8a00; }
+.pick-card.const::before { background: #5a6a7a; }
+.pick-card.retail::before { background: #00a8cc; }
+.pick-card:hover {
+  border-color: #d1d6db;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Z-score badges - Naver minimal */
+.beta-bar-pos {
+  background: #00b386;
+}
+.beta-bar-neg {
+  background: #f04452;
+}
+.z-badge {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  display: inline-flex;
+  align-items: center;
+}
+.z-pos {
+  background: #e6f9f0;
+  color: #0a7a42;
+  border: 1px solid #b5e6cc;
+}
+.z-neg {
+  background: #ffe9ea;
+  color: #c41c2b;
+  border: 1px solid #ffb3b8;
+}
+.z-strong-pos {
+  background: #00b386;
+  color: white;
+  border: none;
+}
+.z-strong-neg {
+  background: #f04452;
+  color: white;
+  border: none;
+}
+.z-neutral {
+  background: #f2f4f6;
+  color: #6b7684;
+  border: 1px solid var(--border);
+}
+
+/* Layout - Naver */
+.trader-left {
+  position: sticky;
+  top: 4rem;
+  max-height: calc(100vh - 5rem);
+  overflow-y: auto;
+}
+.trader-right {
+  position: sticky;
+  top: 4rem;
+  max-height: calc(100vh - 5rem);
+  overflow-y: auto;
+}
+.trader-center {
+  min-height: 600px;
+}
+.filter-chip {
+  transition: all 0.15s ease;
+  border-radius: 8px;
+}
+.filter-chip:hover {
+  background: #f2f4f6;
+}
+.filter-chip.active {
+  background: var(--naver-blue);
+  color: white;
+  border-color: var(--naver-blue);
+}
+.factor-selected {
+  background: #e8f3ff !important;
+  color: #3182f6 !important;
+  border-color: #3182f6 !important;
+}
+
+/* Naver header */
+.naver-header {
+  background: white;
+  border-bottom: 1px solid var(--border);
+  box-shadow: none;
+}
+.naver-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+
+/* v62 FACTOR CLUSTERS - 8개 클러스터별 색상 - FIXED from #2563eb 고정 이슈 */
+.grad-vix { background: #f04452; }
+.grad-dxy-pos { background: #3182f6; }
+.grad-dxy-neg { background: #1e3a8a; }
+.grad-copper-neg { background: #ff8a00; }
+.grad-sp500-neg { background: #1a7f37; }
+.grad-copper-pos { background: #8b5cf6; }
+.grad-shanghai-neg { background: #06b6d4; }
+.grad-dxy-pos2 { background: #0e7490; }
+
+/* v62 pick-card per cluster */
+.pick-card.fc1 { border-top: 2px solid #f04452; }
+.pick-card.fc2 { border-top: 2px solid #3182f6; }
+.pick-card.fc3 { border-top: 2px solid #1e3a8a; }
+.pick-card.fc4 { border-top: 2px solid #ff8a00; }
+.pick-card.fc5 { border-top: 2px solid #1a7f37; }
+.pick-card.fc6 { border-top: 2px solid #8b5cf6; }
+.pick-card.fc7 { border-top: 2px solid #06b6d4; }
+.pick-card.fc8 { border-top: 2px solid #0e7490; }
+
+.pick-card.fc1::before { background: #f04452; }
+.pick-card.fc2::before { background: #3182f6; }
+.pick-card.fc3::before { background: #1e3a8a; }
+.pick-card.fc4::before { background: #ff8a00; }
+.pick-card.fc5::before { background: #1a7f37; }
+.pick-card.fc6::before { background: #8b5cf6; }
+.pick-card.fc7::before { background: #06b6d4; }
+.pick-card.fc8::before { background: #0e7490; }
