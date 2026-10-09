@@ -222,10 +222,7 @@ const { useState, useMemo, useEffect } = React;
           return () => unsub();
         }, [isViewingHistory]);
 
-        const currentIndustry = useMemo(() => {
-          const indList = (typeof industries !== 'undefined' && industries.length) ? industries : (typeof factorClusters !== 'undefined' ? factorClusters.map(c => ({ id: c.id, name: c.display_name, betas: c.avg_betas, color: c.color, grad: c.grad, r2: c.r2 })) : []);
-          return indList.find((i) => i.id === selectedIndustry) || indList[0] || { id: 'fc1', betas: {}, r2: 0.8, name: 'Factor Cluster' };
-        }, [selectedIndustry]);
+        const currentIndustry = useMemo(() => industries.find((i) => i.id === selectedIndustry) || industries[0], [selectedIndustry]);
 
         const contributions = useMemo(() => {
           return Object.entries(currentIndustry.betas).map(([factor, beta]) => {
@@ -377,12 +374,12 @@ const { useState, useMemo, useEffect } = React;
                   <div className="flex items-center justify-between"><h3 className="text-xs font-bold tracking-widest text-[#0369a1]">INDUSTRIES • 8</h3><span className="w-2 h-2 rounded-full bg-[#0ea5e9] animate-pulse"></span></div>
                   <div className="mt-1 text-xs text-[#0284c7]">업종 선택 • 중앙 필터</div>
                   <div className="mt-4 space-y-2">
-                    {industries.map((ind) => {
+                    {(typeof industries !== "undefined" ? industries : []).map((ind) => {
                       const isSelected = ind.id === selectedIndustry;
                       const pred = contributions.filter(c => Object.keys(ind.betas).includes(c.factor)).reduce((s,c) => s + c.contrib, 0);
                       return (
                         <button key={ind.id} onClick={() => setSelectedIndustry(ind.id)} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all text-left border ${isSelected ? "bg-white text-[#0c4a6e] border-[#7dd3fc]" : "bg-white/70 hover:bg-white text-[#475569] border-white/50 hover:border-[#7dd3fc]"}`}>
-                          <div className="flex items-center gap-2.5"><div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: `${ind.color}15`, color: ind.color }}>{ind.icon}</div><div><div className="text-xs font-bold">{ind.short}</div><div className="text-xs text-slate-500">R² {ind.r2}</div></div></div>
+                          <div className="flex items-center gap-2.5"><div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: `${(ind?.color || '#3182f6')}15`, color: (ind?.color || '#3182f6') }}>{(ind?.icon || '◫')}</div><div><div className="text-xs font-bold">{(ind?.short || ind?.id || 'FC')}</div><div className="text-xs text-slate-500">R² {(ind?.r2 || 0.8)}</div></div></div>
                           <div className="text-right"><div className={`text-xs font-mono font-bold ${pred>=0 ? "text-emerald-600" : "text-red-600"}`}>{pred>0 ? "+" : ""}{pred.toFixed(2)}%</div><div className={`w-2 h-2 rounded-full ml-auto mt-1 ${isSelected ? "bg-[#0ea5e9]" : "bg-slate-300"}`}></div></div>
                         </button>
                       );
@@ -413,7 +410,7 @@ const { useState, useMemo, useEffect } = React;
 
                 {activeTab === "recommend" && (
                   <div className="mt-4 space-y-4">
-                    <div className="rounded-2xl p-4 text-white" style={{ background: `linear-gradient(135deg, ${currentIndustry.color} 0%, ${currentIndustry.color}dd 100%)` }}>
+                    <div className="rounded-2xl p-4 text-white" style={{ background: `linear-gradient(135deg, ${(currentIndustry?.color || '#1e3a8a')} 0%, ${(currentIndustry?.color || '#1e3a8a')}dd 100%)` }}>
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <h3 className="text-sm font-extrabold tracking-tight flex items-center gap-2 flex-wrap">{currentIndustry.name} 8종목 <span className="text-xs font-mono opacity-80 bg-white/20 px-2.5 py-1 rounded-full whitespace-nowrap">전체 64종 중 {currentIndustry.short} Top 8 • KRX β·모멘텀</span></h3>
                         <span className="text-xs font-mono bg-white/20 backdrop-blur px-2.5 py-1 rounded-full whitespace-nowrap ml-auto">{selectedDate} 18:00 KST • 일요일</span>
@@ -449,17 +446,17 @@ const { useState, useMemo, useEffect } = React;
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                       {filteredPicks.map((p) => {
-                        const ind = (typeof industries !== "undefined" ? industries : []).find((i) => i.id === p.industryId);
+                        const ind = (typeof industries !== 'undefined' ? industries : []).find((i) => i.id === p.industryId) || { color: '#3182f6', grad: 'grad-elec', icon: '◫', short: p.industryId, r2: 0.8, name: p.industryId };
                         return (
                           <div key={`${p.industryId}-${p.ticker}`} className={`pick-card ${p.industryId} card-hover`}>
                             <div className="p-4">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                  <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: `${ind.color}15`, color: ind.color }}>{ind?.icon}</span>
-                                  <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ background: `${ind.color}10`, color: ind.color }}>{ind?.short}</span>
+                                  <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: `${(ind?.color || '#3182f6')}15`, color: (ind?.color || '#3182f6') }}>{ind?.icon}</span>
+                                  <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ background: `${(ind?.color || '#3182f6')}10`, color: (ind?.color || '#3182f6') }}>{ind?.short}</span>
                                   <span className="text-xs font-mono px-2 py-1 rounded-full bg-slate-100 border text-slate-600">{p.ticker}</span>
                                 </div>
-                                <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full text-white" style={{ background: `linear-gradient(135deg, ${ind.color} 0%, ${ind.color}cc 100%)` }}>Score {p.score}</span>
+                                <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full text-white" style={{ background: `linear-gradient(135deg, ${(ind?.color || '#3182f6')} 0%, ${(ind?.color || '#3182f6')}cc 100%)` }}>Score {p.score}</span>
                               </div>
                               <div className="mt-3 text-base font-extrabold tracking-tight">{p.name}</div>
                               <div className="text-xs text-slate-500 mt-1 font-mono">{p.reason}</div>
@@ -481,14 +478,14 @@ const { useState, useMemo, useEffect } = React;
                       <h3 className="text-sm font-bold flex items-center gap-2">📊 오늘 Top 예측 (α·β) • 8개 업종 랭킹</h3>
                       <div className="mt-1 text-xs text-slate-500">예측수익률 기준 정렬 • Top1이 오늘 최강 업종 • 클릭하면 해당 업종 필터</div>
                       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {industries.map((ind) => ({ ...ind, pred: Object.entries(ind.betas).reduce((s,[f,b]) => s + (zScores[f] ?? 0)*b, 0) })).sort((a,b) => b.pred - a.pred).map((item, idx) => {
+                        {(typeof industries !== "undefined" ? industries : []).map((ind) => ({ ...ind, pred: Object.entries(ind.betas).reduce((s,[f,b]) => s + (zScores[f] ?? 0)*b, 0) })).sort((a,b) => b.pred - a.pred).map((item, idx) => {
                           const isSelected = item.id === selectedIndustry;
                           const isTop = idx === 0;
                           return (
                             <div key={item.id} onClick={() => setSelectedIndustry(item.id)} className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all border ${isSelected ? "bg-[#1e3a8a] text-white border-[#1e3a8a]" : "bg-slate-50 hover:bg-white border-slate-200"}`}>
                               <div className="flex items-center gap-3">
                                 <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${isTop ? "bg-amber-400 text-[#1e3a8a]" : isSelected ? "bg-white text-[#1e3a8a]" : "bg-white border"}`}>{idx+1}</span>
-                                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: isSelected ? "rgba(255,255,255,0.15)" : `${item.color}15`, color: isSelected ? "white" : item.color }}>{item.icon}</div>
+                                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: isSelected ? "rgba(255,255,255,0.15)" : `${(item?.color || '#3182f6')}15`, color: isSelected ? "white" : (item?.color || '#3182f6') }}>{item.icon}</div>
                                 <div><div className="text-sm font-bold">{item.short}</div><div className={`text-xs ${isSelected ? "text-white/60" : "text-slate-500"}`}>R² {item.r2} • {item.name}</div></div>
                               </div>
                               <div className="text-right">
@@ -509,18 +506,18 @@ const { useState, useMemo, useEffect } = React;
                       <div className="flex items-center justify-between"><h3 className="text-base font-extrabold">📋 전체 64종 • 8×8 Industry 전체 보기</h3><span className="px-3 py-1 rounded-full bg-white/15 text-xs font-mono">{all64Filtered.length}종 {selectedFactor ? `• ${selectedFactor} 필터` : ""}</span></div>
                       <div className="mt-2 text-xs text-slate-300">왼쪽 산업 선택 + 오른쪽 팩터 선택으로 필터링 • Score 높은 순 • 트레이더 스캔용</div>
                       <div className="mt-3 grid grid-cols-4 gap-2">
-                        {industries.map(ind => {
+                        {(typeof industries !== "undefined" ? industries : []).map(ind => {
                           const cnt = all64Filtered.filter(p => p.industryId === ind.id).length;
-                          return <div key={ind.id} className="rounded-xl bg-white/10 border border-white/10 p-2 text-center"><div className="text-xs font-bold" style={{ color: ind.color }}>{ind.short}</div><div className="text-xs font-mono text-white">{cnt}종</div></div>;
+                          return <div key={ind.id} className="rounded-xl bg-white/10 border border-white/10 p-2 text-center"><div className="text-xs font-bold" style={{ color: ind?.color || '#3182f6' }}>{(ind?.short || ind?.id || 'FC')}</div><div className="text-xs font-mono text-white">{cnt}종</div></div>;
                         })}
                       </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {all64Filtered.slice(0,32).map((p) => {
-                        const ind = (typeof industries !== "undefined" ? industries : []).find(i => i.id === p.industryId);
+                        const ind = (typeof industries !== 'undefined' ? industries : []).find(i => i.id === p.industryId) || { color: '#3182f6', grad: 'grad-elec', icon: '◫', short: p.industryId, r2: 0.8, name: p.industryId };
                         return (
                           <div key={`${p.industryId}-${p.ticker}-all`} className="rounded-xl border bg-white p-3 hover: transition-shadow">
-                            <div className="flex items-center justify-between"><span className="text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: ind.color }}>{ind.short}</span><span className="text-xs font-mono">{p.ticker}</span><span className="text-xs font-bold">Score {p.score}</span></div>
+                            <div className="flex items-center justify-between"><span className="text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: ind?.color || '#3182f6' }}>{(ind?.short || ind?.id || 'FC')}</span><span className="text-xs font-mono">{p.ticker}</span><span className="text-xs font-bold">Score {p.score}</span></div>
                             <div className="mt-2 text-sm font-bold">{p.name}</div>
                             <div className="text-xs text-slate-500 font-mono">{p.reason}</div>
                           </div>
