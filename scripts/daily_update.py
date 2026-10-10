@@ -936,7 +936,6 @@ def fetch_latest_retrain():
         print(f"[Retrain] latest fetch error: {exc}")
         return None
 
-
 def save_to_firebase(
     z_scores: Dict,
     details: Dict,
@@ -946,14 +945,130 @@ def save_to_firebase(
     retrain_snapshot: Dict = None,
 ):
     """
-    정상 검증된 일일 결과를 저장한다.
+    정상 검증된 일일 결과를 Firestore 또는 로컬 JSON에 저장한다.
 
-    이 함수는 필수 팩터와 외국인 수급 검증이 모두 끝난 뒤에만 호출된다.
+    v61.6-observability:
+    - 데이터 기준일, 생성 시각, 품질 상태, 출처, 프록시 정보를 저장
+    - fallback/합성 데이터 여부를 명시적으로 기록
+    - 화면이 별도 계산 없이 상태 바를 표시할 수 있게 메타데이터를 제공
     """
     generated_at = now_kst()
     date_string = generated_at.strftime("%Y-%m-%d")
 
+    # 1차 데이터 무결성 정책상 기본값은 False다.
+    # 향후 다른 수집 경로가 추가될 경우 details를 검사해 자동 반영한다.
+    detail_values = [
+        value
+        for value in details.values()
+        if isinstance(value, dict)
+    ]
+
+    document_fallback_used = any(
+        item.get("fallback_used", False)
+        for item in detail_values
+    )
+
+    document_synthetic_used = any(
+        item.get("synthetic_data_used", False)
+        for item in detail_values
+    )
+
+    foreigner_meta = details.get("외국인", {})
+    foreigner_data_as_of = foreigner_meta.get("latest_date")
+    foreigner_observations = foreigner_meta.get("rows", 0)
+
+    foreigner_staleness_days = None
+    quality_badge = "PASS"
+    quality_message = (
+        "실제 데이터 기반 일일 스냅샷입니다."
+    )
+    fallback_warning = ""
+
+    # fallback 또는 합성값이 하나라도 있으면 최우선 위험 상태로 처리한다.
+    if document_fallback_used or document_synthetic_used:
+        quality_badge = "FAIL"
+        quality_message = (
+            "Fallback 또는 합성 데이터가 감지되었습니다. "
+            "이 스냅샷은 투자 판단에 사용하지 마세요."
+        )
+        fallback_warning = quality_message
+
+    # 실제 외국인 데이터는 있어도 최신 기준일이 오래되면 경고한다.
+    elif foreigner_data_as_of:
+        try:
+            foreigner_date = datetime.strptime(
+                foreigner_data_as_of,
+                "%Y-%m-%d",
+            ).date()
+
+            foreigner_staleness_days = (
+                generated_at.date() - foreigner_date
+            ).days
+
+            if foreigner_staleness_days > 5:
+                quality_badge = "WARN"
+                quality_message = (
+                    "외국인 수급 기준일이 "
+                    f"{foreigner_data_as_of}이며, "
+                    f"현재 기준 {foreigner_staleness_days}일 "
+                    "경과했습니다."
+                )
+
+        except (TypeError, ValueError):
+            quality_badge = "WARN"
+            quality_message = (
+                "외국인 수급 기준일을 해석할 수 없습니다."
+            )
+
+    else:
+        quality_badge = "WARN"
+        quality_message = (
+            "외국인 수급 기준일 정보가 없습니다."
+        )
+
+    # 화면 표시용 데이터 출처·프록시 구조
+    proxy_factors = [
+        {
+            "name": "구리",
+            "label": "China Proxy 1",
+            "source": details.get("구리", {}).get(
+                "source",
+                "",
+            ),
+        },
+        {
+            "name": "상해종합",
+            "label": "China Proxy 2",
+            "source": details.get("상해종합", {}).get(
+                "source",
+                "",
+            ),
+        },
+    ]
+
+    source_summary = {
+        "market_factors": (
+            "시장 데이터 공급자 및 FRED"
+        ),
+        "foreigner_flow": (
+            "KOSPI200 외국인 순매수 CSV"
+        ),
+        "fundamentals": (
+            "OpenDART 재무제표 필터"
+        ),
+        "china_proxy": (
+            "구리(HG=F), 상해종합(000001.SS)"
+        ),
+    }
+
+    investment_notice = (
+        "본 화면은 시장 분석과 학습을 위한 참고 정보입니다. "
+        "특정 종목의 매수·매도 추천이나 수익을 보장하지 않으며, "
+        "투자 판단과 손익의 책임은 사용자에게 있습니다."
+    )
+
     document = {
+        # 기존 대시보드 호환 필드
         "date": date_string,
         "timestamp": generated_at,
         "generated_at_kst": generated_at.isoformat(),
@@ -965,29 +1080,49 @@ def save_to_firebase(
         "retrain": retrain_snapshot,
         "beta_snapshot": retrain_snapshot,
 
+        # 앱·모델·데이터 정책 메타데이터
         "app_version": APP_VERSION,
         "model_version": MODEL_VERSION,
+        "version": APP_VERSION,
         "data_policy": DATA_POLICY,
-        "data_status": "REAL_ONLY",
-        "quality_status": "PASS",
-        "fallback_used": False,
-        "synthetic_data_used": False,
+        "data_status": (
+            "REAL_ONLY"
+            if not document_fallback_used
+            and not document_synthetic_used
+            else "REVIEW_REQUIRED"
+        ),
 
+        # 2차 Observability 메타데이터
+        "data_as_of": date_string,
+        "quality_status": quality_badge,
+        "quality_badge": quality_badge,
+        "quality_message": quality_message,
+        "fallback_used": document_fallback_used,
+        "synthetic_data_used": document_synthetic_used,
+        "fallback_warning": fallback_warning,
+
+        "source_summary": source_summary,
+        "proxy_factors": proxy_factors,
+        "foreigner_metadata": foreigner_meta,
+        "foreigner_data_as_of": foreigner_data_as_of,
+        "foreigner_observations": foreigner_observations,
+        "foreigner_staleness_days": (
+            foreigner_staleness_days
+        ),
+
+        "investment_notice": investment_notice,
+
+        # 기존 정보 필드
         "source": (
             "market data + FRED + "
             "KOSPI200 foreigner CSV + "
             "China proxy + DART filter + "
             "regime + retrain"
         ),
-        "version": APP_VERSION,
         "factors_count": 10,
         "picks_count": len(weekly_picks),
         "china_proxy": (
             "구리(HG=F) + 상해종합(000001.SS)"
-        ),
-        "foreigner_metadata": details.get(
-            "외국인",
-            {},
         ),
         "filter_applied": FILTER_ENABLED,
         "regime_enabled": REGIME_ENABLED,
@@ -1001,6 +1136,7 @@ def save_to_firebase(
             if regime_snapshot
             else "N/A"
         ),
+
         "retrain_summary": (
             f"{retrain_snapshot.get('date')} "
             f"R2 {retrain_snapshot.get('avg_r2')} "
@@ -1039,7 +1175,10 @@ def save_to_firebase(
 
         print(
             f"[Firebase] saved factor_snapshots/{date_string} "
-            f"picks={len(weekly_picks)}"
+            f"picks={len(weekly_picks)} "
+            f"quality={quality_badge} "
+            f"foreigner_staleness="
+            f"{foreigner_staleness_days}"
         )
 
         if regime_snapshot:
@@ -1048,7 +1187,8 @@ def save_to_firebase(
             ).set(regime_snapshot, merge=True)
 
             print(
-                f"[Firebase] saved regime_history/{date_string}"
+                f"[Firebase] saved regime_history/"
+                f"{date_string}"
             )
 
         if meta_snapshot:
@@ -1057,7 +1197,8 @@ def save_to_firebase(
             ).set(meta_snapshot, merge=True)
 
             print(
-                f"[Firebase] saved meta_history/{date_string}"
+                f"[Firebase] saved meta_history/"
+                f"{date_string}"
             )
 
     except Exception as exc:
