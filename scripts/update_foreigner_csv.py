@@ -78,6 +78,9 @@ def _pick_column(df: pd.DataFrame, candidates):
 
 
 def _fetch_pykrx(start: str, end: str) -> pd.DataFrame:
+    if not os.environ.get("KRX_ID") or not os.environ.get("KRX_PW"):
+        raise RuntimeError("KRX_ID/KRX_PW not set; KRX investor trading requires login")
+
     from pykrx import stock
 
     df = stock.get_market_trading_value_by_date(start, end, "KOSPI")

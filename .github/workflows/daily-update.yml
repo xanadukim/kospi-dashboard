@@ -23,6 +23,9 @@ jobs:
 
       - name: Refresh foreigner supply CSV - pykrx KRX
         continue-on-error: true
+        env:
+          KRX_ID: ${{ secrets.KRX_ID }}
+          KRX_PW: ${{ secrets.KRX_PW }}
         run: |
           echo "=== Refresh foreigner_kospi200.csv via pykrx ==="
           python scripts/update_foreigner_csv.py
