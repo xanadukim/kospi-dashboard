@@ -412,13 +412,13 @@ def fetch_krx_foreign() -> Tuple[List[float], float, Dict]:
 
     closes = validate_series(
         closes,
-        "외국인_KOSPI200",
+        "외국인_KOSPI",
         MIN_FOREIGNER_OBSERVATIONS,
     )
 
     if is_invalid_number(z_score):
         raise RuntimeError(
-            f"외국인_KOSPI200: invalid z-score {z_score}"
+            f"외국인_KOSPI: invalid z-score {z_score}"
         )
 
     metadata = {
@@ -530,7 +530,7 @@ def fetch_10_factors_china_proxy() -> Tuple[Dict, Dict]:
 
     if is_invalid_number(foreigner_z):
         raise RuntimeError(
-            f"외국인_KOSPI200: invalid z-score {foreigner_z}"
+            f"외국인_KOSPI: invalid z-score {foreigner_z}"
         )
 
     z_scores["외국인"] = float(foreigner_z)
@@ -538,7 +538,7 @@ def fetch_10_factors_china_proxy() -> Tuple[Dict, Dict]:
     details["외국인"] = {
         "latest": float(latest),
         "z": float(foreigner_z),
-        "source": "KOSPI200 foreigner CSV",
+        "source": "KOSPI market foreigner CSV",
         "data_status": "REAL",
         "rows": len(closes),
         "latest_date": foreigner_detail.get("latest_date"),
@@ -961,7 +961,7 @@ def save_to_firebase(
 
         "source": (
             "market data + FRED + "
-            "KOSPI200 foreigner CSV + "
+            "KOSPI market foreigner CSV + "
             "China proxy + DART filter + "
             "regime + retrain"
         ),

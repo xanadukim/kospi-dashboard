@@ -309,7 +309,7 @@ def calc_z_score(series, window=120):
 
 def get_foreigner_factor_real(min_samples: int = 20):
     """
-    KOSPI200 외국인 순매수 시계열을 표준 CSV에서 읽는다.
+    KOSPI 전체시장 외국인 순매수 시계열을 표준 CSV에서 읽는다.
 
     표준 CSV 스키마:
         date,institution,other_corp,individual,foreigner,total

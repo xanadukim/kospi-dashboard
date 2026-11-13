@@ -4,11 +4,13 @@ update_foreigner_csv.py - Refresh data/foreigner_kospi200.csv from KRX via pykrx
 The daily pipeline only reads the standard CSV. This script is the ETL step that
 keeps that CSV real and current; it does not feed pykrx output directly into
 daily_update.py.
+
+The foreigner series is the KOSPI whole-market investor trading aggregate
+(institution / other corp / individual / foreigner), converted from KRW to
+million KRW to keep the existing CSV scale.
 """
 
-import math
 import os
-import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -34,37 +36,10 @@ COLUMN_CANDIDATES = {
     "total": ["전체", "합계"],
 }
 
-
-def _read_csv(path: Path) -> pd.DataFrame:
-    if not path.exists():
-        return pd.DataFrame(columns=OUT_COLUMNS)
-
-    df = None
-    for encoding in ("utf-8-sig", "utf-8", "cp949", "euc-kr"):
-        try:
-            df = pd.read_csv(path, encoding=encoding)
-            break
-        except UnicodeDecodeError:
-            continue
-    if df is None:
-        raise RuntimeError(f"cannot decode {path}")
-
-    if "date" not in df.columns:
-        raise RuntimeError(f"{path}: missing date column")
-
-    out = pd.DataFrame()
-    out["date"] = pd.to_datetime(df["date"], errors="coerce")
-    for col in VALUE_COLUMNS:
-        if col not in df.columns:
-            out[col] = np.nan
-            continue
-        out[col] = pd.to_numeric(
-            df[col].astype(str).str.replace(",", "", regex=False).str.replace('"', "", regex=False),
-            errors="coerce",
-        )
-
-    out = out.dropna(subset=["date"]).drop_duplicates(subset=["date"], keep="last").sort_values("date")
-    return out.reset_index(drop=True)
+WON_PER_MILLION = 1_000_000
+LOOKBACK_DAYS = 450
+MIN_ROWS = 120
+LATEST_TOLERANCE_DAYS = 10
 
 
 def _pick_column(df: pd.DataFrame, candidates):
@@ -117,112 +92,63 @@ def _fetch_pykrx(start: str, end: str) -> pd.DataFrame:
             errors="coerce",
         )
 
-    out = out.dropna(subset=["foreigner", "institution", "individual", "total"])
+    out = out.dropna(subset=VALUE_COLUMNS)
     if out.empty:
         raise RuntimeError("pykrx frame has no usable investor rows")
     out = out.sort_index()
-    print(f"[FOREIGNER UPDATE] pykrx shape={out.shape} columns={list(out.columns)}")
-    print(out.head(3).to_string())
-    print(out.tail(3).to_string())
+    print(f"[FOREIGNER UPDATE] pykrx shape={out.shape} range={out.index.min().date()}..{out.index.max().date()}")
     return out
 
 
-def _calibrate_scale(existing: pd.DataFrame, fetched: pd.DataFrame):
-    if existing.empty:
-        return 1.0, 0
+def _validate(df: pd.DataFrame, today) -> None:
+    if df.empty:
+        raise RuntimeError("empty foreigner frame")
+    if len(df) < MIN_ROWS:
+        raise RuntimeError(f"insufficient rows: {len(df)} < {MIN_ROWS}")
 
-    ex = existing.set_index("date")["foreigner"]
-    fe = fetched.set_index("date")["foreigner"]
-    common = ex.index.intersection(fe.index)
-    if len(common) < 3:
-        raise RuntimeError(f"insufficient overlap for unit calibration: {len(common)}")
+    latest = df.index.max().date()
+    if (today - latest).days > LATEST_TOLERANCE_DAYS:
+        raise RuntimeError(f"stale foreigner data: latest={latest} today={today}")
 
-    pairs = []
-    for day in common:
-        e_val = float(ex.loc[day])
-        f_val = float(fe.loc[day])
-        if math.isfinite(e_val) and math.isfinite(f_val) and e_val != 0 and f_val != 0:
-            pairs.append((day, e_val, f_val))
-    if len(pairs) < 3:
-        raise RuntimeError("insufficient non-zero overlap for unit calibration")
+    for col in VALUE_COLUMNS:
+        if not bool(np.isfinite(df[col].to_numpy(dtype=float)).all()):
+            raise RuntimeError(f"non-finite values in {col}")
 
-    print("[FOREIGNER UPDATE] overlap samples:")
-    for day, e_val, f_val in pairs[:8]:
-        print(f"  {day.date()}: existing={e_val:.1f} fetched={f_val:.6g} ratio={e_val / f_val:.6g}")
-
-    num = sum(e_val * f_val for _, e_val, f_val in pairs)
-    den = sum(f_val * f_val for _, _, f_val in pairs)
-    ls_scale = num / den if den > 0 else float("nan")
-    median_scale = float(np.median([e_val / f_val for _, e_val, f_val in pairs]))
-    scale = ls_scale if math.isfinite(ls_scale) and ls_scale > 0 else median_scale
-    if not math.isfinite(scale) or scale <= 0:
-        raise RuntimeError(f"invalid calibration scale ls={ls_scale} median={median_scale}")
-    print(f"[FOREIGNER UPDATE] calibration ls={ls_scale:.8g} median={median_scale:.8g} use={scale:.8g}")
-
-    rel_errors = []
-    for day in common:
-        e_val = float(ex.loc[day])
-        f_val = float(fe.loc[day]) * scale
-        if math.isfinite(e_val) and math.isfinite(f_val) and e_val != 0:
-            rel_errors.append(abs((f_val - e_val) / e_val))
-    if rel_errors and float(np.median(rel_errors)) > 0.10:
-        raise RuntimeError(f"unit calibration failed: median rel err {np.median(rel_errors):.4f}")
-
-    return scale, len(common)
+    component_sum = df["institution"] + df["other_corp"] + df["individual"] + df["foreigner"]
+    diff = (component_sum - df["total"]).abs()
+    max_diff = float(diff.max())
+    if max_diff > 1.0:
+        raise RuntimeError(f"investor column sum mismatch max={max_diff:.4f} (million KRW)")
 
 
 def main() -> int:
-    existing = _read_csv(CSV_PATH)
     today = datetime.now().date()
     end = today.strftime("%Y%m%d")
-
-    if existing.empty:
-        start_date = today - timedelta(days=370)
-    else:
-        latest_existing = existing["date"].max().date()
-        start_date = latest_existing - timedelta(days=21)
-
+    start_date = today - timedelta(days=LOOKBACK_DAYS)
     start = start_date.strftime("%Y%m%d")
-    print(f"[FOREIGNER UPDATE] fetch KOSPI {start}..{end}")
+
+    print(f"[FOREIGNER UPDATE] fetch KOSPI market {start}..{end}")
     fetched = _fetch_pykrx(start, end)
 
-    fetched = fetched.reset_index()
-    fetched["date"] = pd.to_datetime(fetched["date"], errors="coerce")
-    fetched = fetched.dropna(subset=["date"]).drop_duplicates(subset=["date"], keep="last").sort_values("date")
+    for col in VALUE_COLUMNS:
+        fetched[col] = fetched[col] / WON_PER_MILLION
 
-    if existing.empty:
-        existing_max = None
-    else:
-        existing_max = existing["date"].max()
-    new_mask = fetched["date"] > existing_max if existing_max is not None else pd.Series(True, index=fetched.index)
-    if not bool(new_mask.any()):
-        print("[FOREIGNER UPDATE] already up to date")
-        return 0
+    _validate(fetched, today)
 
-    scale, overlap = _calibrate_scale(existing, fetched)
-    if scale != 1.0:
-        for col in VALUE_COLUMNS:
-            fetched[col] = fetched[col] * scale
-        print(f"[FOREIGNER UPDATE] calibrated scale={scale:.8g} overlap={overlap}")
-    else:
-        print(f"[FOREIGNER UPDATE] unit ok overlap={overlap}")
-
-    merged = pd.concat([existing, fetched[OUT_COLUMNS]], ignore_index=True)
-    merged = (
-        merged.dropna(subset=["date"])
-        .drop_duplicates(subset=["date"], keep="last")
-        .sort_values("date", ascending=False)
-        .reset_index(drop=True)
-    )
+    out = fetched.reset_index()
+    out = out.rename(columns={"index": "date"})
+    out["date"] = pd.to_datetime(out["date"], errors="coerce")
+    out = out.dropna(subset=["date"]).drop_duplicates(subset=["date"], keep="last")
+    out = out.sort_values("date", ascending=False).reset_index(drop=True)
 
     CSV_PATH.parent.mkdir(parents=True, exist_ok=True)
-    merged.to_csv(CSV_PATH, index=False, columns=OUT_COLUMNS, float_format="%.1f")
+    out.to_csv(CSV_PATH, index=False, columns=OUT_COLUMNS, float_format="%.1f")
 
-    latest = merged["date"].max().strftime("%Y-%m-%d")
-    latest_row = merged.loc[merged["date"].idxmax()]
+    latest = out["date"].max().strftime("%Y-%m-%d")
+    latest_row = out.loc[out["date"].idxmax()]
     print(
-        f"[FOREIGNER UPDATE] wrote {CSV_PATH} rows={len(merged)} "
-        f"latest_date={latest} foreigner={latest_row['foreigner']:.1f}"
+        f"[FOREIGNER UPDATE] wrote {CSV_PATH} rows={len(out)} "
+        f"latest_date={latest} foreigner={latest_row['foreigner']:.1f} (million KRW)"
     )
     return 0
 

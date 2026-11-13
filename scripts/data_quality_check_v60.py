@@ -179,7 +179,7 @@ def check_foreigner_factor() -> dict:
 
         if metadata.get("status") != "REAL":
             return {
-                "name": "외국인_KOSPI200",
+                "name": "외국인_KOSPI",
                 "status": "FAIL",
                 "reason": metadata.get(
                     "reason",
@@ -199,7 +199,7 @@ def check_foreigner_factor() -> dict:
 
         if len(closes) < MIN_FOREIGNER_OBSERVATIONS:
             return {
-                "name": "외국인_KOSPI200",
+                "name": "외국인_KOSPI",
                 "status": "FAIL",
                 "reason": (
                     f"insufficient foreigner observations: "
@@ -217,7 +217,7 @@ def check_foreigner_factor() -> dict:
 
         if is_invalid_number(latest) or float(latest) == 0:
             return {
-                "name": "외국인_KOSPI200",
+                "name": "외국인_KOSPI",
                 "status": "FAIL",
                 "reason": f"invalid latest foreigner value: {latest}",
                 "closes_len": len(closes),
@@ -230,7 +230,7 @@ def check_foreigner_factor() -> dict:
             }
 
         return {
-            "name": "외국인_KOSPI200",
+            "name": "외국인_KOSPI",
             "status": "OK",
             "reason": "",
             "closes_len": len(closes),
@@ -247,7 +247,7 @@ def check_foreigner_factor() -> dict:
 
     except Exception as exc:
         return {
-            "name": "외국인_KOSPI200",
+            "name": "외국인_KOSPI",
             "status": "FAIL",
             "reason": f"exception: {exc}",
             "closes_len": 0,
@@ -380,7 +380,7 @@ def save_qc_log(
             (
                 result.get("data_status")
                 for result in results
-                if result["name"] == "외국인_KOSPI200"
+                if result["name"] == "외국인_KOSPI"
             ),
             "UNKNOWN",
         ),
