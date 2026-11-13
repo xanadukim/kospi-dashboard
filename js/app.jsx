@@ -76,7 +76,7 @@ const { useState, useMemo, useEffect } = React;
                   <div className="font-bold text-amber-900 text-xs">⚠️ 투자 위험 고지</div>
                   <div className="mt-2 text-xs text-slate-700 leading-relaxed space-y-1">
                     <div>• 주식, 선물 등 투자 상품은 가격 변동으로 원금 손실 위험이 있습니다.</div>
-                    <div>• 외국인 선물 수급, 환율, 유가 등 10개 팩터는 외부 변수이며 급변할 수 있습니다.</div>
+                    <div>• 외국인 수급, 환율, 유가 등 10개 팩터는 외부 변수이며 급변할 수 있습니다.</div>
                     <div>• DART 필터, Regime 모델은 통계적 보조 수단이며 100% 정확하지 않습니다. 성과 지표는 실제 추적 데이터 기준으로만 표시됩니다.</div>
                     <div>• 본 대시보드는 07:30 KST 자동 업데이트되며 장중 급변은 반영되지 않을 수 있습니다.</div>
                   </div>
@@ -85,7 +85,7 @@ const { useState, useMemo, useEffect } = React;
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                   <div className="p-3 rounded-xl bg-blue-50 border border-blue-200"><div className="font-bold text-blue-900">FRED • US Macro</div><div className="mt-1 text-slate-700 leading-relaxed">DGS10(10Y 금리), DCOILWTICO(WTI 유가), DTWEXBGS(달러 DXY), VIXCLS(VIX) • St.Louis Fed API • 100% REAL</div></div>
                   <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200"><div className="font-bold text-emerald-900">yfinance • Global</div><div className="mt-1 text-slate-700 leading-relaxed">^GSPC(S&P500), ^SOX(필라 반도체), KRW=X(원달러), HG=F(구리), 000001.SS(상해종합) • 100% REAL</div></div>
-                  <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-200"><div className="font-bold text-indigo-900">KRX OPEN API • 7개 승인</div><div className="mt-1 text-slate-700 leading-relaxed">KOSPI/KOSDAQ 시세, 외국인/기관 수급, KOSPI200 선물 • 15007 투자자별 거래실적 CSV(foreigner_kospi200.csv) 244일 REAL</div></div>
+                  <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-200"><div className="font-bold text-indigo-900">KRX OPEN API • 7개 승인</div><div className="mt-1 text-slate-700 leading-relaxed">KOSPI/KOSDAQ 시세, 외국인/기관 수급(KOSPI market, pykrx) • 투자자별 거래실적 CSV(foreigner_kospi200.csv) workflow 갱신 REAL</div></div>
                   <div className="p-3 rounded-xl bg-violet-50 border border-violet-200"><div className="font-bold text-violet-900">DART • 재무 필터</div><div className="mt-1 text-slate-700 leading-relaxed">금융감독원 전자공시 • PER, PBR, ROE, 부채비율, 유동비율, 영업이익률, 매출증가율 • 부실주 15% 사전 제거 • v54 완화 기준</div></div>
                 </div>
 
@@ -159,7 +159,7 @@ const { useState, useMemo, useEffect } = React;
 
         const normalizeZScores = (cloud = {}) => ({
           "S&P500": cloud.SP500 ?? cloud["S&P500"] ?? 0,
-          "외국인 선물": cloud.외국인 ?? cloud.외국인_선물 ?? 0,
+          "외국인 수급": cloud.외국인 ?? cloud.외국인_선물 ?? 0,
           "SOX / 필라": cloud.반도체팩터 ?? cloud.SOX ?? cloud["SOX / 필라"] ?? 0,
           "US 10Y": cloud.US10Y ?? cloud["US 10Y"] ?? 0,
           원달러: cloud.원달러 ?? 0,
@@ -273,7 +273,7 @@ const { useState, useMemo, useEffect } = React;
         const filteredPicks = useMemo(() => {
           let picks = weeklyPicks.filter(p => p.industryId === selectedIndustry);
           if (selectedFactor) {
-            const factorMap = { "S&P500": ["SP500","S&P500"], "SOX / 필라": ["반도체팩터","SOX / 필라","SOX"], "원달러": ["원달러"], "US 10Y": ["US10Y","한미스프레드"], "구리": ["중국PMI","구리"], "상해종합": ["중국PMI","상해종합"], "WTI": ["WTI"], "DXY": ["DXY"], "VIX": ["VIX"], "외국인 선물": ["외국인"] };
+            const factorMap = { "S&P500": ["SP500","S&P500"], "SOX / 필라": ["반도체팩터","SOX / 필라","SOX"], "원달러": ["원달러"], "US 10Y": ["US10Y","한미스프레드"], "구리": ["중국PMI","구리"], "상해종합": ["중국PMI","상해종합"], "WTI": ["WTI"], "DXY": ["DXY"], "VIX": ["VIX"], "외국인 수급": ["외국인"] };
             const related = factorMap[selectedFactor] || [selectedFactor];
             picks = picks.filter(p => related.some(r => (p.targetFactor || "").includes(r) || (p.reason || "").includes(r)));
             if (picks.length === 0) picks = weeklyPicks.filter(p => p.industryId === selectedIndustry);
@@ -660,9 +660,9 @@ const { useState, useMemo, useEffect } = React;
                 {/* 헤더에서 이동된 외국인, US10Y */}
                 <div className="grid grid-cols-2 gap-2">
                   <div className="rounded-xl bg-white border border-slate-200 p-3">
-                    <div className="text-xs text-slate-500">외국인 선물</div>
-                    <div className="mt-1 text-sm font-bold">{foreignerDetail.latest != null ? `${Math.round(foreignerDetail.latest/100000000)}억` : "—"} <span className="text-xs text-slate-500">Z {fmtNum(foreignerDetail.z)}</span></div>
-                    <div className="text-xs text-slate-400">{foreignerDetail.latest_date || "KOSPI200 • CSV"} • {foreignerDetail.data_status || "N/A"}</div>
+                    <div className="text-xs text-slate-500">외국인 수급</div>
+                    <div className="mt-1 text-sm font-bold">{foreignerDetail.latest != null ? `${Math.round(foreignerDetail.latest/100)}억` : "—"} <span className="text-xs text-slate-500">Z {fmtNum(foreignerDetail.z)}</span></div>
+                    <div className="text-xs text-slate-400">{foreignerDetail.latest_date || "KOSPI market • pykrx CSV"} • {foreignerDetail.data_status || "N/A"}</div>
                   </div>
                   <div className="rounded-xl bg-white border border-slate-200 p-3">
                     <div className="text-xs text-slate-500">US 10Y / DXY</div>

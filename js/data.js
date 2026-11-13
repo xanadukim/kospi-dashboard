@@ -11,7 +11,7 @@ var industries = [
           grad: "grad-elec",
           betas: {
             "S&P500": 0.42,
-            "외국인 선물": 0.28,
+            "외국인 수급": 0.28,
             "SOX / 필라": 0.35,
             "US 10Y": -0.18,
             구리: 0.15,
@@ -64,7 +64,7 @@ var industries = [
           betas: {
             "US 10Y": -0.30,
             DXY: 0.18,
-            "외국인 선물": 0.15,
+            "외국인 수급": 0.15,
             VIX: -0.15,
             "S&P500": 0.10,
           },
@@ -120,7 +120,7 @@ var industries = [
           grad: "grad-retail",
           betas: {
             "S&P500": 0.22,
-            "외국인 선물": 0.18,
+            "외국인 수급": 0.18,
             상해종합: 0.12,
             구리: 0.08,
             VIX: -0.10,
@@ -131,7 +131,7 @@ var industries = [
 
 var factorMeta = {
         "S&P500": { label: "S&P500", desc: "전일 수익률 Z" },
-        "외국인 선물": { label: "외국인 선물", desc: "KOSPI200 선물 순매수" },
+        "외국인 수급": { label: "외국인 수급", desc: "KOSPI 시장 외국인 순매수(현물)" },
         "SOX / 필라": { label: "SOX / 필라", desc: "반도체 지수 모멘텀" },
         "US 10Y": { label: "US 10Y", desc: "금리 변동 Z" },
         원달러: { label: "원/달러", desc: "환율 변동 Z" },
@@ -140,7 +140,7 @@ var factorMeta = {
         VIX: { label: "VIX", desc: "변동성 지수 Z" },
         구리: { label: "구리", desc: "China Proxy 1 - 경기민감 REAL" },
         상해종합: { label: "상해종합", desc: "China Proxy 2 - SSE REAL" },
-        외국인: { label: "외국인 선물", desc: "외국인 수급" },
+        외국인: { label: "외국인 수급", desc: "KOSPI 시장 외국인 수급" },
         반도체팩터: { label: "SOX / 필라", desc: "반도체 모멘텀" },
         SP500: { label: "S&P500", desc: "전일 수익률" },
       };
