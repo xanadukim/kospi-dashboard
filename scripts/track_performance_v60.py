@@ -85,6 +85,9 @@ def get_return_direct_yfinance(ticker: str, buy_date: str, eval_date: str):
             return None, 0.0, 0.0, "empty hist"
 
         hist.index = hist.index.tz_localize(None)
+        hist = hist[hist.index <= eval_dt]
+        if hist.empty:
+            return None, 0.0, 0.0, f"no price on/before {eval_date}"
         # 매수일 가격 찾기
         buy_date_strs = [d.strftime('%Y-%m-%d') for d in hist.index]
         if buy_date in buy_date_strs:
@@ -103,28 +106,39 @@ def get_return_direct_yfinance(ticker: str, buy_date: str, eval_date: str):
         return None, 0.0, 0.0, str(e)
 
 def get_kospi_return(buy_date: str, eval_date: str):
-    """KOSPI 지수 수익률 (^KS11). 유효하지 않으면 None을 반환한다."""
+    """KOSPI 지수 수익률 (^KS11). 매수일·평가일 기준으로 정렬하고 유효하지 않으면 None."""
     try:
         import yfinance as yf
-        kos = yf.Ticker("^KS11").history(start=buy_date, end=eval_date)
-        if kos.empty or 'Close' not in kos or len(kos[['Close']].dropna()) < 2:
-            from datetime import timedelta
-            import datetime as dt
-            bd = dt.datetime.strptime(buy_date, '%Y-%m-%d')
-            ed = dt.datetime.strptime(eval_date, '%Y-%m-%d')
-            s = (bd - timedelta(days=5)).strftime('%Y-%m-%d')
-            e = (ed + timedelta(days=3)).strftime('%Y-%m-%d')
-            kos = yf.Ticker("^KS11").history(start=s, end=e)
+        import datetime as dt
+        from datetime import timedelta
+
+        buy_dt = dt.datetime.strptime(buy_date, '%Y-%m-%d')
+        eval_dt = dt.datetime.strptime(eval_date, '%Y-%m-%d')
+        start = (buy_dt - timedelta(days=7)).strftime('%Y-%m-%d')
+        end = (eval_dt + timedelta(days=3)).strftime('%Y-%m-%d')
+        kos = yf.Ticker("^KS11").history(start=start, end=end)
         if kos.empty or 'Close' not in kos:
             return None
+
         kos = kos[['Close']].dropna()
-        if len(kos) < 2:
+        kos.index = kos.index.tz_localize(None)
+        kos = kos[kos.index <= eval_dt]
+        if kos.empty:
             return None
-        first = float(kos['Close'].iloc[0])
-        last = float(kos['Close'].iloc[-1])
-        if not math.isfinite(first) or not math.isfinite(last) or first == 0:
+
+        buy_dates = [d.strftime('%Y-%m-%d') for d in kos.index]
+        if buy_date in buy_dates:
+            buy_price = float(kos.loc[kos.index.strftime('%Y-%m-%d') == buy_date]['Close'].iloc[0])
+        else:
+            before = kos[kos.index < buy_dt]
+            if before.empty:
+                return None
+            buy_price = float(before['Close'].iloc[-1])
+
+        eval_price = float(kos['Close'].iloc[-1])
+        if not math.isfinite(buy_price) or not math.isfinite(eval_price) or buy_price == 0:
             return None
-        kret = (last - first) / first
+        kret = (eval_price - buy_price) / buy_price
         return kret if math.isfinite(kret) else None
     except Exception as e:
         print(f"[KOSPI] Error: {e}")

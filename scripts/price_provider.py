@@ -227,6 +227,9 @@ def get_stock_return(ticker: str, buy_date: str, eval_date: str = None, source: 
         if hist.empty:
             return None
         hist.index = hist.index.tz_localize(None)
+        hist = hist[hist.index <= eval_dt]
+        if hist.empty:
+            return None
         buy_dates = [d.strftime('%Y-%m-%d') for d in hist.index]
         if buy_date in buy_dates:
             buy_price = float(hist.loc[hist.index.strftime('%Y-%m-%d') == buy_date]['Close'].iloc[0])
