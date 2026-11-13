@@ -21,6 +21,12 @@ jobs:
         run: |
           pip install firebase-admin yfinance requests lxml pandas numpy pykrx beautifulsoup4
 
+      - name: Refresh foreigner supply CSV - pykrx KRX
+        continue-on-error: true
+        run: |
+          echo "=== Refresh foreigner_kospi200.csv via pykrx ==="
+          python scripts/update_foreigner_csv.py
+
       - name: Data Quality Check Gate - v61.6 REAL_ONLY
         id: qc_gate
         env:
