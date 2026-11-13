@@ -17,36 +17,36 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install deps v60 China Proxy
+      - name: Install deps v61.6 REAL_ONLY
         run: |
           pip install firebase-admin yfinance requests lxml pandas numpy scikit-learn pykrx beautifulsoup4
 
-      - name: Run regime detector - v60 REAL yfinance 100% + China Proxy
+      - name: Run regime detector - v61.6 REAL_ONLY yfinance
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
-          echo "=== Regime Detector v60 China Proxy ==="
+          echo "=== Regime Detector v61.6-stable REAL_ONLY ==="
           python scripts/regime_detector_v60.py
 
-      - name: Run performance tracking - v60 REAL yfinance 95% + 64 Picks + China Proxy
+      - name: Run performance tracking - v61.6 REAL_ONLY yfinance
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
           PRICE_SOURCE: yfinance
         run: |
-          echo "=== Performance Tracking v60 64 Picks China Proxy ==="
+          echo "=== Performance Tracking v61.6-stable REAL_ONLY ==="
           python scripts/track_performance_v60.py
 
-      - name: Run meta factor tracker - v60 REAL IC 100% + China Proxy 10 Factors
+      - name: Run meta factor tracker - v61.6 REAL_ONLY IC
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
-          echo "=== Meta Factor Tracker v60 China Proxy IC ==="
+          echo "=== Meta Factor Tracker v61.6-stable REAL_ONLY ==="
           python scripts/meta_factor_tracker_v60.py
 
       - name: Summary
         run: |
-          echo "v60 Performance pipeline completed"
+          echo "v61.6-stable Performance pipeline REAL_ONLY completed"
           echo "- regime_snapshots/{today} - VIX/OVX/DXY/TNX/KRW/KOSPI/SP500 + 구리(HG=F) + 상해종합(000001.SS)"
           echo "- performance_tracking/{recDate}_{ticker}_{evalDate} - 64 Picks REAL return vs KOSPI"
           echo "- factor_validity/{factor}_{today} - IC/HitRate for 10 Factors including 구리/상해종합"

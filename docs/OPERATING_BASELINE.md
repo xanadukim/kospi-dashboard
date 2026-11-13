@@ -68,7 +68,7 @@
 - 데이터가 없으면 `N/A`, `—`, 또는 수집처/컬렉션명을 표시한다.
 - `daily_update.py`의 내장 meta tracker는 비활성화했다. IC/HitRate는 `meta_factor_tracker_v60.py`가 실제 `performance_tracking`으로 생성한 `meta_summaries`/`factor_validity`만 사용한다.
 - `meta_factor_tracker_v60.py`는 같은 `recDate+ticker`의 여러 `evalDate` 중 최신 1건만 사용해 look-ahead/중복 표본을 줄인다.
-- `regime_detector.py`는 필수 지표 누락 시 예외를 발생시킨다. daily pipeline은 이를 `FALLBACK_MODULE_ERROR`로 명시 기록하며 정상 regime처럼 표시하지 않는다.
+- `regime_detector.py`는 필수 지표 누락 시 예외를 발생시킨다. daily pipeline은 이를 `REGIME_MODULE_ERROR`로 명시 기록하며 정상 regime처럼 표시하지 않는다.
 
 ## 5. 검증 명령
 

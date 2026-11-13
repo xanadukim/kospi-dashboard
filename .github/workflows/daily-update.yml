@@ -17,44 +17,44 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install deps v61 100% REAL KRX
+      - name: Install deps v61.6 REAL_ONLY
         run: |
           pip install firebase-admin yfinance requests lxml pandas numpy pykrx beautifulsoup4
 
-      - name: Data Quality Check Gate - v61 10 Factors 100% REAL KRX + 0.85 Removed
+      - name: Data Quality Check Gate - v61.6 REAL_ONLY
         id: qc_gate
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
         run: |
-          echo "=== QC Gate v61.3 - 10 Factors 100% REAL KRX + 15007 CSV REAL NaN 체크 ==="
+          echo "=== QC Gate v61.6-stable REAL_ONLY ==="
           python scripts/data_quality_check_v60.py
           echo "QC Gate passed"
 
-      - name: Run daily update - v61 100% REAL KRX 10 Factors + 64 Picks + DART + Regime + Retrain
+      - name: Run daily update - v61.6 REAL_ONLY 10 Factors + 64 Picks + DART + Regime + Retrain
         if: steps.qc_gate.outcome == 'success'
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
           KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
-          PRICE_SOURCE: krx
+          PRICE_SOURCE: yfinance
         run: |
-          echo "=== Daily Update v61.3 100% REAL KRX + 15007 CSV REAL Regime + Retrain 6M REAL ==="
-          echo "- KRX OPEN API: 7 APIs approved (KOSPI, KOSDAQ, futures)"
-          echo "- Price Source: KRX OPEN API DIRECT (yfinance fallback removed)"
+          echo "=== Daily Update v61.6-stable REAL_ONLY ==="
+          echo "- Price Source: yfinance (KRX OPEN API optional; disabled until endpoint verified)"
+          echo "- Factors: SP500/US10Y/SOX/원달러/WTI/DXY/VIX/구리/상해종합 + 외국인 CSV"
           echo "- Regime Detector: VIX/OVX/DXY/WTI/KOSPI REAL"
-          echo "- Meta Tracker: P(valid|regime) + bonus"
+          echo "- Meta Tracker: disabled; use meta_factor_tracker_v60.py output"
           echo "- Retrain: beta_snapshots/latest fetch"
           python scripts/daily_update.py
 
       - name: Summary
         if: always()
         run: |
-          echo "v61.3 Daily pipeline 100% REAL KRX + 15007 CSV REAL with QC Gate + Regime + Retrain completed"
+          echo "v61.6-stable Daily pipeline REAL_ONLY with QC Gate + Regime + Retrain completed"
           echo "- QC: data_quality_logs/{today}"
           echo "- Factors: factor_snapshots/{today} - 10 Factors REAL + regime + retrain"
           echo "- Regime: regime_history/{today} - VIX/OVX/DXY REAL + 8 indicators"
-          echo "- Meta: meta_history/{today} - P(valid|regime) regime aware"
-          echo "- Retrain: beta_snapshots/latest - 8 industries RidgeCV REAL"
+          echo "- Meta: meta_summaries/{today} from performance workflow"
+          echo "- Retrain: beta_snapshots/latest - 8 industries REAL"
           echo "QC FAIL이면 daily_update 실행 안 됨"

@@ -73,9 +73,9 @@ def fetch_regime_indicators() -> Dict:
         "vol_5d": calc_volatility(closes, 5)
     }
     
-    # TNX - US 10Y (금리)
+    # US10Y - US 10Y (금리)
     closes, latest = get_market_indicator("US10Y", period="6mo")
-    indicators["TNX"] = {
+    indicators["US10Y"] = {
         "latest": latest,
         "closes": closes,
         "z": calc_z_score(closes),

@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install deps v61 Retrain 100% REAL KRX
+      - name: Install deps v61.6 Retrain REAL_ONLY
         run: |
           python -m pip install --upgrade pip
           pip install firebase-admin yfinance requests lxml pandas numpy pykrx beautifulsoup4 scikit-learn --upgrade
@@ -36,21 +36,21 @@ jobs:
           python -c "import firebase_admin; print('firebase-admin OK')"
           python -c "import sklearn; print(f'sklearn {sklearn.__version__} OK')"
 
-      - name: Run retrain model - v60.2 RidgeCV REAL 180D
+      - name: Run retrain model - v61.6 REAL_ONLY 180D
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
           KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
-          PRICE_SOURCE: krx
+          PRICE_SOURCE: yfinance
         run: |
-          echo "=== Retrain v60.2 - 6개월 재학습 - RidgeCV REAL ==="
+          echo "=== Retrain v61.6-stable - REAL_ONLY - 180D ==="
           echo "- Window: ${{ inputs.window_days || '180' }} days"
           echo "- Industries: 8 (elec, auto, chem, fin, bio, steel, const, retail)"
           echo "- Factors: 10 (SP500, US10Y, 외국인, SOX, 원달러, WTI, DXY, VIX, 구리, 상해종합)"
-          echo "- Method: RidgeCV alpha=[0.1,0.5,1.0,2.0] + StandardScaler + 70% new 30% old"
-          echo "- Proxy: 삼성전자 005930 등 8개 대표주 REAL KRX OPEN API"
-          echo "- KRX OPEN API: 7 APIs approved (KOSPI, KOSDAQ, futures)"
+          echo "- Method: Ridge alpha selection + StandardScaler + 70% new / 30% base blending"
+          echo "- Proxy: 삼성전자 005930 등 8개 대표주 yfinance .KS REAL"
+          echo "- Price Source: yfinance (KRX OPEN API optional; disabled until endpoint verified)"
           python scripts/retrain_model.py
 
       - name: Check generated data.js.new
@@ -77,12 +77,11 @@ jobs:
       - name: Summary
         if: always()
         run: |
-          echo "v61.3 Retrain pipeline 100% REAL KRX + 15007 CSV completed - REAL yfinance"
-          echo "- retrain_history/{today} - 180D RidgeCV REAL"
+          echo "v61.6-stable Retrain pipeline REAL_ONLY completed"
+          echo "- retrain_history/{today} - 180D Ridge REAL"
           echo "- beta_snapshots/{today} - 8 industries new betas REAL"
           echo "- beta_snapshots/latest - always latest - Frontend LIVE"
           echo "- retrain_logs/{today} - summary"
           echo "- js/data.js.new - auto generated for manual commit"
           echo "Next retrain: 30 days later (monthly)"
           echo "Manual: cp js/data.js.new js/data.js && git commit && git push"
-          echo "FIX: Deleted old retrain-model-v60.yml which lacked yfinance"
