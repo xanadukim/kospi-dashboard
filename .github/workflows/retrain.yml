@@ -1,4 +1,4 @@
-name: KOSPI Quant Terminal v61.3 - Monthly Retrain + 6M Auto 100% REAL KRX
+name: KOSPI Quant Terminal v61.6-stable - Monthly Retrain REAL_ONLY
 
 on:
   schedule:

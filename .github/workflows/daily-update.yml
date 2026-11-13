@@ -1,4 +1,4 @@
-name: KOSPI Quant Terminal v61.3 - Daily Update + QC Gate + Regime + Retrain 100% REAL KRX
+name: KOSPI Quant Terminal v61.6-stable - Daily Update + QC Gate + Regime + Retrain REAL_ONLY
 
 on:
   schedule:

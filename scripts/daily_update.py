@@ -91,23 +91,9 @@ except ImportError:
         print(f"[Daily] regime detector unavailable: {exc}")
 
 
-try:
-    from meta_factor_tracker import build_meta_tracker
-
-    META_ENABLED = True
-    print("[Daily] meta factor tracker loaded")
-
-except ImportError:
-    try:
-        from scripts.meta_factor_tracker import build_meta_tracker
-
-        META_ENABLED = True
-        print("[Daily] meta factor tracker loaded from scripts")
-
-    except Exception as exc:
-        META_ENABLED = False
-        build_meta_tracker = None
-        print(f"[Daily] meta factor tracker unavailable: {exc}")
+META_ENABLED = False
+build_meta_tracker = None
+print("[Daily] meta snapshot disabled for v61.6-stable; use meta_factor_tracker_v60.py output")
 
 
 FRED_API_KEY = os.environ.get("FRED_API_KEY", "")
@@ -1124,8 +1110,8 @@ def build_optional_regime_snapshot():
     """
     레짐 탐지 결과를 생성한다.
 
-    기존 v61.6 동작 호환을 위해 레짐 모듈 오류 시
-    fallback 레짐을 기록하고 daily snapshot은 계속 생성한다.
+    레짐 모듈 오류 시 정상 레짐을 추정하지 않고
+    REGIME_MODULE_ERROR 상태를 기록한다.
     """
     if not REGIME_ENABLED or build_regime_snapshot is None:
         print("[Regime] skipped: module unavailable")
@@ -1152,16 +1138,18 @@ def build_optional_regime_snapshot():
         traceback.print_exc()
 
         return {
-            "regime": "평시",
-            "confidence": 0.70,
+            "regime": "REGIME_MODULE_ERROR",
+            "confidence": 0,
             "triggers": [
-                "regime fallback due to module error"
+                "regime module error; no valid regime inferred"
             ],
-            "window": 120,
-            "color": "#10b981",
-            "risk_level": "Low",
+            "window": None,
+            "color": "#64748b",
+            "risk_level": "Unknown",
             "date": now_kst().strftime("%Y-%m-%d"),
             "data_status": "FALLBACK_MODULE_ERROR",
+            "fallback_used": True,
+            "synthetic_data_used": False,
         }
 
 

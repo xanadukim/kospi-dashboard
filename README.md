@@ -1,123 +1,78 @@
+# KOSPI Quant Terminal v61.6-stable
 
-# KOSPI Quant Terminal v60 - 100% REAL + DART + 성과추적 + Regime + 재학습
+100% REAL 데이터 파이프라인 + DART 필터 + 64 Picks + 성과추적 + Regime + 월별 재학습.
 
-## Architecture v60
+> Stable 기준: mock/난수/합성 fallback 없음. 실제 데이터가 없으면 화면에 `N/A`/`—`/수집처를 표시한다. 상세 운영 계약은 `docs/OPERATING_BASELINE.md`를 본다.
 
-### 1. Daily Pipeline (07:30 KST)
-`scripts/daily_update.py` - 10 Factors China Proxy + DART + 64 Picks
-- **10 Factors (100% REAL)**:
-  1. S&P500 (^GSPC) - yfinance
-  2. US 10Y (DGS10) - FRED
-  3. 외국인 (pykrx / KRX OPEN API) - KRX REAL
-  4. SOX (^SOX) - yfinance
-  5. 원달러 (KRW=X) - yfinance
-  6. WTI (DCOILWTICO) - FRED
-  7. DXY (DTWEXBGS) - FRED
-  8. VIX (VIXCLS) - FRED
-  9. 구리 (HG=F) - China Proxy 1 - yfinance NEW
-  10. 상해종합 (000001.SS) - China Proxy 2 - yfinance NEW
+## Architecture v61.6-stable
 
-- **64 Picks Generation (8x8)**:
-  - 8 industries x 8 stocks = 64 picks
-  - Score = 6.5 + Σ(β*Z)*1.2 + momentum*0.3 + max(0,pred)*0.5
-  - ExpectedReturn = 0.5 + |pred|*0.8 + momentum*0.1
+### 1. Daily Pipeline (평일 07:30 KST)
+`.github/workflows/daily-update.yml`
+1. `scripts/data_quality_check_v60.py` — 품질 게이트
+2. `scripts/daily_update.py` — 10개 팩터 + DART + 64 picks + regime/retrain 첨부
 
-- **DART Filter v54 RELAXED**:
-  - ROE -10% / 부채 400% / 영업 -10% 완화
-  - 대장주 화이트리스트 11개 보호
-  - 70% 안전장치
+10개 팩터:
+1. S&P500 (`^GSPC`) — yfinance
+2. US 10Y (`DGS10`) — FRED
+3. 외국인 KOSPI200 — `data/foreigner_kospi200.csv`
+4. SOX (`^SOX`) — yfinance
+5. 원달러 (`KRW=X`) — yfinance
+6. WTI (`DCOILWTICO`) — FRED
+7. DXY (`DTWEXBGS`) — FRED
+8. VIX (`VIXCLS`) — FRED
+9. 구리 (`HG=F`) — China Proxy 1 — yfinance
+10. 상해종합 (`000001.SS`) — China Proxy 2 — yfinance
 
-- **Firebase**: factor_snapshots/{date} with zScores, details, weeklyPicks 64
+산출물: `factor_snapshots/{date}`에 `zScores`, `details`, `weeklyPicks`, `regime`, `retrain`, 상태 메타데이터 저장.
 
-### 2. Performance Pipeline (16:00 KST)
-`performance-update.yml` - 매일 장 마감 후
-
-1. `regime_detector_v56.py` - 100% REAL yfinance
-   - VIX, OVX, DXY, TNX, KRW, KOSPI, SP500 REAL
-   - GPR_proxy = (VIX+OVX)/2
-   - 4단계: normal / caution / high_vol / war_crisis
-   - window 120→100→90→60일 자동 조절
-
-2. `track_performance_v56.py` - 95% REAL yfinance
-   - 005930.KS 등 실제 종가로 return 계산
-   - KOSPI 대비 excess return
-   - performance_tracking/{recDate}_{ticker}_{evalDate}
-
-3. `meta_factor_tracker_v56.py` - 100% REAL IC
-   - IC = corr(Z_at_Rec, Return)
-   - Hit Rate = sign(Z)==sign(Return)
-   - t-stat, avg_excess
-   - factor_validity/{factor}_{date} + meta_summaries
+### 2. Performance Pipeline (평일 16:00 KST)
+`.github/workflows/performance-update.yml`
+1. `scripts/regime_detector_v60.py` → `regime_snapshots`, `market_regimes`
+2. `scripts/track_performance_v60.py` → `performance_tracking`, `performance_snapshots`
+3. `scripts/meta_factor_tracker_v60.py` → `factor_validity`, `meta_summaries`
 
 ### 3. Monthly Retrain (매월 1일 11:00 KST)
-`retrain_model.py` v60 - China Proxy 10 Factors
-- 성과 가중 Ridge (hit_rate 높으면 λ↓)
-- Lasso Factor Selection (|β|>=0.08)
-- 2-stage KOSPI 모델
-- model_versions/{YYYY-MM} + config/industries
+`.github/workflows/retrain.yml` → `scripts/retrain_model.py`
+- `beta_snapshots/latest`, `beta_snapshots/{date}`, `retrain_history`, `retrain_logs` 저장
+- `js/data.js.new`는 수동 반영용 산출물이며 프런트 기본값이 아니다.
 
-### 4. Price Provider v60
-`price_provider.py` - yfinance / KRX 추상화
-- FACTOR_TICKERS: 구리, 상해종합 포함
-- get_stock_prices() - source env로 yfinance/krx 전환
-- _get_krx_prices() - KRX_API_KEY 있으면 KRX OPEN API, 없으면 yfinance fallback
-- get_stock_return() - yfinance REAL
-- calc_z_score(window=120) -3~+3 클리핑
+### 4. Dashboard
+`index.html` + `js/config.js` + `js/data.js` + `js/app.jsx`
+- Firebase는 읽기 전용 클라이언트만 사용한다.
+- `js/app.js`, `js/regime.js`, `js/retrain.js`는 `legacy/`로 이동했으며 운영에서 로드하지 않는다.
+- 프런트는 `factor_snapshots`, `performance_tracking`, `performance_snapshots`, `meta_summaries`만 표시한다.
 
-### 5. Workflows
+## Data Policy
 
-| 파일 | Cron | KST | 역할 |
-|------|------|-----|------|
-| daily-update.yml | 30 22 * * 0-4 | 07:30 평일 | 10 Factors + DART + 64 Picks |
-| performance-update.yml | 0 7 * * 1-5 | 16:00 평일 | Regime + Performance + Meta |
-| retrain-model.yml | 0 2 1 * * | 11:00 매월1일 | β 재학습 |
+```text
+APP_VERSION   = v61.6-data-integrity
+MODEL_VERSION = industry8-factor-v61.6
+DATA_POLICY   = REAL_ONLY_NO_SYNTHETIC_NO_085_FALLBACK
+```
 
-### 6. Secrets
+- 필수 데이터 부족 시 새 snapshot/picks를 생성하지 않는다.
+- 마지막 정상 snapshot을 실패 결과로 덮어쓰지 않는다.
+- 모든 snapshot은 `data_status`, `quality_status`, `fallback_used`, `synthetic_data_used`를 가진다.
+- `daily_update.py` 내장 meta tracker는 비활성화했다. IC/HitRate는 `meta_factor_tracker_v60.py`의 실제 성과 기반 결과만 사용한다.
+
+## Secrets
 
 GitHub Secrets:
-- FIREBASE_SERVICE_ACCOUNT
-- DART_API_KEY
-- FRED_API_KEY
-- KRX_API_KEY (승인 후 추가)
+- `FIREBASE_SERVICE_ACCOUNT`
+- `FRED_API_KEY`
+- `DART_API_KEY`
+- `KRX_API_KEY` (승인/필요 시)
 
-### 7. Dashboard Tabs 일정
+## Verification
 
-- 산업 모델 Today: Firebase onSnapshot, selectedIndustry 필터, 07:30 갱신
-- 월요일 추천 64선: weeklyPicks.filter(industryId).slice(0,8), 일요일 18:00 생성
-- 지난주 성과: performance_tracking 기반 vs KOSPI
-- 성과 IC: factor_validity IC/Hit
-- KOSPI 마켓: regime_snapshots + KOSPI 예측
-
-### 8. KRX 반영 효과
-
-- R² 0.89 → 0.90~0.92 (+0.01~0.03)
-- 전기전자 0.91→0.93, 금융 0.87→0.89
-- Fallback 0.85 제거, IC 0.15→0.18, 적중률 62%→65%
-
-### 9. Files
-
-```
-scripts/
-  daily_update.py v60 - 10 Factors + DART + 64 Picks
-  price_provider.py v60 - KRX/yfinance 추상화
-  fundamental_filter.py v54 RELAXED - DART 필터
-  regime_detector_v56.py - Regime 100% REAL
-  track_performance_v56.py - Performance 95% REAL
-  meta_factor_tracker_v56.py - IC 100% REAL
-  retrain_model.py v60 - China Proxy 재학습
-
-.github/workflows/
-  daily-update.yml
-  performance-update.yml
-  retrain-model.yml
-
-js/data.js - Industries & Factor Meta v60
-index.html - Dashboard v60
+```bash
+py -3 -m py_compile scripts/daily_update.py scripts/regime_detector.py scripts/regime_detector_v60.py scripts/track_performance_v60.py scripts/meta_factor_tracker_v60.py scripts/retrain_model.py scripts/data_quality_check_v60.py
+py -3 tests/check_v616_static.py
+npx --yes esbuild js/app.jsx --loader:.jsx=jsx --outfile=/tmp/app.jsx.js
+node --check /tmp/app.jsx.js
+git diff --check
 ```
 
 ## Next Step
 
-KRX OPEN API 승인되면:
-1. GitHub Secrets에 KRX_API_KEY 추가
-2. price_provider.py source="krx"로 전환
-3. 100% KRX REAL 달성
+v61.6-stable 검증 후에만 v62 factor-beta K-means 실험을 별도 브랜치에서 진행한다.

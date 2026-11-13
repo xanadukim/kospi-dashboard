@@ -1,4 +1,4 @@
-// js/data.js - Industries & Factor Meta - v61.3 100% REAL KRX + 15007 CSV REAL + DART + Regime (구리+상해)
+// js/data.js - Industries & Factor Meta - v61.6-stable REAL_ONLY (R²는 retrain snapshot만 표시)
 // 분리된 데이터 파일 - 베타 수정 시 여기만 수정
 
 var industries = [
@@ -7,7 +7,6 @@ var industries = [
           name: "전기전자/반도체",
           short: "전기전자",
           icon: "◫",
-          r2: 0.91,
           color: "#2563eb",
           grad: "grad-elec",
           betas: {
@@ -27,7 +26,6 @@ var industries = [
           name: "자동차/운수장비",
           short: "자동차",
           icon: "◩",
-          r2: 0.84,
           color: "#0f766e",
           grad: "grad-auto",
           betas: {
@@ -45,7 +43,6 @@ var industries = [
           name: "화학/2차전지",
           short: "화학·전지",
           icon: "⬡",
-          r2: 0.79,
           color: "#9333ea",
           grad: "grad-chem",
           betas: {
@@ -62,7 +59,6 @@ var industries = [
           name: "금융/증권",
           short: "금융",
           icon: "₩",
-          r2: 0.87,
           color: "#1e293b",
           grad: "grad-fin",
           betas: {
@@ -79,7 +75,6 @@ var industries = [
           name: "바이오/의약품",
           short: "바이오",
           icon: "⚕",
-          r2: 0.71,
           color: "#e11d48",
           grad: "grad-bio",
           betas: {
@@ -95,7 +90,6 @@ var industries = [
           name: "철강/소재/에너지",
           short: "철강·소재",
           icon: "⬣",
-          r2: 0.84,
           color: "#a16207",
           grad: "grad-steel",
           betas: { 구리: 0.35, 상해종합: 0.28, 원달러: 0.15, WTI: 0.14, "S&P500": 0.08, DXY: 0.10 },
@@ -106,7 +100,6 @@ var industries = [
           name: "건설/조선/기계",
           short: "건설·조선",
           icon: "⌖",
-          r2: 0.76,
           color: "#334155",
           grad: "grad-const",
           betas: {
@@ -123,7 +116,6 @@ var industries = [
           name: "유통/IT서비스",
           short: "유통·IT",
           icon: "◎",
-          r2: 0.80,
           color: "#0891b2",
           grad: "grad-retail",
           betas: {

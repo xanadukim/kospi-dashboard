@@ -280,6 +280,21 @@ def build_regime_snapshot() -> Dict:
     """전체 Regime 스냅샷 생성 - daily_update.py에서 호출"""
     try:
         indicators = fetch_regime_indicators()
+
+        required = ["VIX", "OVX", "DXY", "WTI", "KOSPI", "SP500", "US10Y", "KRW"]
+        missing = []
+        proxied = []
+        for name in required:
+            item = indicators.get(name, {})
+            closes = item.get("closes", [])
+            latest = item.get("latest", 0)
+            if len(closes) < 20 or not latest:
+                missing.append(name)
+            if item.get("is_proxy"):
+                proxied.append(name)
+        if missing:
+            raise RuntimeError(f"regime indicators missing: {missing}")
+
         regime_info = detect_regime(indicators)
         factor_adj = get_regime_factor_adjustment(regime_info["regime"])
         config = get_regime_config(regime_info["regime"])
@@ -303,6 +318,10 @@ def build_regime_snapshot() -> Dict:
             },
             "factor_adjustment": factor_adj,
             "config": config,
+            "data_status": "REAL_WITH_PROXY" if proxied else "REAL",
+            "fallback_used": bool(proxied),
+            "synthetic_data_used": False,
+            "proxy_indicators": proxied,
             "version": "v60-regime-detector-REAL"
         }
         
@@ -312,20 +331,7 @@ def build_regime_snapshot() -> Dict:
         print(f"[Regime] Error building snapshot: {e}")
         import traceback
         traceback.print_exc()
-        # fallback 평시
-        return {
-            "date": datetime.now().strftime("%Y-%m-%d"),
-            "regime": "평시",
-            "confidence": 0.70,
-            "triggers": [f"fallback - error: {str(e)[:50]}"],
-            "window": 120,
-            "color": "#10b981",
-            "risk_level": "Low",
-            "indicators": {},
-            "factor_adjustment": get_regime_factor_adjustment("평시"),
-            "config": get_regime_config("평시"),
-            "version": "v60-regime-detector-fallback"
-        }
+        raise
 
 if __name__ == "__main__":
     snap = build_regime_snapshot()

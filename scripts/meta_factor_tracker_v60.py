@@ -57,12 +57,25 @@ if not perf_docs:
     print("Waiting for first tracking to complete...")
     exit(0)
 
+# performance_tracking은 같은 recDate+ticker가 여러 evalDate로 누적된다.
+# IC/HitRate는 look-ahead 혼합을 피하기 위해 종목·추천일 기준 최신 evalDate 1건만 사용한다.
+latest_by_pick = {}
+for doc in perf_docs:
+    d = doc.to_dict()
+    key = (d.get('recDate', ''), d.get('ticker', ''))
+    eval_date = str(d.get('evalDate', ''))
+    prev = latest_by_pick.get(key)
+    if prev is None or eval_date > str(prev.get('evalDate', '')):
+        latest_by_pick[key] = d
+
+deduped_docs = list(latest_by_pick.values())
+print(f"Deduped performance docs: {len(deduped_docs)} / {len(perf_docs)}")
+
 # Group by factor
 factor_data = defaultdict(list)  # factor -> list of (z, excess_return, return, score)
 factor_details = defaultdict(list)
 
-for doc in perf_docs:
-    d = doc.to_dict()
+for d in deduped_docs:
     factor = d.get('targetFactor', '').strip()
     if not factor:
         continue
@@ -197,7 +210,7 @@ summary = {
     'timestamp': datetime.datetime.now(KST),
     'factors': results,
     'topIC': {k: v for k, v in top_ic},
-    'total_samples': len(perf_docs),
+    'total_samples': len(deduped_docs),
     'unique_factors': len(results),
     'china_proxy': {
         '구리': results.get('구리', {}),

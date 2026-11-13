@@ -22,7 +22,7 @@ const { useState, useMemo, useEffect } = React;
                 <button onClick={onClose} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 btn-modern">✕</button>
               </div>
               <div className="mt-4">
-                <div className="text-xs font-mono text-slate-500 mb-3">Firebase • 최근 {history.length}개 • 일요일 18:00 KST 자동 저장</div>
+                <div className="text-xs font-mono text-slate-500 mb-3">Firebase • 최근 {history.length}개 • 평일 07:30 KST 자동 저장</div>
                 <div className="space-y-2">
                   {history.length === 0 && <div className="text-sm text-slate-400 py-8 text-center">저장된 자료 없음 • Local Mode</div>}
                   {history.map((doc) => {
@@ -34,7 +34,7 @@ const { useState, useMemo, useEffect } = React;
                           <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold ${isSelected ? "bg-white/15" : "bg-slate-100"}`}>📊</div>
                           <div>
                             <div className="text-sm font-bold">{doc.date} ({getDayName(doc.date)})</div>
-                            <div className={`text-xs font-mono ${isSelected ? "text-slate-300" : "text-slate-500"}`}>{doc.weeklyPicks?.length || 8} picks • Z {doc.zScores ? Object.keys(doc.zScores).length : 0}</div>
+                            <div className={`text-xs font-mono ${isSelected ? "text-slate-300" : "text-slate-500"}`}>{doc.weeklyPicks?.length || 0} picks • Z {doc.zScores ? Object.keys(doc.zScores).length : 0}</div>
                           </div>
                         </div>
                         <div className={`text-xs px-2 py-1 rounded-full font-mono ${isSelected ? "bg-white/20" : "bg-slate-100"}`}>{isSelected ? "선택됨" : "보기"}</div>
@@ -68,7 +68,7 @@ const { useState, useMemo, useEffect } = React;
                   <div className="font-extrabold text-red-900 text-sm flex items-center gap-2"><span>🚨</span> 본 서비스는 투자 조언이 아닙니다</div>
                   <div className="mt-2 text-xs text-slate-700 leading-relaxed">
                     예상 수익률, Score, 64 Picks, Factor Betas, Z-Scores는 과거 데이터 기반 통계적 예측이며 <b>투자 자문, 매수/매도 추천이 아닙니다.</b> 
-                    모든 투자 결정은 본인 판단과 책임 하에 이루어져야 하며, 원금 손실이 발생할 수 있습니다. 본 모델의 R² 0.89는 과거 설명력이며 미래 수익을 보장하지 않습니다.
+                    모든 투자 결정은 본인 판단과 책임 하에 이루어져야 하며, 원금 손실이 발생할 수 있습니다. 본 모델의 과거 설명력은 미래 수익을 보장하지 않습니다.
                   </div>
                 </div>
 
@@ -77,7 +77,7 @@ const { useState, useMemo, useEffect } = React;
                   <div className="mt-2 text-xs text-slate-700 leading-relaxed space-y-1">
                     <div>• 주식, 선물 등 투자 상품은 가격 변동으로 원금 손실 위험이 있습니다.</div>
                     <div>• 외국인 선물 수급, 환율, 유가 등 10개 팩터는 외부 변수이며 급변할 수 있습니다.</div>
-                    <div>• DART 필터, Regime 모델은 통계적 보조 수단이며 100% 정확하지 않습니다. Hit Rate 66.8%는 과거 백테스트 결과입니다.</div>
+                    <div>• DART 필터, Regime 모델은 통계적 보조 수단이며 100% 정확하지 않습니다. 성과 지표는 실제 추적 데이터 기준으로만 표시됩니다.</div>
                     <div>• 본 대시보드는 07:30 KST 자동 업데이트되며 장중 급변은 반영되지 않을 수 있습니다.</div>
                   </div>
                 </div>
@@ -115,13 +115,13 @@ const { useState, useMemo, useEffect } = React;
                     <span className="w-8 h-8 rounded-xl bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-700">?</span>
                     도움말 • KOSPI Quant Terminal 사용법
                   </h2>
-                  <div className="text-xs font-mono text-slate-500 mt-1">v61.5 Trader Centric • 5 Tabs • Left-Right 필터 • 07:30 KST 자동 업데이트</div>
+                  <div className="text-xs font-mono text-slate-500 mt-1">v61.6-stable REAL_ONLY • 5 Tabs • Left-Right 필터 • 평일 07:30 KST 자동 업데이트</div>
                 </div>
                 <button onClick={onClose} className="w-9 h-9 rounded-full bg-[#1e3a8a] text-white hover:bg-[#23408e] btn-modern">✕</button>
               </div>
               <div className="mt-6 space-y-5 text-sm">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="p-3 rounded-xl bg-[#1e3a8a] text-white"><div className="text-xs font-bold">1. 왼쪽 INDUSTRIES</div><div className="text-xs mt-1 text-slate-300">8개 업종 선택 → 중앙 필터 • R² 0.71~0.91 • 전기전자 0.91 최고</div></div>
+                  <div className="p-3 rounded-xl bg-[#1e3a8a] text-white"><div className="text-xs font-bold">1. 왼쪽 INDUSTRIES</div><div className="text-xs mt-1 text-slate-300">8개 업종 선택 → 중앙 필터 • R²는 재학습 스냅샷 기준</div></div>
                   <div className="p-3 rounded-xl bg-white border"><div className="text-xs font-bold">2. 중앙 5 Tabs</div><div className="text-xs mt-1 text-slate-600">추천(8) / 전체64 / 성과 / 마켓 / 시스템 • Factor Beta 바</div></div>
                   <div className="p-3 rounded-xl bg-white border"><div className="text-xs font-bold">3. 오른쪽 FACTOR</div><div className="text-xs mt-1 text-slate-600">Z-Score 클릭 → 중앙 필터링 • 구리, 상해, S&P500 등 10개</div></div>
                 </div>
@@ -143,21 +143,12 @@ const { useState, useMemo, useEffect } = React;
       function App() {
         const [selectedIndustry, setSelectedIndustry] = useState("elec");
         const [selectedFactor, setSelectedFactor] = useState(null);
-        const [filterEnabled, setFilterEnabled] = useState(true);
-        const [zScores, setZScores] = useState({
-          "S&P500": 0.63,
-          "외국인 선물": 1.07,
-          "SOX / 필라": 1.59,
-          "US 10Y": -1.13,
-          원달러: 1.38,
-          WTI: -0.32,
-          DXY: 0.45,
-          VIX: -0.52,
-          구리: 0.68,
-          상해종합: 0.42,
-        });
+        const [zScores, setZScores] = useState({});
         const [history, setHistory] = useState([]);
-        const [selectedDate, setSelectedDate] = useState("2026-09-28");
+        const [performanceRecords, setPerformanceRecords] = useState([]);
+        const [performanceSummary, setPerformanceSummary] = useState(null);
+        const [metaSummary, setMetaSummary] = useState(null);
+        const [selectedDate, setSelectedDate] = useState("—");
         const [showHistory, setShowHistory] = useState(false);
         const [showDisclaimer, setShowDisclaimer] = useState(false);
         const [showHelp, setShowHelp] = useState(false);
@@ -166,23 +157,25 @@ const { useState, useMemo, useEffect } = React;
         const [lastRefresh, setLastRefresh] = useState(new Date());
         const [isViewingHistory, setIsViewingHistory] = useState(false);
 
+        const normalizeZScores = (cloud = {}) => ({
+          "S&P500": cloud.SP500 ?? cloud["S&P500"] ?? 0,
+          "외국인 선물": cloud.외국인 ?? cloud.외국인_선물 ?? 0,
+          "SOX / 필라": cloud.반도체팩터 ?? cloud.SOX ?? cloud["SOX / 필라"] ?? 0,
+          "US 10Y": cloud.US10Y ?? cloud["US 10Y"] ?? 0,
+          원달러: cloud.원달러 ?? 0,
+          WTI: cloud.WTI ?? 0,
+          DXY: cloud.DXY ?? 0,
+          VIX: cloud.VIX ?? 0,
+          구리: cloud.구리 ?? 0,
+          상해종합: cloud.상해종합 ?? 0,
+        });
+
         const loadSnapshot = (dateStr) => {
           const doc = history.find((d) => d.date === dateStr);
           if (!doc) return;
           const cloud = doc.zScores;
           if (cloud) {
-            setZScores({
-              "S&P500": cloud.SP500 ?? cloud["S&P500"] ?? 0.63,
-              "외국인 선물": cloud.외국인 ?? cloud.외국인_선물 ?? 1.07,
-              "SOX / 필라": cloud.반도체팩터 ?? cloud["SOX / 필라"] ?? 1.59,
-              "US 10Y": cloud.US10Y ?? -1.13,
-              원달러: cloud.원달러 ?? 1.38,
-              WTI: cloud.WTI ?? -0.32,
-              DXY: cloud.DXY ?? 0.45,
-              VIX: cloud.VIX ?? -0.52,
-              구리: cloud.구리 ?? 0.68,
-              상해종합: cloud.상해종합 ?? 0.42,
-            });
+            setZScores(normalizeZScores(cloud));
             setSelectedDate(doc.date);
             setIsViewingHistory(doc.date !== history[0]?.date);
             setLastRefresh(new Date());
@@ -204,23 +197,57 @@ const { useState, useMemo, useEffect } = React;
             setLastRefresh(new Date());
             if (docs[0]?.zScores && !isViewingHistory) {
               const cloud = docs[0].zScores;
-              setZScores({
-                "S&P500": cloud.SP500 ?? cloud["S&P500"] ?? 0.63,
-                "외국인 선물": cloud.외국인 ?? cloud.외국인_선물 ?? 1.07,
-                "SOX / 필라": cloud.반도체팩터 ?? cloud["SOX / 필라"] ?? 1.59,
-                "US 10Y": cloud.US10Y ?? -1.13,
-                원달러: cloud.원달러 ?? 1.38,
-                WTI: cloud.WTI ?? -0.32,
-                DXY: cloud.DXY ?? 0.45,
-                VIX: cloud.VIX ?? -0.52,
-                구리: cloud.구리 ?? 0.68,
-                상해종합: cloud.상해종합 ?? 0.42,
-              });
+              setZScores(normalizeZScores(cloud));
               setSelectedDate(docs[0].date);
             }
           });
           return () => unsub();
         }, [isViewingHistory]);
+
+        useEffect(() => {
+          if (!db) {
+            setPerformanceRecords([]);
+            setPerformanceSummary(null);
+            setMetaSummary(null);
+            return;
+          }
+
+          const unsubPerformance = db.collection("performance_tracking")
+            .orderBy("evalDate", "desc")
+            .limit(300)
+            .onSnapshot((snap) => {
+              setPerformanceRecords(snap.docs.map((d) => d.data()));
+            }, (error) => {
+              console.warn("[performance_tracking]", error);
+              setPerformanceRecords([]);
+            });
+
+          const unsubSummary = db.collection("performance_snapshots")
+            .orderBy("date", "desc")
+            .limit(1)
+            .onSnapshot((snap) => {
+              setPerformanceSummary(snap.empty ? null : snap.docs[0].data());
+            }, (error) => {
+              console.warn("[performance_snapshots]", error);
+              setPerformanceSummary(null);
+            });
+
+          const unsubMeta = db.collection("meta_summaries")
+            .orderBy("date", "desc")
+            .limit(1)
+            .onSnapshot((snap) => {
+              setMetaSummary(snap.empty ? null : snap.docs[0].data());
+            }, (error) => {
+              console.warn("[meta_summaries]", error);
+              setMetaSummary(null);
+            });
+
+          return () => {
+            unsubPerformance();
+            unsubSummary();
+            unsubMeta();
+          };
+        }, []);
 
         const currentIndustry = useMemo(() => industries.find((i) => i.id === selectedIndustry) || industries[0], [selectedIndustry]);
 
@@ -234,42 +261,21 @@ const { useState, useMemo, useEffect } = React;
 
         const predictedReturn = useMemo(() => contributions.reduce((sum, c) => sum + c.contrib, 0), [contributions]);
 
+        const activeSnapshot = useMemo(() => {
+          return history.find((d) => d.date === selectedDate) || history[0] || null;
+        }, [history, selectedDate]);
+
         const weeklyPicks = useMemo(() => {
-          const selected = history.find((d) => d.date === selectedDate) || history[0];
-          const getZ = (tf) => {
-            const map = { 반도체팩터: zScores["SOX / 필라"] ?? 1.59, 원달러: zScores["원달러"] ?? 1.38, 중국PMI: 0.21, 한미스프레드: 0.91, US10Y: zScores["US 10Y"] ?? -1.13, SP500: zScores["S&P500"] ?? 0.63 };
-            return map[tf] ?? 0.8;
-          };
-          if (selected?.weeklyPicks && selected.weeklyPicks.length >= 20) return selected.weeklyPicks;
-          const mockData = [
-            { id: "elec", stocks: [["005930","삼성전자",1.0,0.8],["000660","SK하이닉스",1.25,1.2],["066570","LG전자",0.85,0.3],["042700","한미반도체",1.3,2.1],["011070","LG이노텍",0.9,1.5],["058470","리노공업",0.85,1.0],["000990","DB하이텍",0.8,0.9],["095340","ISC",0.9,0.6]] },
-            { id: "auto", stocks: [["005380","현대차",1.0,0.7],["000270","기아",1.15,1.1],["064350","현대로템",1.05,1.8],["003490","대한항공",0.95,1.3],["012330","현대모비스",0.9,0.2],["086280","현대글로비스",0.85,0.4],["180640","한진칼",0.8,0.8],["161390","한국타이어",0.75,-0.2]] },
-            { id: "chem", stocks: [["086520","에코프로",1.25,2.2],["247540","에코프로비엠",1.3,1.5],["373220","LG에너지솔루션",1.2,0.5],["003670","포스코퓨처엠",1.15,0.9],["051910","LG화학",1.0,-0.3],["011780","금호석유",0.85,0.1],["010130","고려아연",0.75,0.4],["121600","나노신소재",1.0,0.7]] },
-            { id: "fin", stocks: [["071050","한국금융지주",1.15,1.2],["105560","KB금융",1.0,0.6],["055550","신한지주",0.95,0.4],["000810","삼성화재",0.85,0.7],["086790","하나금융지주",0.9,0.3],["175330","JB금융",0.75,0.5],["316140","우리금융지주",0.85,0.1],["030200","KT",0.6,-0.3]] },
-            { id: "bio", stocks: [["195940","HLB",1.2,2.5],["207940","삼성바이오로직스",1.0,0.9],["068270","셀트리온",1.1,0.2],["214450","파마리서치",0.85,1.4],["145020","휴젤",0.9,1.1],["326030","SK바이오팜",1.05,0.7],["128940","한미약품",0.85,0.5],["185740","셀트리온제약",0.95,0.3]] },
-            { id: "steel", stocks: [["005490","POSCO홀딩스",1.0,0.4],["047050","포스코인터",0.95,0.8],["010130","고려아연",0.9,0.6],["009830","한화솔루션",0.85,0.3],["004020","현대제철",0.85,-0.3],["103140","풍산",0.75,0.2],["001430","세아베스틸",0.7,0.1],["010950","S-Oil",0.8,-0.6]] },
-            { id: "const", stocks: [["012450","한화에어로",1.2,2.3],["329180","HD현대중공업",1.15,1.9],["064350","현대로템",1.05,1.8],["009540","HD한국조선해양",1.0,1.5],["010140","삼성중공업",0.9,0.8],["034020","두산에너빌리티",0.95,0.4],["028050","삼성엔지니어링",0.85,0.2],["047040","대우건설",0.7,-0.3]] },
-            { id: "retail", stocks: [["352820","하이브",0.9,0.6],["035900","JYP",0.85,0.8],["035420","NAVER",1.05,-0.2],["035720","카카오",1.1,-0.4],["030000","제일기획",0.65,0.3],["017670","SK텔레콤",0.65,0.2],["004170","신세계",0.8,-0.3],["139480","이마트",0.75,-0.8]] },
-          ];
-          const picks = [];
-          const tfMap = { elec: "반도체팩터", auto: "원달러", chem: "중국PMI", fin: "한미스프레드", bio: "US10Y", steel: "중국PMI", const: "원달러", retail: "SP500" };
-          mockData.forEach((ind) => {
-            const tf = tfMap[ind.id];
-            const z = getZ(tf);
-            ind.stocks.forEach(([ticker, name, beta_adj, mom]) => {
-              const score = 6.5 + Math.abs(z) * 1.2 * beta_adj + mom * 0.3 + Math.random()*0.5;
-              picks.push({ industryId: ind.id, ticker, name, score: parseFloat(score.toFixed(1)), expectedReturn: parseFloat((0.5 + Math.abs(z)*0.8*beta_adj + mom*0.2).toFixed(1)), reason: `${tf} ${z.toFixed(2)}σ × β${beta_adj} + mom ${mom}%`, targetFactor: tf, date: selectedDate });
-            });
-          });
-          return picks;
-        }, [history, selectedDate, zScores]);
+          const picks = Array.isArray(activeSnapshot?.weeklyPicks) ? activeSnapshot.weeklyPicks : [];
+          return picks.filter((p) => p && p.ticker && p.name && p.industryId);
+        }, [activeSnapshot]);
 
         const filteredPicks = useMemo(() => {
           let picks = weeklyPicks.filter(p => p.industryId === selectedIndustry);
           if (selectedFactor) {
             const factorMap = { "S&P500": ["SP500","S&P500"], "SOX / 필라": ["반도체팩터","SOX / 필라","SOX"], "원달러": ["원달러"], "US 10Y": ["US10Y","한미스프레드"], "구리": ["중국PMI","구리"], "상해종합": ["중국PMI","상해종합"], "WTI": ["WTI"], "DXY": ["DXY"], "VIX": ["VIX"], "외국인 선물": ["외국인"] };
             const related = factorMap[selectedFactor] || [selectedFactor];
-            picks = picks.filter(p => related.some(r => p.targetFactor.includes(r) || p.reason.includes(r)));
+            picks = picks.filter(p => related.some(r => (p.targetFactor || "").includes(r) || (p.reason || "").includes(r)));
             if (picks.length === 0) picks = weeklyPicks.filter(p => p.industryId === selectedIndustry);
           }
           return picks.slice(0,8);
@@ -279,54 +285,79 @@ const { useState, useMemo, useEffect } = React;
           if (!selectedFactor) return weeklyPicks;
           const factorMap = { "S&P500": ["SP500","S&P500"], "SOX / 필라": ["반도체팩터","SOX"], "원달러": ["원달러"], "US 10Y": ["US10Y","한미스프레드"], "구리": ["구리","중국PMI"], "상해종합": ["상해종합","중국PMI"] };
           const related = factorMap[selectedFactor] || [selectedFactor];
-          return weeklyPicks.filter(p => related.some(r => p.targetFactor.includes(r) || p.reason.includes(r)));
+          return weeklyPicks.filter(p => related.some(r => (p.targetFactor || "").includes(r) || (p.reason || "").includes(r)));
         }, [weeklyPicks, selectedFactor]);
 
         const pastPicks = useMemo(() => {
-          const industryMap = { elec: "전기전자", auto: "자동차", chem: "화학·전지", fin: "금융", bio: "바이오", steel: "철강·소재", const: "건설·조선", retail: "유통·IT" };
-          const picksForIndustry = filteredPicks.length >= 1 ? filteredPicks : weeklyPicks.filter(p => p.industryId === selectedIndustry).slice(0,8);
-          return picksForIndustry.map((p) => {
-            const baseReturn = (p.score - 6.5) * 0.8 + (Math.random()*2 - 0.5);
-            const returnPct = parseFloat(baseReturn.toFixed(1));
-            const vsKospi = parseFloat((returnPct - (Math.random()*1.5 - 0.2)).toFixed(1));
-            const buyPrice = 30000 + Math.floor(Math.random()*400000);
-            const currentPrice = Math.floor(buyPrice * (1 + returnPct/100));
-            const status = returnPct > 1.5 ? "성공" : returnPct > -1 ? "보류" : "실패";
-            return { date: "09-15", industryId: p.industryId, industry: industryMap[p.industryId] || p.industryId, ticker: p.ticker, name: p.name, buyPrice, currentPrice, returnPct, vsKospi, status, score: p.score };
-          });
-        }, [filteredPicks, weeklyPicks, selectedIndustry]);
+          const byRecDate = new Map();
+          performanceRecords
+            .filter((r) => r && r.industryId === selectedIndustry && typeof r.returnPct === "number")
+            .forEach((r) => {
+              const key = `${r.recDate || r.evalDate || `${r.ticker}-${r.date}`}-${r.ticker}`;
+              const prev = byRecDate.get(key);
+              if (!prev || String(r.evalDate || "") > String(prev.evalDate || "")) {
+                byRecDate.set(key, r);
+              }
+            });
+
+          return [...byRecDate.values()]
+            .sort((a, b) => String(b.evalDate || b.recDate || "").localeCompare(String(a.evalDate || a.recDate || "")))
+            .slice(0, 8)
+            .map((r) => {
+              const returnPct = Number(r.returnPct) || 0;
+              const vsKospi = Number(r.excessReturnPct ?? r.excessReturn * 100) || 0;
+              return {
+                date: r.evalDate || r.recDate || "—",
+                recDate: r.recDate,
+                evalDate: r.evalDate,
+                industryId: r.industryId,
+                industry: industries.find((i) => i.id === r.industryId)?.short || r.industryId,
+                ticker: r.ticker,
+                name: r.name,
+                returnPct,
+                vsKospi,
+                status: returnPct > 1.5 ? "성공" : returnPct > -1 ? "보류" : "실패",
+                score: r.score,
+                daysElapsed: r.daysElapsed,
+              };
+            });
+        }, [performanceRecords, selectedIndustry]);
 
         const pastPicksAvg = useMemo(() => {
-          if (pastPicks.length === 0) return { avg: 0, vsKospi: 0, hit: 0 };
-          const avg = pastPicks.reduce((s,r) => s+r.returnPct,0)/pastPicks.length;
-          const vs = pastPicks.reduce((s,r) => s+r.vsKospi,0)/pastPicks.length;
-          const hit = pastPicks.filter(r => r.returnPct > 0).length;
-          return { avg: avg.toFixed(2), vsKospi: vs.toFixed(2), hit };
+          if (pastPicks.length === 0) return { avg: "0.00", vsKospi: "0.00", hit: 0, total: 0, hitRate: 0 };
+          const avg = pastPicks.reduce((s, r) => s + r.returnPct, 0) / pastPicks.length;
+          const vs = pastPicks.reduce((s, r) => s + r.vsKospi, 0) / pastPicks.length;
+          const hit = pastPicks.filter((r) => r.returnPct > 0).length;
+          return { avg: avg.toFixed(2), vsKospi: vs.toFixed(2), hit, total: pastPicks.length, hitRate: hit / pastPicks.length };
         }, [pastPicks]);
 
-        // Regime & Meta & Retrain from history or global
-        const currentRegime = useMemo(() => {
-          const hist = history[0]?.regime;
-          if (hist) return hist;
-          if (typeof regimeData !== 'undefined') return regimeData;
-          return { regime: "normal", confidence: "평시", window: 120, vix: 16.5, description: "정상 시장" };
-        }, [history]);
+        const icStats = useMemo(() => {
+          const entries = metaSummary?.factors
+            ? Object.entries(metaSummary.factors).map(([factor, metrics]) => ({ factor, ...(metrics || {}) }))
+            : [];
+          const valid = entries.filter((f) => typeof f.ic === "number");
+          if (valid.length === 0) return { avgIc: null, avgHit: null, top: [], count: 0 };
+          const avgIc = valid.reduce((s, f) => s + f.ic, 0) / valid.length;
+          const avgHit = valid.reduce((s, f) => s + (f.hit_rate_pct ?? (f.hit_rate * 100) ?? 0), 0) / valid.length;
+          const top = [...valid].sort((a, b) => Math.abs(b.ic) - Math.abs(a.ic)).slice(0, 5);
+          return { avgIc, avgHit, top, count: valid.length };
+        }, [metaSummary]);
 
-        const currentMeta = useMemo(() => {
-          const hist = history[0]?.meta;
-          if (hist) return hist;
-          if (typeof metaData !== 'undefined') return metaData;
-          return { top_valid: ["S&P500","구리","SOX / 필라","원달러","외국인 선물"], avg_p_valid: 0.72 };
-        }, [history]);
-
-        const retrainData = useMemo(() => {
-          const hist = history[0]?.retrain || history[0]?.beta_snapshot;
-          if (hist) return hist;
-          if (typeof retrainMeta !== 'undefined') return retrainMeta;
-          return { date: "2026-09-27", avg_r2: 0.84, changes: 41, next_retrain: "2026-10-01", version: "v60.2", window: 180, beta_changes: {}, r2_list: {elec:0.91,auto:0.84,chem:0.79,fin:0.87,bio:0.71,steel:0.84,const:0.76,retail:0.80} };
-        }, [history]);
-
-        const isRetrainLive = history[0]?.retrain || (typeof retrainMeta !== 'undefined' && retrainMeta.date !== "2026-09-27");
+        const currentRegime = useMemo(() => activeSnapshot?.regime || null, [activeSnapshot]);
+        const retrainData = useMemo(() => activeSnapshot?.retrain || activeSnapshot?.beta_snapshot || null, [activeSnapshot]);
+        const hasZScores = Object.values(zScores).some((v) => typeof v === "number" && v !== 0);
+        const predText = hasZScores ? `${predictedReturn>0 ? "+" : ""}${predictedReturn.toFixed(2)}%` : "—";
+        const fmtPred = (v) => hasZScores ? `${v>0 ? "+" : ""}${v.toFixed(2)}%` : "—";
+        const dartFilterStatus = activeSnapshot?.filter_status || (activeSnapshot?.filter_applied ? "APPLIED" : "UNKNOWN");
+        const snapshotDetails = activeSnapshot?.details || {};
+        const foreignerDetail = snapshotDetails["외국인"] || {};
+        const us10yDetail = snapshotDetails.US10Y || {};
+        const dxyDetail = snapshotDetails.DXY || {};
+        const regimeIndicators = currentRegime?.indicators || {};
+        const regimeWindow = currentRegime?.window ?? currentRegime?.config?.window ?? "—";
+        const regimeDescription = currentRegime?.config?.description || currentRegime?.reason || "레짐 데이터 없음";
+        const fmtNum = (value, digits = 2) => (typeof value === "number" && Number.isFinite(value) ? value.toFixed(digits) : "—");
+        const industryR2 = (industryId) => retrainData?.r2?.[industryId] ?? "—";
 
         return (
           <div className="min-h-screen bg-white">
@@ -344,7 +375,7 @@ const { useState, useMemo, useEffect } = React;
                       { id: "top", label: "오늘 Top 예측", icon: "📊", count: 8, color: "#f59e0b" },
                       { id: "all64", label: "전체 64", icon: "📋", count: all64Filtered.length, color: "#334155" },
                       { id: "performance", label: "성과", icon: "📈", count: pastPicks.length, color: "#7c3aed" },
-                      { id: "market", label: "마켓", icon: "🌐", count: currentMeta?.top_valid?.length || 5, color: "#059669" },
+                      { id: "market", label: "마켓", icon: "🌐", count: icStats.count, color: "#059669" },
                     ].map((tab) => (
                       <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                         className={`px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all ${activeTab === tab.id ? "text-white" : "text-slate-600 hover:bg-white"}`}
@@ -355,9 +386,9 @@ const { useState, useMemo, useEffect } = React;
                   </div>
                   {/* KOSPI R² 박스 - 탭 옆으로 이동 */}
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#e5e8eb]">
-                    <span className="text-xs text-slate-500">KOSPI R²</span>
-                    <span className="text-sm font-bold">0.89</span>
-                    <span className={`text-xs font-mono px-2 py-0.5 rounded-full border ${predictedReturn>=0 ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-red-50 text-red-700 border-red-100"}`}>{predictedReturn>0 ? `+${predictedReturn.toFixed(2)}%` : `${predictedReturn.toFixed(2)}%`}</span>
+                    <span className="text-xs text-slate-500">평균 R²</span>
+                    <span className="text-sm font-bold">{retrainData?.avg_r2 ?? "N/A"}</span>
+                    <span className={`text-xs font-mono px-2 py-0.5 rounded-full border ${hasZScores ? (predictedReturn>=0 ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-red-50 text-red-700 border-red-100") : "bg-slate-50 text-slate-500 border-slate-200"}`}>{predText}</span>
                   </div>
                   {isViewingHistory && <button onClick={returnToLatest} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">↩ 최신으로</button>}
                   <button onClick={() => setShowHistory(true)} className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${isViewingHistory ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-white text-slate-600 border-[#e5e8eb] hover:bg-slate-50"}`}>📅 이전 자료 {history.length>0 ? `(${history.length})` : ""}</button>
@@ -379,8 +410,8 @@ const { useState, useMemo, useEffect } = React;
                       const pred = contributions.filter(c => Object.keys(ind.betas).includes(c.factor)).reduce((s,c) => s + c.contrib, 0);
                       return (
                         <button key={ind.id} onClick={() => setSelectedIndustry(ind.id)} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all text-left border ${isSelected ? "bg-white text-[#0c4a6e] border-[#7dd3fc]" : "bg-white/70 hover:bg-white text-[#475569] border-white/50 hover:border-[#7dd3fc]"}`}>
-                          <div className="flex items-center gap-2.5"><div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: `${ind.color}15`, color: ind.color }}>{ind.icon}</div><div><div className="text-xs font-bold">{ind.short}</div><div className="text-xs text-slate-500">R² {ind.r2}</div></div></div>
-                          <div className="text-right"><div className={`text-xs font-mono font-bold ${pred>=0 ? "text-emerald-600" : "text-red-600"}`}>{pred>0 ? "+" : ""}{pred.toFixed(2)}%</div><div className={`w-2 h-2 rounded-full ml-auto mt-1 ${isSelected ? "bg-[#0ea5e9]" : "bg-slate-300"}`}></div></div>
+                          <div className="flex items-center gap-2.5"><div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: `${ind.color}15`, color: ind.color }}>{ind.icon}</div><div><div className="text-xs font-bold">{ind.short}</div><div className="text-xs text-slate-500">R² {industryR2(ind.id)}</div></div></div>
+                          <div className="text-right"><div className={`text-xs font-mono font-bold ${hasZScores ? (pred>=0 ? "text-emerald-600" : "text-red-600") : "text-slate-400"}`}>{fmtPred(pred)}</div><div className={`w-2 h-2 rounded-full ml-auto mt-1 ${isSelected ? "bg-[#0ea5e9]" : "bg-slate-300"}`}></div></div>
                         </button>
                       );
                     })}
@@ -398,7 +429,7 @@ const { useState, useMemo, useEffect } = React;
                     { id: "top", label: "오늘 Top 예측", icon: "📊", count: 8, color: "#f59e0b" },
                     { id: "all64", label: "전체 64", icon: "📋", count: all64Filtered.length, color: "#334155" },
                     { id: "performance", label: "성과", icon: "📈", count: pastPicks.length, color: "#7c3aed" },
-                    { id: "market", label: "마켓", icon: "🌐", count: currentMeta?.top_valid?.length || 5, color: "#059669" },
+                    { id: "market", label: "마켓", icon: "🌐", count: icStats.count, color: "#059669" },
                   ].map((tab) => (
                     <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                       className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${activeTab === tab.id ? "text-white" : "text-slate-600 hover:bg-white"}`}
@@ -413,13 +444,13 @@ const { useState, useMemo, useEffect } = React;
                     <div className="rounded-2xl p-4 text-white" style={{ background: `linear-gradient(135deg, ${currentIndustry.color} 0%, ${currentIndustry.color}dd 100%)` }}>
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <h3 className="text-sm font-extrabold tracking-tight flex items-center gap-2 flex-wrap">{currentIndustry.name} 8종목 <span className="text-xs font-mono opacity-80 bg-white/20 px-2.5 py-1 rounded-full whitespace-nowrap">전체 64종 중 {currentIndustry.short} Top 8 • KRX β·모멘텀</span></h3>
-                        <span className="text-xs font-mono bg-white/20 backdrop-blur px-2.5 py-1 rounded-full whitespace-nowrap ml-auto">{selectedDate} 18:00 KST • 일요일</span>
+                        <span className="text-xs font-mono bg-white/20 backdrop-blur px-2.5 py-1 rounded-full whitespace-nowrap ml-auto">{selectedDate} • {activeSnapshot?.data_status || "NO_DATA"} • {activeSnapshot?.quality_status || "—"} • fallback_used={String(Boolean(activeSnapshot?.fallback_used))} • synthetic_data_used={String(Boolean(activeSnapshot?.synthetic_data_used))}</span>
                       </div>
                       <div className="mt-1.5 text-xs text-white/85">Score = 6.5 + |Z|×1.2×β_adj + mom×0.3 • 타겟팩터 {Object.entries(currentIndustry.betas).sort((a,b) => Math.abs(b[1])-Math.abs(a[1]))[0]?.[0]} {selectedFactor ? `+ ${selectedFactor} 필터` : ""}</div>
                       <div className="mt-3 grid grid-cols-3 gap-2">
-                        <div className="rounded-xl bg-white/15 backdrop-blur p-2.5"><div className="text-xs text-white/70">예측 수익률</div><div className="text-sm font-bold">{predictedReturn>0 ? "+" : ""}{predictedReturn.toFixed(2)}% α·β</div></div>
-                        <div className="rounded-xl bg-white/15 backdrop-blur p-2.5"><div className="text-xs text-white/70">Top 기여도</div><div className="text-sm font-bold">{contributions[0]?.factor} {contributions[0]?.contrib>0 ? "+" : ""}{contributions[0]?.contrib.toFixed(2)}%</div></div>
-                        <div className="rounded-xl bg-white/15 backdrop-blur p-2.5"><div className="text-xs text-white/70">R² / 필터</div><div className="text-sm font-bold">{currentIndustry.r2} • DART {filterEnabled ? "ON" : "OFF"}</div></div>
+                        <div className="rounded-xl bg-white/15 backdrop-blur p-2.5"><div className="text-xs text-white/70">α·β 추정</div><div className="text-sm font-bold">{hasZScores ? `${predText} α·β` : "—"}</div></div>
+                        <div className="rounded-xl bg-white/15 backdrop-blur p-2.5"><div className="text-xs text-white/70">Top 기여도</div><div className="text-sm font-bold">{contributions[0] ? `${contributions[0].factor} ${fmtPred(contributions[0].contrib)}` : "—"}</div></div>
+                        <div className="rounded-xl bg-white/15 backdrop-blur p-2.5"><div className="text-xs text-white/70">R² / 필터</div><div className="text-sm font-bold">{industryR2(currentIndustry.id)} • DART {dartFilterStatus}</div></div>
                       </div>
                     </div>
 
@@ -427,8 +458,7 @@ const { useState, useMemo, useEffect } = React;
                       <div className="flex items-center justify-between flex-wrap gap-2">
                         <div className="flex items-center gap-2"><span className="w-7 h-7 rounded-lg bg-red-50 border border-red-100 flex items-center justify-center">🛡️</span><span className="text-xs font-bold">DART 필터 • 1단계 최적 필터</span><span className="text-xs font-mono text-slate-500">부실주 제거 • 개별 기업 특성 기반</span></div>
                         <div className="flex items-center gap-2">
-                          <button onClick={() => setFilterEnabled(!filterEnabled)} className={`text-xs px-3 py-1.5 rounded-full font-bold transition-all ${filterEnabled ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-500"}`}>{filterEnabled ? "ON • Hit +4.4%p" : "OFF"}</button>
-                          
+                          <span className={`text-xs px-3 py-1.5 rounded-full font-bold ${dartFilterStatus === "APPLIED" ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-500"}`}>{dartFilterStatus}</span>
                         </div>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-1.5">
@@ -436,17 +466,19 @@ const { useState, useMemo, useEffect } = React;
                           { label: "ROE>-10% 완화", on: true },
                           { label: "부채<400% 완화", on: true },
                           { label: "대장주 13개 보호", on: true },
-                          { label: "부실주 15% 탈락", on: filterEnabled },
-                          { label: "MDD -0.8%p 개선", on: filterEnabled },
+                          { label: "부실주 제외 규칙", on: dartFilterStatus === "APPLIED" },
                         ].map((f,i) => (
                           <span key={i} className={`text-xs px-2.5 py-1 rounded-full border font-mono ${f.on ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-slate-50 border-slate-200 text-slate-400"}`}>{f.label}</span>
                         ))}
                       </div>
                     </div>
 
+                    {filteredPicks.length === 0 ? (
+                      <div className="rounded-2xl border bg-white p-6 text-center text-sm text-slate-400">{weeklyPicks.length === 0 ? "추천 데이터가 없습니다. factor_snapshots.weeklyPicks 적재 후 표시됩니다." : "선택한 산업/팩터 조건에 맞는 추천이 없습니다."}</div>
+                    ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                       {filteredPicks.map((p) => {
-                        const ind = industries.find((i) => i.id === p.industryId);
+                        const ind = industries.find((i) => i.id === p.industryId) || industries[0];
                         return (
                           <div key={`${p.industryId}-${p.ticker}`} className={`pick-card ${p.industryId} card-hover`}>
                             <div className="p-4">
@@ -469,6 +501,7 @@ const { useState, useMemo, useEffect } = React;
                         );
                       })}
                     </div>
+                    )}
                   </div>
                 )}
 
@@ -486,10 +519,10 @@ const { useState, useMemo, useEffect } = React;
                               <div className="flex items-center gap-3">
                                 <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${isTop ? "bg-amber-400 text-[#1e3a8a]" : isSelected ? "bg-white text-[#1e3a8a]" : "bg-white border"}`}>{idx+1}</span>
                                 <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: isSelected ? "rgba(255,255,255,0.15)" : `${item.color}15`, color: isSelected ? "white" : item.color }}>{item.icon}</div>
-                                <div><div className="text-sm font-bold">{item.short}</div><div className={`text-xs ${isSelected ? "text-white/60" : "text-slate-500"}`}>R² {item.r2} • {item.name}</div></div>
+                                <div><div className="text-sm font-bold">{item.short}</div><div className={`text-xs ${isSelected ? "text-white/60" : "text-slate-500"}`}>R² {industryR2(item.id)} • {item.name}</div></div>
                               </div>
                               <div className="text-right">
-                                <div className={`text-sm font-mono font-bold ${item.pred>=0 ? (isSelected ? "text-emerald-300" : "text-emerald-600") : (isSelected ? "text-red-300" : "text-red-600")}`}>{item.pred>0 ? "+" : ""}{item.pred.toFixed(2)}%</div>
+                                <div className={`text-sm font-mono font-bold ${hasZScores ? (item.pred>=0 ? (isSelected ? "text-emerald-300" : "text-emerald-600") : (isSelected ? "text-red-300" : "text-red-600")) : "text-slate-400"}`}>{fmtPred(item.pred)}</div>
                                 <div className={`text-xs ${isSelected ? "text-white/50" : "text-slate-400"}`}>{isTop ? "👑 최강" : `${idx+1}위`}</div>
                               </div>
                             </div>
@@ -512,9 +545,12 @@ const { useState, useMemo, useEffect } = React;
                         })}
                       </div>
                     </div>
+                    {all64Filtered.length === 0 ? (
+                      <div className="rounded-2xl border bg-white p-6 text-center text-sm text-slate-400">전체 추천 데이터가 없습니다.</div>
+                    ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {all64Filtered.slice(0,32).map((p) => {
-                        const ind = industries.find(i => i.id === p.industryId);
+                        const ind = industries.find(i => i.id === p.industryId) || industries[0];
                         return (
                           <div key={`${p.industryId}-${p.ticker}-all`} className="rounded-xl border bg-white p-3 hover: transition-shadow">
                             <div className="flex items-center justify-between"><span className="text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: ind.color }}>{ind.short}</span><span className="text-xs font-mono">{p.ticker}</span><span className="text-xs font-bold">Score {p.score}</span></div>
@@ -524,6 +560,7 @@ const { useState, useMemo, useEffect } = React;
                         );
                       })}
                     </div>
+                    )}
                     <div className="text-xs text-center text-slate-400">전체 {all64Filtered.length}종 중 32종 표시 • 전체 보기는 스크롤</div>
                   </div>
                 )}
@@ -532,44 +569,46 @@ const { useState, useMemo, useEffect } = React;
                   <div className="mt-4 space-y-4">
                     <div className="rounded-2xl border bg-white overflow-hidden" style={{ borderColor: "#e2e8f0" }}>
                       <div className="p-4 border-b bg-gradient-to-r from-violet-50 to-purple-50">
-                        <div className="flex items-center justify-between"><h3 className="text-sm font-extrabold">📈 지난주 성과 • {currentIndustry.short} 8종</h3><span className="text-xs font-mono px-2 py-1 rounded-full bg-violet-600 text-white">Hit {pastPicksAvg.hit}/8 • Avg {pastPicksAvg.avg}%</span></div>
-                        <div className="mt-1 text-xs text-slate-500">실제 종가 기반 • vs KOSPI 초과 수익 • 95% REAL yfinance</div>
+                        <div className="flex items-center justify-between"><h3 className="text-sm font-extrabold">📈 최근 성과 • {currentIndustry.short}</h3><span className="text-xs font-mono px-2 py-1 rounded-full bg-violet-600 text-white">Hit {pastPicksAvg.hit}/{pastPicksAvg.total} • Avg {pastPicksAvg.avg}%</span></div>
+                        <div className="mt-1 text-xs text-slate-500">performance_tracking 기반 • vs KOSPI 초과 수익 • {performanceSummary?.source || "실제 종가 데이터"}</div>
                       </div>
                       <div className="p-3 grid grid-cols-3 gap-3">
                         <div className="rounded-xl bg-slate-50 border p-3 text-center"><div className="text-xs text-slate-500">평균 수익</div><div className={`text-sm font-bold ${parseFloat(pastPicksAvg.avg)>=0 ? "text-emerald-600" : "text-red-600"}`}>{pastPicksAvg.avg}%</div></div>
                         <div className="rounded-xl bg-slate-50 border p-3 text-center"><div className="text-xs text-slate-500">vs KOSPI</div><div className={`text-sm font-bold ${parseFloat(pastPicksAvg.vsKospi)>=0 ? "text-emerald-600" : "text-red-600"}`}>{pastPicksAvg.vsKospi>0 ? "+" : ""}{pastPicksAvg.vsKospi}%</div></div>
-                        <div className="rounded-xl bg-slate-50 border p-3 text-center"><div className="text-xs text-slate-500">Hit Rate</div><div className="text-sm font-bold">{pastPicksAvg.hit}/8 ({(pastPicksAvg.hit/8*100).toFixed(0)}%)</div></div>
+                        <div className="rounded-xl bg-slate-50 border p-3 text-center"><div className="text-xs text-slate-500">Hit Rate</div><div className="text-sm font-bold">{pastPicksAvg.total ? `${pastPicksAvg.hit}/${pastPicksAvg.total} (${(pastPicksAvg.hitRate*100).toFixed(0)}%)` : "—"}</div></div>
                       </div>
+                      {pastPicks.length === 0 ? (
+                        <div className="p-6 text-center text-sm text-slate-400">성과 데이터가 없습니다. performance_tracking 적재 후 표시됩니다.</div>
+                      ) : (
                       <div className="p-3 grid grid-cols-1 md:grid-cols-2 gap-2">
                         {pastPicks.map((r) => (
-                          <div key={r.ticker} className="flex items-center justify-between p-2.5 rounded-xl border bg-white hover:bg-slate-50">
+                          <div key={`${r.recDate || r.evalDate}-${r.ticker}`} className="flex items-center justify-between p-2.5 rounded-xl border bg-white hover:bg-slate-50">
                             <div className="flex items-center gap-2"><span className="text-xs font-mono px-2 py-0.5 rounded-full bg-slate-100">{r.ticker}</span><span className="text-sm font-bold">{r.name}</span><span className={`text-xs px-1.5 py-0.5 rounded-full ${r.status==="성공" ? "bg-emerald-100 text-emerald-700" : r.status==="보류" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}`}>{r.status}</span></div>
                             <div className="flex items-center gap-3"><span className={`text-xs font-mono font-bold ${r.returnPct>=0 ? "text-emerald-600" : "text-red-600"}`}>{r.returnPct>0 ? "+" : ""}{r.returnPct}%</span><span className="text-xs text-slate-400">vs {r.vsKospi>0 ? "+" : ""}{r.vsKospi}%</span></div>
                           </div>
                         ))}
                       </div>
+                      )}
                     </div>
 
                     <div className="rounded-2xl bg-white border border-slate-200 p-4">
                       <h4 className="text-sm font-extrabold">📊 성과 IC • Factor Validity • Hit Rate</h4>
                       <div className="mt-3 grid grid-cols-2 gap-3">
-                        <div className="p-3 rounded-xl bg-violet-50 border border-violet-200"><div className="text-xs text-violet-700">평균 Hit Rate</div><div className="text-lg font-extrabold text-violet-900">66.8% <span className="text-xs font-normal">(+4.4%p DART)</span></div><div className="text-xs text-violet-600">필터 전 62.4% → 후 66.8%</div></div>
-                        <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200"><div className="text-xs text-emerald-700">평균 IC</div><div className="text-lg font-extrabold text-emerald-900">0.15</div><div className="text-xs text-emerald-600">목표 0.12 유지 중</div></div>
+                        <div className="p-3 rounded-xl bg-violet-50 border border-violet-200"><div className="text-xs text-violet-700">평균 Hit Rate</div><div className="text-lg font-extrabold text-violet-900">{icStats.avgHit == null ? "N/A" : `${icStats.avgHit.toFixed(1)}%`}</div><div className="text-xs text-violet-600">meta_summaries/{metaSummary?.date || "—"}</div></div>
+                        <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200"><div className="text-xs text-emerald-700">평균 IC</div><div className="text-lg font-extrabold text-emerald-900">{icStats.avgIc == null ? "N/A" : icStats.avgIc.toFixed(3)}</div><div className="text-xs text-emerald-600">{icStats.count} factors</div></div>
                       </div>
                       <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {(currentMeta?.top_valid || ["S&P500","구리","SOX / 필라"]).map((f,i) => {
-                          const isObj = typeof f === 'object' && f !== null;
-                          const name = isObj ? (f.factor || f.name || 'Unknown') : f;
-                          const prob = isObj ? (f.prob ?? (0.75 - i*0.05)) : (0.75 - i*0.05);
-                          const color = isObj ? (f.color || '#7c3aed') : '#7c3aed';
+                        {icStats.top.length === 0 ? (
+                          <div className="col-span-2 p-4 text-center text-sm text-slate-400">factor_validity / meta_summaries 데이터가 없습니다.</div>
+                        ) : icStats.top.map((f, i) => {
+                          const hit = f.hit_rate_pct ?? (typeof f.hit_rate === "number" ? f.hit_rate * 100 : null);
                           return (
-                            <div key={`${name}-${i}`} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border">
+                            <div key={`${f.factor}-${i}`} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border">
                               <span className="text-xs font-bold flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full" style={{background: color}}></span>
-                                {i+1}. {name}
-                                {isObj && f.regime_match && <span className="ml-1 px-1 py-0.5 rounded text-[10px] bg-emerald-100 text-emerald-700">일치</span>}
+                                <span className="w-2 h-2 rounded-full bg-violet-500"></span>
+                                {i+1}. {f.factor}
                               </span>
-                              <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-white border">P(valid) {typeof prob === 'number' ? prob.toFixed(2) : prob}</span>
+                              <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-white border">IC {f.ic.toFixed(3)} • Hit {hit == null ? "N/A" : `${hit.toFixed(1)}%`}</span>
                             </div>
                           );
                         })}
@@ -580,31 +619,35 @@ const { useState, useMemo, useEffect } = React;
 
                 {activeTab === "market" && (
                   <div className="mt-4 space-y-4">
+                    {!currentRegime ? (
+                      <div className="rounded-2xl border bg-white p-6 text-center text-sm text-slate-400">레짐 데이터가 없습니다. regime snapshot 적재 후 표시됩니다.</div>
+                    ) : (
                     <div className="rounded-2xl p-4 text-white" style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #1e293b 100%)" }}>
-                      <div className="flex items-center justify-between"><h3 className="text-sm font-extrabold">🌐 마켓 레짐 • Regime Dashboard REAL</h3><span className={`px-3 py-1 rounded-full text-xs font-bold ${currentRegime.regime==="normal" ? "bg-emerald-500" : currentRegime.regime==="caution" ? "bg-amber-500" : "bg-red-500"} text-white`}>{currentRegime.confidence || currentRegime.regime} • {currentRegime.window}일 윈도우</span></div>
-                      <div className="mt-2 text-xs text-slate-300">VIX {currentRegime.vix || 16.5} • OVX • DXY • TNX • KRW • KOSPI • SP500 REAL • GPR proxy = (VIX+OVX)/2</div>
+                      <div className="flex items-center justify-between"><h3 className="text-sm font-extrabold">🌐 마켓 레짐 • Regime Dashboard</h3><span className={`px-3 py-1 rounded-full text-xs font-bold ${(currentRegime.regime==="normal" || currentRegime.regime==="평시") ? "bg-emerald-500" : (currentRegime.regime==="caution" || currentRegime.regime==="고변동") ? "bg-amber-500" : "bg-red-500"} text-white`}>{currentRegime.regime || "N/A"} • {regimeWindow}일 윈도우</span></div>
+                      <div className="mt-2 text-xs text-slate-300">{currentRegime.date || selectedDate} 기준 • data_status {currentRegime.data_status || "UNKNOWN"}</div>
                       <div className="mt-4 grid grid-cols-4 gap-2">
                         {[
-                          { label: "VIX", value: currentRegime.vix || 16.5, threshold: 22 },
-                          { label: "OVX", value: currentRegime.ovx || 32, threshold: 50 },
-                          { label: "DXY", value: "103.8", threshold: 105 },
-                          { label: "WTI vol", value: "2.1%", threshold: "4%" },
+                          { label: "VIX", value: fmtNum(regimeIndicators.VIX ?? currentRegime.vix), threshold: 22 },
+                          { label: "OVX", value: fmtNum(regimeIndicators.OVX ?? currentRegime.ovx), threshold: 50 },
+                          { label: "DXY", value: fmtNum(regimeIndicators.DXY ?? currentRegime.dxy), threshold: 105 },
+                          { label: "WTI vol", value: regimeIndicators.WTI_vol != null ? `${fmtNum(regimeIndicators.WTI_vol)}%` : "—", threshold: "4%" },
                         ].map((m) => (
                           <div key={m.label} className="rounded-xl bg-white/10 border border-white/10 p-2.5 text-center"><div className="text-xs text-slate-400">{m.label}</div><div className="text-sm font-bold">{m.value}</div><div className="text-xs text-slate-400">임계 {m.threshold}</div></div>
                         ))}
                       </div>
-                      <div className="mt-3 text-xs text-slate-400">평시 120일 → 고변동 90일 → 전시 60일 자동 축소 • {currentRegime.description || "정상 시장"}</div>
+                      <div className="mt-3 text-xs text-slate-400">{regimeDescription}</div>
                     </div>
+                    )}
 
                     <div className="rounded-2xl bg-white border border-slate-200 p-4">
-                      <h4 className="text-sm font-extrabold">📈 KOSPI 모델 + Meta 유효 통합</h4>
+                      <h4 className="text-sm font-extrabold">📈 모델 + Meta 유효 통합</h4>
                       <div className="mt-3 grid grid-cols-2 gap-3">
-                        <div className="p-3 rounded-xl bg-slate-50 border"><div className="text-xs text-slate-500">KOSPI 예측</div><div className="text-sm font-bold">+0.49% α·β</div><div className="text-xs text-slate-400">R² 0.89 Adj 0.87 • Ridge λ=0.5</div></div>
-                        <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200"><div className="text-xs text-emerald-700">Meta 유효 팩터</div><div className="text-sm font-bold">{currentMeta?.top_valid?.length || 5}개 유효</div><div className="text-xs text-emerald-600">P(valid) {(currentMeta?.avg_p_valid || 0.72).toFixed(2)}</div></div>
+                        <div className="p-3 rounded-xl bg-slate-50 border"><div className="text-xs text-slate-500">KOSPI α·β 추정</div><div className="text-sm font-bold">{hasZScores ? `${predText} α·β` : "—"}</div><div className="text-xs text-slate-400">평균 R² {fmtNum(retrainData?.avg_r2, 3)} • {retrainData?.version || "retrain N/A"}</div></div>
+                        <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200"><div className="text-xs text-emerald-700">Meta 유효 팩터</div><div className="text-sm font-bold">{icStats.count}개 유효</div><div className="text-xs text-emerald-600">meta {metaSummary?.date || activeSnapshot?.meta?.date || "N/A"}</div></div>
                       </div>
                       <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
                         {contributions.slice(0,5).map((c) => (
-                          <div key={c.factor} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border"><span className="text-xs font-bold">{c.factor}</span><span className="text-xs font-mono">{c.z>0 ? "+" : ""}{c.z.toFixed(2)}σ × β{c.beta.toFixed(2)} = {c.contrib>0 ? "+" : ""}{c.contrib.toFixed(2)}%</span></div>
+                          <div key={c.factor} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border"><span className="text-xs font-bold">{c.factor}</span><span className="text-xs font-mono">{c.z>0 ? "+" : ""}{c.z.toFixed(2)}σ × β{c.beta.toFixed(2)} = {fmtPred(c.contrib)}</span></div>
                         ))}
                       </div>
                     </div>
@@ -618,13 +661,13 @@ const { useState, useMemo, useEffect } = React;
                 <div className="grid grid-cols-2 gap-2">
                   <div className="rounded-xl bg-white border border-slate-200 p-3">
                     <div className="text-xs text-slate-500">외국인 선물</div>
-                    <div className="mt-1 text-sm font-bold">1327억 <span className="text-emerald-600">순매수</span></div>
-                    <div className="text-xs text-slate-400">KOSPI200 • DART</div>
+                    <div className="mt-1 text-sm font-bold">{foreignerDetail.latest != null ? `${Math.round(foreignerDetail.latest/100000000)}억` : "—"} <span className="text-xs text-slate-500">Z {fmtNum(foreignerDetail.z)}</span></div>
+                    <div className="text-xs text-slate-400">{foreignerDetail.latest_date || "KOSPI200 • CSV"} • {foreignerDetail.data_status || "N/A"}</div>
                   </div>
                   <div className="rounded-xl bg-white border border-slate-200 p-3">
                     <div className="text-xs text-slate-500">US 10Y / DXY</div>
-                    <div className="mt-1 text-sm font-bold">4.72% <span className="text-xs text-red-500">+0.04</span></div>
-                    <div className="text-xs text-slate-400">DXY 103.8 • Regime</div>
+                    <div className="mt-1 text-sm font-bold">{fmtNum(us10yDetail.latest, 2)}% <span className="text-xs text-slate-500">Z {fmtNum(us10yDetail.z)}</span></div>
+                    <div className="text-xs text-slate-400">DXY {fmtNum(dxyDetail.latest, 2)} • {us10yDetail.data_status || "N/A"}</div>
                   </div>
                 </div>
                 <div className="rounded-2xl border bg-white p-4">
@@ -641,7 +684,7 @@ const { useState, useMemo, useEffect } = React;
                           <div className="col-span-6"><div className="text-sm font-bold tracking-tight flex items-center gap-1.5">{c.factor} {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>}</div><div className="text-xs text-slate-500">{factorMeta[c.factor]?.desc || ""}</div></div>
                           <div className="col-span-2 text-right"><span className={`z-badge ${zCls}`}>{c.z>0 ? "+" : ""}{c.z.toFixed(2)}</span></div>
                           <div className="col-span-2 text-right font-mono text-xs font-semibold text-slate-600">{c.beta>0 ? "+" : ""}{c.beta.toFixed(2)}</div>
-                          <div className={`col-span-2 text-right font-mono text-xs font-bold ${c.contrib>=0 ? "text-emerald-600" : "text-red-600"}`}>{c.contrib>0 ? "+" : ""}{c.contrib.toFixed(2)}%</div>
+                          <div className={`col-span-2 text-right font-mono text-xs font-bold ${hasZScores ? (c.contrib>=0 ? "text-emerald-600" : "text-red-600") : "text-slate-400"}`}>{fmtPred(c.contrib)}</div>
                         </div>
                       );
                     })}

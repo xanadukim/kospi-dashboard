@@ -249,6 +249,9 @@ for snap_data in target_snapshots:
                 'kospiReturnPct': round(float(kret) * 100, 2),
                 'excessReturn': round(float(excess), 6),
                 'excessReturnPct': round(float(excess) * 100, 2),
+                'dataStatus': 'REAL',
+                'fallback_used': False,
+                'synthetic_data_used': False,
                 'source': f'yfinance-REAL-v60-ChinaProxy-{src_msg}',
                 'priceSource': 'yfinance .KS REAL + price_provider v60',
                 'chinaProxy': '구리(HG=F) + 상해종합(000001.SS) 기반 picks',
@@ -307,6 +310,9 @@ if all_returns:
         'source': 'yfinance-REAL-v60-ChinaProxy-64Picks',
         'version': 'v60-performance-snapshot',
         'chinaProxy': '구리+상해종합 기반 64 Picks 성과',
+        'dataStatus': 'REAL',
+        'fallback_used': False,
+        'synthetic_data_used': False,
         'period': f'{target_snapshots[-1].get("date") if target_snapshots else ""} ~ {today}',
     }
 
