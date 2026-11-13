@@ -17,6 +17,7 @@ Firestore 구조:
 - performance_snapshots/{2026-09-27} 일별 요약 (Hit Rate, Avg Return 등 대시보드용)
 """
 
+import math
 import os
 import json
 import datetime
@@ -102,12 +103,11 @@ def get_return_direct_yfinance(ticker: str, buy_date: str, eval_date: str):
         return None, 0.0, 0.0, str(e)
 
 def get_kospi_return(buy_date: str, eval_date: str):
-    """KOSPI 지수 수익률 (^KS11)"""
+    """KOSPI 지수 수익률 (^KS11). 유효하지 않으면 None을 반환한다."""
     try:
         import yfinance as yf
         kos = yf.Ticker("^KS11").history(start=buy_date, end=eval_date)
-        if kos.empty or len(kos) < 2:
-            # 넉넉하게 5일 여유
+        if kos.empty or 'Close' not in kos or len(kos[['Close']].dropna()) < 2:
             from datetime import timedelta
             import datetime as dt
             bd = dt.datetime.strptime(buy_date, '%Y-%m-%d')
@@ -115,13 +115,20 @@ def get_kospi_return(buy_date: str, eval_date: str):
             s = (bd - timedelta(days=5)).strftime('%Y-%m-%d')
             e = (ed + timedelta(days=3)).strftime('%Y-%m-%d')
             kos = yf.Ticker("^KS11").history(start=s, end=e)
-        if kos.empty:
-            return 0.0
-        kret = (float(kos['Close'].iloc[-1]) - float(kos['Close'].iloc[0])) / float(kos['Close'].iloc[0]) if float(kos['Close'].iloc[0]) != 0 else 0
-        return kret
+        if kos.empty or 'Close' not in kos:
+            return None
+        kos = kos[['Close']].dropna()
+        if len(kos) < 2:
+            return None
+        first = float(kos['Close'].iloc[0])
+        last = float(kos['Close'].iloc[-1])
+        if not math.isfinite(first) or not math.isfinite(last) or first == 0:
+            return None
+        kret = (last - first) / first
+        return kret if math.isfinite(kret) else None
     except Exception as e:
         print(f"[KOSPI] Error: {e}")
-        return 0.0
+        return None
 
 # ========== Load Snapshots ==========
 if not db:
@@ -208,30 +215,75 @@ for snap_data in target_snapshots:
             # 수익률 계산
             if HAS_PROVIDER:
                 ret = get_stock_return(ticker, rec_date, today, source="yfinance")
-                src_msg = "price_provider v60 yfinance REAL"
+                src_msg = "price_provider v61.6 yfinance REAL"
             else:
                 ret, _, _, src_msg = get_return_direct_yfinance(ticker, rec_date, today)
 
-            if ret is None:
+            ret_value = float(ret) if ret is not None else None
+            kret_value = None
+            missing_reason = None
+            if ret_value is None or not math.isfinite(ret_value):
+                missing_reason = "stock price unavailable"
+            else:
+                kret = get_kospi_return(rec_date, today)
+                kret_value = float(kret) if kret is not None else None
+                if kret_value is None or not math.isfinite(kret_value):
+                    missing_reason = "KOSPI benchmark unavailable"
+
+            doc_id = f"{rec_date}_{ticker}_{today}"
+            if missing_reason:
+                missing_doc = {
+                    'recDate': rec_date,
+                    'evalDate': today,
+                    'ticker': ticker,
+                    'name': name,
+                    'industryId': industry,
+                    'targetFactor': target_factor,
+                    'zAtRec': z_at_rec,
+                    'score': score,
+                    'predIndustry': pred_industry,
+                    'daysElapsed': days_elapsed,
+                    'return': None,
+                    'returnPct': None,
+                    'kospiReturn': None,
+                    'kospiReturnPct': None,
+                    'excessReturn': None,
+                    'excessReturnPct': None,
+                    'dataStatus': 'MISSING_PRICE',
+                    'missingReason': missing_reason,
+                    'fallback_used': False,
+                    'synthetic_data_used': False,
+                    'source': f'yfinance-REAL-v61.6-{src_msg}',
+                    'priceSource': 'yfinance .KS REAL + price_provider v61.6',
+                    'version': 'v61.6-performance-missing',
+                    'createdAt': firestore.SERVER_TIMESTAMP if db else today,
+                }
+                if db:
+                    batch.set(db.collection('performance_tracking').document(doc_id), missing_doc, merge=True)
+                    batch_cnt += 1
+                    if batch_cnt >= 400:
+                        batch.commit()
+                        print(f"  Committed {batch_cnt} docs")
+                        batch = db.batch()
+                        batch_cnt = 0
                 fail += 1
+                print(f"  [MISS] {ticker} {name} ({target_factor}): {missing_reason}")
                 continue
 
-            kret = get_kospi_return(rec_date, today)
-            excess = ret - kret
+            excess = ret_value - kret_value
 
-            all_returns.append(ret)
+            all_returns.append(ret_value)
             all_excess.append(excess)
 
             # Hit Rate 계산: Score가 높았을 때(>7.0) 수익이 양수면 Hit
             # 또는 Z*예측이 양수일 때 초과수익 양수면 Hit (팩터 방향성)
             if score >= 7.0:
                 total_for_hit += 1
-                if ret > 0:
+                if ret_value > 0:
                     hits += 1
             # Z 기반 Hit도 계산 (factor_validity용)
             # 여기서는 단순 수익 양수 여부로
 
-            doc_id = f"{rec_date}_{ticker}_{today}"
             doc = {
                 'recDate': rec_date,
                 'evalDate': today,
@@ -243,19 +295,19 @@ for snap_data in target_snapshots:
                 'score': score,
                 'predIndustry': pred_industry,
                 'daysElapsed': days_elapsed,
-                'return': round(float(ret), 6),
-                'returnPct': round(float(ret) * 100, 2),
-                'kospiReturn': round(float(kret), 6),
-                'kospiReturnPct': round(float(kret) * 100, 2),
-                'excessReturn': round(float(excess), 6),
-                'excessReturnPct': round(float(excess) * 100, 2),
+                'return': round(ret_value, 6),
+                'returnPct': round(ret_value * 100, 2),
+                'kospiReturn': round(kret_value, 6),
+                'kospiReturnPct': round(kret_value * 100, 2),
+                'excessReturn': round(excess, 6),
+                'excessReturnPct': round(excess * 100, 2),
                 'dataStatus': 'REAL',
                 'fallback_used': False,
                 'synthetic_data_used': False,
-                'source': f'yfinance-REAL-v60-ChinaProxy-{src_msg}',
-                'priceSource': 'yfinance .KS REAL + price_provider v60',
+                'source': f'yfinance-REAL-v61.6-{src_msg}',
+                'priceSource': 'yfinance .KS REAL + price_provider v61.6',
                 'chinaProxy': '구리(HG=F) + 상해종합(000001.SS) 기반 picks',
-                'version': 'v60-64Picks-DART-REAL',
+                'version': 'v61.6-64Picks-DART-REAL',
                 'createdAt': firestore.SERVER_TIMESTAMP if db else today,
             }
 
@@ -269,7 +321,7 @@ for snap_data in target_snapshots:
                     batch = db.batch()
                     batch_cnt = 0
 
-            print(f"  [OK] {ticker} {name} ({target_factor}): {ret*100:+.2f}% vs KOSPI {kret*100:+.2f}% excess {excess*100:+.2f}% (Z {z_at_rec:+.2f} Score {score})")
+            print(f"  [OK] {ticker} {name} ({target_factor}): {ret_value*100:+.2f}% vs KOSPI {kret_value*100:+.2f}% excess {excess*100:+.2f}% (Z {z_at_rec:+.2f} Score {score})")
 
         except Exception as e:
             fail += 1

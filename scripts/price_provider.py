@@ -16,6 +16,7 @@ Sample URL (for test): https://data-dbg.krx.co.kr/svc/sample/apis/idx/kospi_dd_t
 Real URL (after approval): https://data.krx.co.kr/svc/apis/idx/kospi_dd_trd?basDd=YYYYMMDD
 """
 
+import math
 import os
 from typing import List, Tuple
 import requests
@@ -220,18 +221,26 @@ def get_stock_return(ticker: str, buy_date: str, eval_date: str = None, source: 
         start = (buy_dt - timedelta(days=5)).strftime('%Y-%m-%d')
         end = (eval_dt + timedelta(days=2)).strftime('%Y-%m-%d')
         hist = t.history(start=start, end=end)
+        if hist.empty or 'Close' not in hist:
+            return None
+        hist = hist[['Close']].dropna()
         if hist.empty:
             return None
         hist.index = hist.index.tz_localize(None)
-        before = hist[hist.index < buy_dt]
-        if before.empty and buy_date not in [d.strftime('%Y-%m-%d') for d in hist.index]:
-            return None
-        if buy_date in [d.strftime('%Y-%m-%d') for d in hist.index]:
-            buy_price = float(hist.loc[hist.index.strftime('%Y-%m-%d')==buy_date]['Close'].iloc[0])
+        buy_dates = [d.strftime('%Y-%m-%d') for d in hist.index]
+        if buy_date in buy_dates:
+            buy_price = float(hist.loc[hist.index.strftime('%Y-%m-%d') == buy_date]['Close'].iloc[0])
         else:
+            before = hist[hist.index < buy_dt]
+            if before.empty:
+                return None
             buy_price = float(before['Close'].iloc[-1])
         eval_price = float(hist['Close'].iloc[-1])
+        if not math.isfinite(buy_price) or not math.isfinite(eval_price) or buy_price == 0:
+            return None
         ret = (eval_price - buy_price) / buy_price
+        if not math.isfinite(ret):
+            return None
         print(f"[return] {ticker} {buy_date}: {ret*100:+.2f}%")
         return ret
     except Exception as e:
