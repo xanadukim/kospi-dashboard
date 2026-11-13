@@ -83,7 +83,14 @@ def _fetch_pykrx(start: str, end: str) -> pd.DataFrame:
 
     from pykrx import stock
 
-    df = stock.get_market_trading_value_by_date(start, end, "KOSPI")
+    df = stock.get_market_trading_value_by_date(
+        start,
+        end,
+        "KOSPI",
+        etf=True,
+        etn=True,
+        elw=True,
+    )
     if df is None or getattr(df, "empty", True):
         raise RuntimeError("pykrx returned empty KOSPI investor trading frame")
 
