@@ -113,7 +113,11 @@ def _fetch_pykrx(start: str, end: str) -> pd.DataFrame:
     out = out.dropna(subset=["foreigner", "institution", "individual", "total"])
     if out.empty:
         raise RuntimeError("pykrx frame has no usable investor rows")
-    return out.sort_index()
+    out = out.sort_index()
+    print(f"[FOREIGNER UPDATE] pykrx shape={out.shape} columns={list(out.columns)}")
+    print(out.head(3).to_string())
+    print(out.tail(3).to_string())
+    return out
 
 
 def _calibrate_scale(existing: pd.DataFrame, fetched: pd.DataFrame):
@@ -126,18 +130,27 @@ def _calibrate_scale(existing: pd.DataFrame, fetched: pd.DataFrame):
     if len(common) < 3:
         raise RuntimeError(f"insufficient overlap for unit calibration: {len(common)}")
 
-    ratios = []
+    pairs = []
     for day in common:
         e_val = float(ex.loc[day])
         f_val = float(fe.loc[day])
         if math.isfinite(e_val) and math.isfinite(f_val) and e_val != 0 and f_val != 0:
-            ratios.append(e_val / f_val)
-    if len(ratios) < 3:
+            pairs.append((day, e_val, f_val))
+    if len(pairs) < 3:
         raise RuntimeError("insufficient non-zero overlap for unit calibration")
 
-    scale = float(np.median(ratios))
+    print("[FOREIGNER UPDATE] overlap samples:")
+    for day, e_val, f_val in pairs[:8]:
+        print(f"  {day.date()}: existing={e_val:.1f} fetched={f_val:.6g} ratio={e_val / f_val:.6g}")
+
+    num = sum(e_val * f_val for _, e_val, f_val in pairs)
+    den = sum(f_val * f_val for _, _, f_val in pairs)
+    ls_scale = num / den if den > 0 else float("nan")
+    median_scale = float(np.median([e_val / f_val for _, e_val, f_val in pairs]))
+    scale = ls_scale if math.isfinite(ls_scale) and ls_scale > 0 else median_scale
     if not math.isfinite(scale) or scale <= 0:
-        raise RuntimeError(f"invalid calibration scale {scale}")
+        raise RuntimeError(f"invalid calibration scale ls={ls_scale} median={median_scale}")
+    print(f"[FOREIGNER UPDATE] calibration ls={ls_scale:.8g} median={median_scale:.8g} use={scale:.8g}")
 
     rel_errors = []
     for day in common:
