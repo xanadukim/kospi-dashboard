@@ -47,6 +47,9 @@ FACTOR_TICKERS = {
     "구리": "HG=F",
     "OVX": "^OVX",
     "KOSPI": "^KS11",
+    "KOSPI_INDEX": "^KS11",
+    "KRW": "KRW=X",
+    "USD/KRW": "KRW=X",
 }
 
 # KOSPI main index names to filter - from TEST images
@@ -151,7 +154,11 @@ def get_stock_prices(ticker: str, start: str = None, end: str = None, period: st
         # KOSPI 지수인 경우 KRX OPEN API 직접
         if ticker in ["KOSPI", "^KS11", "KOSPI_INDEX"]:
             period_days = {"1mo": 30, "3mo": 90, "6mo": 180, "1y": 365}.get(period, 30)
-            return _get_krx_kospi_index_history(days=period_days)
+            closes, dates = _get_krx_kospi_index_history(days=period_days)
+            if len(closes) >= 20 and all(math.isfinite(c) for c in closes):
+                return closes, dates
+            print("[KRX KOSPI] insufficient history; fallback yfinance ^KS11")
+            return _get_yfinance_prices("KOSPI", start, end, period)
         return _get_krx_prices(ticker, start, end, period)
     else:
         return _get_yfinance_prices(ticker, start, end, period)
@@ -252,14 +259,18 @@ def get_stock_return(ticker: str, buy_date: str, eval_date: str = None, source: 
 
 def get_market_indicator(ticker: str, period: str = "3mo", source: str = None):
     src = source or DEFAULT_SOURCE
-    # KOSPI는 KRX OPEN API 우선
-    if src == "krx" and ticker in ["KOSPI", "^KS11", "KOSPI_INDEX"] and KRX_API_KEY:
+    kospi_aliases = {"KOSPI", "^KS11", "KOSPI_INDEX"}
+    # KOSPI는 KRX OPEN API를 우선 시도하되, 검증되지 않으면 yfinance ^KS11로 fallback
+    if src == "krx" and ticker in kospi_aliases and KRX_API_KEY:
         days_map = {"1mo": 30, "3mo": 90, "6mo": 180, "1y": 365}
         days = days_map.get(period, 90)
         closes, _ = _get_krx_kospi_index_history(days=days)
-        latest = closes[-1] if closes else 0.0
-        return closes, latest
-    
+        if len(closes) >= 20 and all(math.isfinite(c) for c in closes):
+            latest = closes[-1]
+            print(f"[indicator] KRX KOSPI: {latest:.2f} len {len(closes)}")
+            return closes, latest
+        print("[indicator] KRX KOSPI insufficient; fallback yfinance ^KS11")
+
     try:
         import yfinance as yf
         yf_ticker = FACTOR_TICKERS.get(ticker, ticker)
@@ -267,7 +278,11 @@ def get_market_indicator(ticker: str, period: str = "3mo", source: str = None):
         hist = t.history(period=period)
         if hist.empty:
             return [], 0.0
-        closes = [float(x) for x in hist['Close'].dropna().tolist()]
+        closes = []
+        for value in hist["Close"].dropna().tolist():
+            close = float(value)
+            if math.isfinite(close):
+                closes.append(close)
         latest = closes[-1] if closes else 0.0
         print(f"[indicator] {yf_ticker}: {latest:.2f} len {len(closes)}")
         return closes, latest
