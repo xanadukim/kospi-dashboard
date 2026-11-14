@@ -253,6 +253,7 @@ const { useState, useMemo, useEffect } = React;
         const [showHelp, setShowHelp] = useState(false);
         const [activeTab, setActiveTab] = useState("recommend");
         const [expandedIndustry, setExpandedIndustry] = useState(null);
+        const [selectedStockKey, setSelectedStockKey] = useState(null);
         const [liveCount, setLiveCount] = useState(0);
         const [lastRefresh, setLastRefresh] = useState(new Date());
         const [isViewingHistory, setIsViewingHistory] = useState(false);
@@ -519,6 +520,30 @@ const { useState, useMemo, useEffect } = React;
             },
           };
         }, [history, performanceRecords, performanceSummary]);
+
+        // 업종 분석 탭 - 종목 선택 분석
+        const selectedStock = useMemo(
+          () => weeklyPicks.find((p) => p.ticker === selectedStockKey) || null,
+          [weeklyPicks, selectedStockKey]
+        );
+        const selectedStockIndustry = useMemo(
+          () => industries.find((i) => i.id === selectedStock?.industryId) || null,
+          [selectedStock]
+        );
+        const selectedStockPicks = useMemo(
+          () => weeklyPicks
+            .filter((p) => p.industryId === selectedStock?.industryId)
+            .sort((a, b) => (b.score || 0) - (a.score || 0)),
+          [weeklyPicks, selectedStock]
+        );
+        const selectedStockPerf = useMemo(() => {
+          if (!selectedStock?.date || !selectedStock?.ticker) return null;
+          const recs = performanceRecords.filter(
+            (r) => r && r.ticker === selectedStock.ticker && r.recDate === selectedStock.date && typeof r.returnPct === "number"
+          );
+          if (!recs.length) return null;
+          return recs.sort((a, b) => String(b.evalDate || "").localeCompare(String(a.evalDate || "")))[0];
+        }, [selectedStock, performanceRecords]);
 
         const icStats = useMemo(() => {
           const entries = metaSummary?.factors
@@ -837,8 +862,27 @@ const { useState, useMemo, useEffect } = React;
                 {activeTab === "top" && (
                   <div className="space-y-4">
                     <div className="rounded-2xl bg-white border border-slate-200 p-4">
-                      <h3 className="text-sm font-bold flex items-center gap-2">📊 업종 분석 • 예측 기여도 Breakdown</h3>
-                      <div className="mt-1 text-xs text-slate-500">예측수익률 순 정렬 • 행 클릭 = 업종 필터 • ▸ 클릭 = 기여 팩터 상세</div>
+                      <div className="flex items-start justify-between flex-wrap gap-2">
+                        <div>
+                          <h3 className="text-sm font-bold flex items-center gap-2">📊 업종 분석 • 예측 기여도 Breakdown</h3>
+                          <div className="mt-1 text-xs text-slate-500">예측수익률 순 정렬 • 행 클릭 = 업종 필터 • ▸ 클릭 = 기여 팩터 상세</div>
+                        </div>
+                        <select
+                          value={selectedStockKey || ""}
+                          onChange={(e) => setSelectedStockKey(e.target.value || null)}
+                          className="text-xs border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white text-slate-700 max-w-[240px]"
+                          title="종목 선택 시 점수 분석 표시"
+                        >
+                          <option value="">🔍 종목 분석 — 종목 선택…</option>
+                          {industries.map((ind) => (
+                            <optgroup key={ind.id} label={ind.short}>
+                              {weeklyPicks.filter((p) => p.industryId === ind.id).sort((a, b) => (b.score || 0) - (a.score || 0)).map((p) => (
+                                <option key={p.ticker} value={p.ticker}>{p.name} ({p.ticker})</option>
+                              ))}
+                            </optgroup>
+                          ))}
+                        </select>
+                      </div>
                       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
                         {industries.map((ind) => ({ ...ind, pred: Object.entries(ind.betas).reduce((s,[f,b]) => s + (zScores[f] ?? 0)*b, 0) })).sort((a,b) => b.pred - a.pred).map((item, idx) => {
                           const isSelected = item.id === selectedIndustry;
@@ -884,6 +928,89 @@ const { useState, useMemo, useEffect } = React;
                         })}
                       </div>
                     </div>
+
+                    {selectedStock && (() => {
+                      const ind = selectedStockIndustry;
+                      const pred = typeof selectedStock.predIndustry === "number" ? selectedStock.predIndustry : 0;
+                      const mom = typeof selectedStock.momentum === "number" ? selectedStock.momentum : 0;
+                      const tfBeta = ind?.betas?.[selectedStock.targetFactor] ?? 0;
+                      const tfZ = zScores[selectedStock.targetFactor] ?? selectedStock.zAtRec ?? 0;
+                      const tfContrib = tfBeta * tfZ;
+                      const terms = [
+                        { label: "기본 점수", value: 6.5, desc: "모든 종목의 출발점" },
+                        { label: `업종 예측수익률 ${fmtPred(pred)} × 1.2`, value: pred * 1.2, desc: "이 업종이 오늘 예측하는 수익률" },
+                        { label: `개별 모멘텀 ${mom >= 0 ? "+" : ""}${mom.toFixed(2)} × 0.3`, value: mom * 0.3, desc: "최근 20일 주가가 같은 업종 다른 종목보다 강한 정도" },
+                        { label: `양(+)예측 보너스 × 0.5`, value: Math.max(0, pred) * 0.5, desc: "업종 예측이 플러스일 때 추가점" },
+                        { label: `예측 크기 보너스 × 0.3`, value: Math.abs(pred) * 0.3, desc: "예측이 강할수록(절대값) 추가점" },
+                      ];
+                      const rawSum = terms.reduce((s, t) => s + t.value, 0);
+                      return (
+                        <>
+                          <div className="rounded-2xl bg-white border border-slate-200 p-4">
+                            <div className="flex items-center justify-between flex-wrap gap-2">
+                              <h4 className="text-sm font-extrabold">🔍 {selectedStock.name} <span className="text-xs font-normal text-slate-400">{selectedStock.ticker} • {ind?.short || selectedStock.industryId}</span></h4>
+                              <span className="text-xs font-mono px-2 py-1 rounded-full bg-violet-600 text-white font-bold">Score {selectedStock.score}</span>
+                            </div>
+                            <div className="mt-2 text-xs text-slate-500 leading-relaxed">
+                              이 점수는 <b>모델 내부 계산 과정</b>을 보여주는 통계 점수이며, 매수/매도 추천이 아닙니다. 재료는 아래 5가지입니다.
+                            </div>
+                            <div className="mt-3 rounded-xl bg-slate-50 border border-slate-200 p-3 space-y-1.5">
+                              {terms.map((t, i) => (
+                                <div key={i} className="flex items-center justify-between text-xs gap-2">
+                                  <span className="text-slate-600">{t.label} <span className="text-slate-400">— {t.desc}</span></span>
+                                  <span className={`font-mono font-bold shrink-0 ${t.value >= 0 ? "text-emerald-600" : "text-red-600"}`}>{t.value > 0 ? "+" : ""}{t.value.toFixed(2)}</span>
+                                </div>
+                              ))}
+                              <div className="border-t border-slate-200 pt-1.5 flex items-center justify-between text-xs font-bold">
+                                <span className="text-slate-700">합계 {rawSum.toFixed(2)} → 1~10 범위 보정</span>
+                                <span className="font-mono text-violet-700">Score {selectedStock.score}</span>
+                              </div>
+                            </div>
+                            <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2">
+                              <div className="rounded-xl bg-blue-50 border border-blue-200 p-3">
+                                <div className="text-xs font-bold text-blue-900">주요 민감 팩터</div>
+                                <div className="mt-1 text-sm font-bold text-blue-900">{selectedStock.targetFactor}</div>
+                                <div className="text-xs font-mono text-blue-700 mt-0.5">Z {tfZ > 0 ? "+" : ""}{Number(tfZ).toFixed(2)} × β {tfBeta > 0 ? "+" : ""}{tfBeta.toFixed(2)} = <b>{tfContrib >= 0 ? "+" : ""}{tfContrib.toFixed(2)}</b></div>
+                                <div className="text-xs text-blue-600 mt-1">이 팩터가 이 업종 점수에 기여한 크기</div>
+                              </div>
+                              <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3">
+                                <div className="text-xs font-bold text-emerald-900">시장 민감도 (KOSPI β)</div>
+                                <div className="mt-1 text-sm font-bold text-emerald-900">{typeof selectedStock.betaStock === "number" ? selectedStock.betaStock.toFixed(2) : "—"}</div>
+                                <div className="text-xs text-emerald-700 mt-0.5">KOSPI가 1% 움직이면 이 종목은 약 {(Math.abs(selectedStock.betaStock || 0) * 100).toFixed(0)}% 방향으로 반응하는 성향 (120일 실측)</div>
+                              </div>
+                              <div className="rounded-xl bg-amber-50 border border-amber-200 p-3">
+                                <div className="text-xs font-bold text-amber-900">개별 모멘텀</div>
+                                <div className="mt-1 text-sm font-bold text-amber-900">{mom >= 0 ? "+" : ""}{mom.toFixed(2)}σ</div>
+                                <div className="text-xs text-amber-700 mt-0.5">최근 20일 주가 강도가 같은 업종 8종목 중 상대적 위치</div>
+                              </div>
+                            </div>
+                            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                              <span className="px-2.5 py-1 rounded-full font-bold" style={{ background: "#ecfdf5", color: "#065f46", border: "1px solid #a7f3d0" }}>모델 예상수익률 +{selectedStock.expectedReturn}% <span className="font-normal">(추정치, 보장 아님)</span></span>
+                              {selectedStockPerf ? (
+                                <span className="px-2.5 py-1 rounded-full bg-slate-100 border font-mono">
+                                  실측 {selectedStockPerf.evalDate} 기준 {selectedStockPerf.returnPct > 0 ? "+" : ""}{selectedStockPerf.returnPct}% (vs KOSPI {selectedStockPerf.vsKospi > 0 ? "+" : ""}{Number(selectedStockPerf.vsKospi ?? 0).toFixed(2)}%)
+                                </span>
+                              ) : (
+                                <span className="px-2.5 py-1 rounded-full bg-slate-50 border text-slate-400">실측 데이터 없음 (추적 기간 외 종목)</span>
+                              )}
+                              <span className="text-slate-400">β 출처: {selectedStock.betaSource || "base"}</span>
+                            </div>
+                          </div>
+
+                          <div className="rounded-2xl bg-white border border-slate-200 p-4">
+                            <h4 className="text-sm font-extrabold">🏭 이 업종 추천 8종 • {ind?.short || selectedStock.industryId}</h4>
+                            <div className="mt-1 text-xs text-slate-500">{ind?.name} — 클릭하면 해당 종목 분석으로 이동</div>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {selectedStockPicks.map((p) => (
+                                <button key={p.ticker} onClick={() => setSelectedStockKey(p.ticker)} className={`text-xs px-2.5 py-1.5 rounded-full border font-mono transition-all ${p.ticker === selectedStock.ticker ? "bg-[#1e3a8a] text-white border-[#1e3a8a]" : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200"}`}>
+                                  {p.name} <b>{p.score}</b>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
 
