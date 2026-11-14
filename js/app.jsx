@@ -208,6 +208,7 @@ const { useState, useMemo, useEffect } = React;
         const [liveCount, setLiveCount] = useState(0);
         const [lastRefresh, setLastRefresh] = useState(new Date());
         const [isViewingHistory, setIsViewingHistory] = useState(false);
+        const [dataReady, setDataReady] = useState(false);
 
         const normalizeZScores = (cloud = {}) => ({
           "S&P500": cloud.SP500 ?? cloud["S&P500"] ?? 0,
@@ -241,18 +242,19 @@ const { useState, useMemo, useEffect } = React;
         };
 
         useEffect(() => {
-          if (!db) return;
+          if (!db) { setDataReady(true); return; }
           const unsub = db.collection("factor_snapshots").orderBy("date", "desc").limit(10).onSnapshot((snap) => {
             const docs = snap.docs.map((d) => d.data());
             setHistory(docs);
             setLiveCount(docs.length);
             setLastRefresh(new Date());
+            setDataReady(true);
             if (docs[0]?.zScores && !isViewingHistory) {
               const cloud = docs[0].zScores;
               setZScores(normalizeZScores(cloud));
               setSelectedDate(docs[0].date);
             }
-          });
+          }, () => setDataReady(true));
           return () => unsub();
         }, [isViewingHistory]);
 
@@ -489,12 +491,32 @@ const { useState, useMemo, useEffect } = React;
         const fmtNum = (value, digits = 2) => (typeof value === "number" && Number.isFinite(value) ? value.toFixed(digits) : "—");
         const industryR2 = (industryId) => retrainData?.r2?.[industryId] ?? "—";
 
+        if (!dataReady) {
+          return (
+            <div className="min-h-screen bg-white">
+              <div className="h-[72px] border-b border-slate-200 bg-white" />
+              <div className="max-w-screen-2xl mx-auto px-4 md:px-6 pt-6 grid grid-cols-12 gap-4">
+                <div className="col-span-12 md:col-span-2 space-y-3">
+                  {[...Array(8)].map((_, i) => <div key={i} className="h-14 rounded-xl bg-slate-100 animate-pulse" />)}
+                </div>
+                <div className="col-span-12 md:col-span-10 space-y-4">
+                  <div className="h-40 rounded-2xl bg-slate-100 animate-pulse" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    {[...Array(4)].map((_, i) => <div key={i} className="h-36 rounded-2xl bg-slate-100 animate-pulse" />)}
+                  </div>
+                </div>
+              </div>
+              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 text-xs text-slate-400 font-mono">데이터 불러오는 중…</div>
+            </div>
+          );
+        }
+
         return (
           <div className="min-h-screen bg-white">
             <header className="sticky top-0 z-30" style={{ background: "white", borderBottom: "1px solid #e5e8eb", height: "72px" }}>
               <div className="max-w-screen-2xl mx-auto px-4 md:px-6 h-[72px] flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center font-extrabold text-xs" style={{ background: "#3182f6", color: "white" }}>KQ</div>
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center font-extrabold text-xs" style={{ background: "#1e3a8a", color: "white" }}>KQ</div>
                   <div className="text-sm font-bold" style={{color: "#1e3a8a"}}>KOSPI Quant Terminal <span className="text-xs font-normal text-slate-500 ml-1">v61.6</span></div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -502,8 +524,8 @@ const { useState, useMemo, useEffect } = React;
                   <div className="hidden xl:flex items-center gap-1 p-1 rounded-full bg-[#f1f5f9] border border-[#e5e8eb]">
                     {[
                       { id: "recommend", label: "추천", icon: "🎯", count: filteredPicks.length, color: "#1e3a8a" },
-                      { id: "top", label: "오늘 Top 예측", icon: "📊", count: 8, color: "#f59e0b" },
-                      { id: "all64", label: "전체 64", icon: "📋", count: all64Filtered.length, color: "#334155" },
+                      { id: "top", label: "업종 랭킹", icon: "📊", count: 8, color: "#f59e0b" },
+                      { id: "all64", label: "전체 종목", icon: "📋", count: all64Filtered.length, color: "#334155" },
                       { id: "performance", label: "성과", icon: "📈", count: pastPicks.length, color: "#7c3aed" },
                       { id: "market", label: "마켓", icon: "🌐", count: icStats.count, color: "#059669" },
                     ].map((tab) => (
@@ -514,16 +536,10 @@ const { useState, useMemo, useEffect } = React;
                       </button>
                     ))}
                   </div>
-                  {/* KOSPI R² 박스 - 탭 옆으로 이동 */}
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#e5e8eb]">
-                    <span className="text-xs text-slate-500">평균 R²</span>
-                    <span className="text-sm font-bold">{retrainData?.avg_r2 ?? "N/A"}</span>
-                    <span className={`text-xs font-mono px-2 py-0.5 rounded-full border ${hasZScores ? (predictedReturn>=0 ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-red-50 text-red-700 border-red-100") : "bg-slate-50 text-slate-500 border-slate-200"}`}>{predText}</span>
-                  </div>
                   {isViewingHistory && <button onClick={returnToLatest} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">↩ 최신으로</button>}
                   <button onClick={() => setShowHistory(true)} className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${isViewingHistory ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-white text-slate-600 border-[#e5e8eb] hover:bg-slate-50"}`}>📅 이전 자료 {history.length>0 ? `(${history.length})` : ""}</button>
                   <button onClick={() => setShowDisclaimer(true)} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-600 border border-[#e5e8eb] hover:bg-slate-50">면책</button>
-                  <button onClick={() => setShowHelp(true)} className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#3182f6] text-white hover:bg-[#2b7fff]">도움말</button>
+                  <button onClick={() => setShowHelp(true)} className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#1e3a8a] text-white hover:bg-[#23408e]">도움말</button>
                 </div>
               </div>
             </header>
@@ -556,8 +572,8 @@ const { useState, useMemo, useEffect } = React;
                 <div className="xl:hidden flex items-center gap-1 p-1 rounded-full bg-[#f1f5f9] border border-[#e5e8eb] w-fit flex-wrap mb-4">
                   {[
                     { id: "recommend", label: "추천", icon: "🎯", count: filteredPicks.length, color: "#1e3a8a" },
-                    { id: "top", label: "오늘 Top 예측", icon: "📊", count: 8, color: "#f59e0b" },
-                    { id: "all64", label: "전체 64", icon: "📋", count: all64Filtered.length, color: "#334155" },
+                    { id: "top", label: "업종 랭킹", icon: "📊", count: 8, color: "#f59e0b" },
+                    { id: "all64", label: "전체 종목", icon: "📋", count: all64Filtered.length, color: "#334155" },
                     { id: "performance", label: "성과", icon: "📈", count: pastPicks.length, color: "#7c3aed" },
                     { id: "market", label: "마켓", icon: "🌐", count: icStats.count, color: "#059669" },
                   ].map((tab) => (

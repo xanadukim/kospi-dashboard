@@ -1,0 +1,8 @@
+{
+  "name": "kospi-dashboard",
+  "private": true,
+  "description": "KOSPI Quant Terminal - static GitHub Pages dashboard",
+  "scripts": {
+    "build": "npx --yes esbuild js/app.jsx --outfile=js/app.js"
+  }
+}

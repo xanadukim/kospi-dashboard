@@ -37,9 +37,10 @@
 - `js/data.js.new`는 수동 반영용 산출물이며 프런트 기본값이 아니다.
 
 ### 4. Dashboard
-`index.html` + `js/config.js` + `js/data.js` + `js/app.jsx`
+`index.html` + `js/config.js` + `js/data.js` + `js/app.jsx`(소스) → `js/app.js`(빌드 산출물)
+- `js/app.jsx`를 수정한 뒤 반드시 `npm run build`(esbuild)로 `js/app.js`를 재생성하고 둘 다 커밋한다. `index.html`은 빌드된 `js/app.js`를 로드한다.
 - Firebase는 읽기 전용 클라이언트만 사용한다.
-- `js/app.js`, `js/regime.js`, `js/retrain.js`는 `legacy/`로 이동했으며 운영에서 로드하지 않는다.
+- `js/regime.js`, `js/retrain.js`는 `legacy/`로 이동했으며 운영에서 로드하지 않는다.
 - 프런트는 `factor_snapshots`, `performance_tracking`, `performance_snapshots`, `meta_summaries`만 표시한다.
 
 ## Data Policy
@@ -68,8 +69,8 @@ GitHub Secrets:
 ```bash
 py -3 -m py_compile scripts/daily_update.py scripts/regime_detector.py scripts/regime_detector_v60.py scripts/track_performance_v60.py scripts/meta_factor_tracker_v60.py scripts/retrain_model.py scripts/data_quality_check_v60.py
 py -3 tests/check_v616_static.py
-npx --yes esbuild js/app.jsx --loader:.jsx=jsx --outfile=/tmp/app.jsx.js
-node --check /tmp/app.jsx.js
+npm run build
+node --check js/app.js
 git diff --check
 ```
 

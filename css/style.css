@@ -1,8 +1,8 @@
 :root {
   --font-kr: "Noto Sans KR", -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
-  --naver-blue: #3182f6;
-  --naver-blue-light: #e8f3ff;
+  --naver-blue: #1e3a8a;
+  --naver-blue-light: #eef2ff;
   --border: #e5e8eb;
   --bg: #f8f9fa;
   --text-main: #1e3a8a;
@@ -45,7 +45,7 @@ body {
 }
 
 /* Industry colors - flat Naver style */
-.grad-elec { background: #3182f6; }
+.grad-elec { background: #2563eb; }
 .grad-auto { background: #00b386; }
 .grad-chem { background: #8b5cf6; }
 .grad-fin { background: #1e3a8a; }
@@ -105,7 +105,7 @@ body {
   width: 3px;
 }
 .check-card.c1::before { background: #ff8a00; }
-.check-card.c2::before { background: #3182f6; }
+.check-card.c2::before { background: #2563eb; }
 .check-card.c3::before { background: #00b386; }
 .check-card.c4::before { background: #8b5cf6; }
 .check-card:hover {
@@ -137,7 +137,7 @@ body {
   right: 0;
   height: 2px;
 }
-.pick-card.elec::before { background: #3182f6; }
+.pick-card.elec::before { background: #2563eb; }
 .pick-card.auto::before { background: #00b386; }
 .pick-card.chem::before { background: #8b5cf6; }
 .pick-card.fin::before { background: #1e3a8a; }
@@ -221,9 +221,9 @@ body {
   border-color: var(--naver-blue);
 }
 .factor-selected {
-  background: #e8f3ff !important;
-  color: #3182f6 !important;
-  border-color: #3182f6 !important;
+  background: #eef2ff !important;
+  color: #1e3a8a !important;
+  border-color: #1e3a8a !important;
 }
 
 /* Naver header */
