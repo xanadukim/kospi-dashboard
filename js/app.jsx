@@ -1051,7 +1051,7 @@ const { useState, useMemo, useEffect } = React;
                       <div className="rounded-2xl border bg-white p-6 text-center text-sm text-slate-400">전체 추천 데이터가 없습니다.</div>
                     ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {all64Filtered.slice(0,32).map((p) => {
+                      {all64Filtered.map((p) => {
                         const ind = industries.find(i => i.id === p.industryId) || industries[0];
                         return (
                           <div key={`${p.industryId}-${p.ticker}-all`} className="rounded-xl border bg-white p-3 hover:shadow-md transition-shadow cursor-pointer" title="클릭하면 네이버페이증권 해당 종목 페이지가 새 탭으로 열립니다" onClick={() => openNaverStock(p.ticker)}>
@@ -1073,7 +1073,7 @@ const { useState, useMemo, useEffect } = React;
                       })}
                     </div>
                     )}
-                    <div className="text-xs text-center text-slate-400">전체 {all64Filtered.length}종 중 32종 표시 • 전체 보기는 스크롤</div>
+                    <div className="text-xs text-center text-slate-400">전체 {all64Filtered.length}종 표시</div>
                   </div>
                 )}
 
