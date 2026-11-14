@@ -254,6 +254,7 @@ const { useState, useMemo, useEffect } = React;
         const [activeTab, setActiveTab] = useState("recommend");
         const [expandedIndustry, setExpandedIndustry] = useState(null);
         const [selectedStockKey, setSelectedStockKey] = useState(null);
+        const [all64Industry, setAll64Industry] = useState(null);
         const [liveCount, setLiveCount] = useState(0);
         const [lastRefresh, setLastRefresh] = useState(new Date());
         const [isViewingHistory, setIsViewingHistory] = useState(false);
@@ -398,11 +399,12 @@ const { useState, useMemo, useEffect } = React;
         }, [weeklyPicks, selectedIndustry, selectedFactor]);
 
         const all64Filtered = useMemo(() => {
-          if (!selectedFactor) return weeklyPicks;
+          const base = all64Industry ? weeklyPicks.filter(p => p.industryId === all64Industry) : weeklyPicks;
+          if (!selectedFactor) return base;
           const factorMap = { "S&P500": ["SP500","S&P500"], "SOX / 필라": ["반도체팩터","SOX"], "원달러": ["원달러"], "US 10Y": ["US10Y","한미스프레드"], "구리": ["구리","중국PMI"], "상해종합": ["상해종합","중국PMI"] };
           const related = factorMap[selectedFactor] || [selectedFactor];
-          return weeklyPicks.filter(p => related.some(r => (p.targetFactor || "").includes(r) || (p.reason || "").includes(r)));
-        }, [weeklyPicks, selectedFactor]);
+          return base.filter(p => related.some(r => (p.targetFactor || "").includes(r) || (p.reason || "").includes(r)));
+        }, [weeklyPicks, selectedFactor, all64Industry]);
 
         const pastPicks = useMemo(() => {
           const byRecDate = new Map();
@@ -1036,14 +1038,22 @@ const { useState, useMemo, useEffect } = React;
                       <div className="flex items-center justify-between flex-wrap gap-2">
                         <div>
                           <h3 className="text-sm font-extrabold">📋 전체 종목 • 8×8 Industry 전체 보기</h3>
-                          <div className="mt-1 text-xs text-slate-500">왼쪽 산업 + 오른쪽 팩터로 필터링 • Score 높은 순 • 클릭 시 네이버페이증권 새 탭</div>
+                          <div className="mt-1 text-xs text-slate-500">업종 칩 클릭 = 해당 업종만 표시 • 전체 보기 = 초기화 • Score 높은 순 • 클릭 시 네이버페이증권 새 탭</div>
                         </div>
-                        <span className="px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs font-mono font-bold text-slate-600">{all64Filtered.length}종{selectedFactor ? ` • ${selectedFactor} 필터` : ""}</span>
+                        <button onClick={() => setAll64Industry(null)} className={`px-3 py-1 rounded-full text-xs font-bold border transition ${all64Industry ? "bg-[#1e3a8a] text-white border-[#1e3a8a]" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"}`} title="클릭 시 전체 종목 표시">전체 보기</button>
                       </div>
-                      <div className="mt-3 grid grid-cols-4 gap-2">
+                      <div className="mt-3 grid grid-cols-3 sm:grid-cols-5 gap-2">
+                        <button onClick={() => setAll64Industry(null)} className={`rounded-xl border p-2 text-center transition ${!all64Industry ? "bg-[#1e3a8a] border-[#1e3a8a] text-white" : "bg-slate-50 border-slate-100 hover:bg-white"}`}>
+                          <div className="text-xs font-bold">전체</div>
+                          <div className={`text-xs font-mono ${!all64Industry ? "text-white/70" : "text-slate-500"}`}>{weeklyPicks.length}종</div>
+                        </button>
                         {industries.map(ind => {
-                          const cnt = all64Filtered.filter(p => p.industryId === ind.id).length;
-                          return <div key={ind.id} className="rounded-xl bg-slate-50 border border-slate-100 p-2 text-center"><div className="text-xs font-bold" style={{ color: ind.color }}>{ind.short}</div><div className="text-xs font-mono text-slate-500">{cnt}종</div></div>;
+                          const cnt = weeklyPicks.filter(p => p.industryId === ind.id).length;
+                          const active = all64Industry === ind.id;
+                          return <button key={ind.id} onClick={() => setAll64Industry(active ? null : ind.id)} className={`rounded-xl border p-2 text-center transition ${active ? "bg-[#1e3a8a] border-[#1e3a8a] text-white" : "bg-slate-50 border-slate-100 hover:bg-white"}`}>
+                            <div className="text-xs font-bold" style={{ color: active ? "white" : ind.color }}>{ind.short}</div>
+                            <div className={`text-xs font-mono ${active ? "text-white/70" : "text-slate-500"}`}>{cnt}종</div>
+                          </button>;
                         })}
                       </div>
                     </div>
