@@ -120,29 +120,69 @@ const { useState, useMemo, useEffect } = React;
                 <button onClick={onClose} className="w-9 h-9 rounded-full bg-[#1e3a8a] text-white hover:bg-[#23408e] btn-modern">✕</button>
               </div>
               <div className="mt-6 space-y-5 text-sm">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="p-3 rounded-xl bg-[#1e3a8a] text-white"><div className="text-xs font-bold">1. 왼쪽 INDUSTRIES</div><div className="text-xs mt-1 text-slate-300">8개 업종 선택 → 중앙 필터 • R²는 재학습 스냅샷 기준</div></div>
-                  <div className="p-3 rounded-xl bg-white border"><div className="text-xs font-bold">2. 중앙 5 Tabs</div><div className="text-xs mt-1 text-slate-600">추천(8) / 전체64 / 성과 / 마켓 / 시스템 • Factor Beta 바</div></div>
-                  <div className="p-3 rounded-xl bg-white border"><div className="text-xs font-bold">3. 오른쪽 FACTOR</div><div className="text-xs mt-1 text-slate-600">Z-Score 클릭 → 중앙 필터링 • 구리, 상해, S&P500 등 10개</div></div>
-                </div>
-                <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs leading-relaxed">
-                  <div className="font-bold text-blue-900">💡 트레이더 사용법</div>
-                  <div className="mt-1 text-slate-700">• 왼쪽 산업 클릭: 해당 산업 8종 추천 • 오른쪽 팩터 클릭: 해당 팩터에 민감한 종목만 필터 (예: 구리 클릭 → 화학·철강 위주) • DART ON/OFF: 부실주 제거 필터 • 07:30 체크리스트 4개 모두 ✓여야 신뢰도 높음</div>
-                </div>
-                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs leading-relaxed">
-                  <div className="font-bold text-emerald-900">📖 읽는 법 • 지표 해석</div>
-                  <div className="mt-2 space-y-1.5 text-slate-700">
-                    <div><b>Z-Score</b>: 팩터가 최근 120일 평균 대비 표준편차 몇 개 위치인지. +1.0 이상 강한 우호, -1.0 이하 강한 비우호, ±3 클립. VIX는 부호 반전(높을수록 위험 → 음수로 표시).</div>
-                    <div><b>β (베타)</b>: 팩터 z가 1 움직일 때 산업 수익률에 미치는 민감도. 부호 = 방향(양수 우호/음수 비우호), 크기 = 민감도.</div>
-                    <div><b>기여도</b>: β × Z. 산업 예측 수익률을 만드는 각 팩터의 기여분. 합계 = 예측 산업 수익률.</div>
-                    <div><b>Regime</b>: VIX/OVX/DXY/WTI 등 8개 지표 기반 시장 상태. 평시/주의/전시/위기. 전시 이상이면 리스크 관리 우선 해석.</div>
-                    <div><b>Score</b>: 6.5 + 예측수익률×1.2 + 모멘텀×0.3 + 보정항. 통계적 상대 점수(1~10)이며 <b>매수 추천이 아닙니다.</b> "Score 상위"는 모델 상위권이라는 뜻입니다.</div>
-                    <div><b>예상 수익률</b>: 모델 기반 추정치로 실제 수익을 보장하지 않습니다. 성과 탭의 실측 vs KOSPI가 더 신뢰할 지표입니다.</div>
+                <div className="p-4 rounded-xl bg-[#1e3a8a] text-white">
+                  <div className="text-sm font-extrabold">⚡ 30초 요약</div>
+                  <div className="mt-2 text-xs text-slate-200 leading-relaxed">
+                    이 사이트는 매일 아침 KOSPI 64개 종목에 대해 <b>10개 시장 지표(외국인 수급, 환율, 금리, 유가 등)가 얼마나 강하거나 약한지</b> 계산해서 점수로 보여줍니다.
+                    <br/>• 데이터는 <b>매일 오전 7시 30분</b> 자동 갱신됩니다
+                    <br/>• <b>투자 추천이 아니라 통계 점수</b>입니다 — 최종 판단은 본인 몫입니다
                   </div>
                 </div>
+
+                <div>
+                  <div className="text-xs font-bold text-slate-500 tracking-widest">📺 화면 보는 순서 — 3단계</div>
+                  <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="p-3 rounded-xl bg-white border"><div className="text-xs font-bold">1️⃣ 왼쪽 • 업종 선택</div><div className="text-xs mt-1 text-slate-600">전기전자·자동차·화학·금융·바이오·철강·건설·유통 8개 중 하나를 클릭하면 가운데가 그 업종 8종목으로 바뀝니다</div></div>
+                    <div className="p-3 rounded-xl bg-white border"><div className="text-xs font-bold">2️⃣ 오른쪽 • 지표 선택</div><div className="text-xs mt-1 text-slate-600">10개 지표(Z 표시)를 클릭하면 그 지표에 민감한 종목만 걸러집니다. 예: 구리 클릭 → 화학·철강 위주</div></div>
+                    <div className="p-3 rounded-xl bg-white border"><div className="text-xs font-bold">3️⃣ 가운데 • 탭 확인</div><div className="text-xs mt-1 text-slate-600">추천(8) / 전체64 / 성과 / 마켓 — 위쪽 "오늘의 요약" 카드가 오늘의 핵심입니다</div></div>
+                  </div>
+                  <div className="mt-2 text-xs text-slate-400">💡 아무거나 클릭해보세요. 화면이 깨지거나 데이터가 사라지지 않습니다.</div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs leading-relaxed">
+                  <div className="font-bold text-emerald-900">📖 숫자 읽는 법 — 쉬운 말로</div>
+                  <div className="mt-2 space-y-1.5 text-slate-700">
+                    <div><b>Z (Z-Score)</b> = "이 지표가 요즘 평소보다 얼마나 특별한가". <b>+1.0 넘으면 강한 신호, -1.0 이하면 반대 신호</b>. 예: 외국인 수급 Z +1.5 → 요즘 외국인 매수가 유난히 강하다는 뜻</div>
+                    <div><b>β (베타)</b> = "이 업종이 그 지표에 얼마나 민감한가". +면 같은 방향, -면 반대 방향으로 움직임</div>
+                    <div><b>기여도</b> = β × Z. "이 지표가 이 업종 점수에 실제로 얼마나 기여했나"의 합계가 예측 수익률</div>
+                    <div><b>점수(Score)</b> = 1~10점 상대 점수. 높을수록 모델이 상대적으로 좋게 본 종목. <b>매수 추천이 아닙니다</b></div>
+                    <div><b>Regime</b> = "지금 시장이 평온한지 위험한지" 판정. 전시/위기면 점수보다 리스크부터 생각</div>
+                    <div><b>예상 수익률</b> = 모델 추정치일 뿐 실제 수익을 보장하지 않습니다. 성과 탭의 실측 데이터가 더 중요합니다</div>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs leading-relaxed">
+                  <div className="font-bold text-amber-900">⚠️ 잘못 해석하기 쉬운 것들</div>
+                  <div className="mt-2 space-y-1 text-slate-700">
+                    <div>• 점수가 높다고 무조건 사야 할 종목이 아닙니다 — "Score 상위"는 모델 상위권이라는 뜻입니다</div>
+                    <div>• Z가 높다고 항상 좋은 게 아닙니다 — VIX(공포지수)는 높을수록 나쁘므로 부호가 반전되어 표시됩니다</div>
+                    <div>• 외국인 수급은 선물이 아니라 <b>현물 매매</b>입니다</div>
+                    <div>• 과거 성과가 미래 수익을 보장하지 않습니다 — 성과 탭은 "지금까지 어땠나"의 기록입니다</div>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs leading-relaxed">
+                  <div className="font-bold text-blue-900">🧭 실전 활용 시나리오 — regime별 읽는 법</div>
+                  <div className="mt-2 space-y-1.5 text-slate-700">
+                    <div><b>평시</b>: Top 팩터 Z 방향으로 강세 섹터 확인 → 그 섹터의 Score 상위 종목을 <b>관심종목</b>으로만 활용</div>
+                    <div><b>주의/전시</b>: 점수보다 regime이 우선 — 포지션 축소·관망 관점으로 해석하고 신규 진입은 보류</div>
+                    <div><b>위기</b>: 모든 신호를 리스크 관리 관점으로만 사용 — 시장 전체가 위험한 상태입니다</div>
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-blue-200 text-slate-700">
+                    <b>아침 루틴 3단계</b>: ① 위쪽 요약 카드의 Regime 확인 → ② 가장 강한 팩터 신호 방향 확인 → ③ 강세 섹터의 Score 상위만 관심종목으로 추려보기
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-slate-50 border text-xs">
+                  <div className="font-bold">용어 사전 • 전문용어 정리</div>
+                  <div className="mt-2 text-slate-600 leading-relaxed">
+                    <b>Z-Score</b>: 최근 120일 평균 대비 표준편차 위치 (±3 클립). <b>β</b>: 팩터 z당 산업 수익 민감도. <b>기여도</b>: β×Z의 합. <b>R²</b>: 모델이 과거 데이터를 얼마나 설명하는지 (0~1, 높을수록 좋음). <b>IC</b>: 팩터 z와 실제 수익의 상관계수 — 성과 탭에서 확인. <b>DART</b>: 금융감독원 공시 기반 부실주 필터. <b>REAL_ONLY</b>: 모든 데이터가 실제 소스이며 추정값 없음.
+                  </div>
+                </div>
+
                 <div className="p-3 rounded-xl bg-slate-50 border text-xs">
                   <div className="font-bold">DATA PIPELINE</div>
-                  <div className="mt-1 font-mono text-slate-600">yfinance(4) + FRED(3) + KRX OPEN API(2) + 15007 CSV(1) → StandardScaler → RidgeCV(λ) → Dashboard • Firebase Live • 매일 07:30 KST</div>
+                  <div className="mt-1 font-mono text-slate-600">yfinance + FRED + KRX(pykrx) + DART → Z-score → Ridge 회귀 → Dashboard • Firebase Live • 평일 07:30 KST • v61.6-stable REAL_ONLY</div>
                 </div>
               </div>
             </div>
@@ -388,6 +428,20 @@ const { useState, useMemo, useEffect } = React;
             .sort((a, b) => (b.score || 0) - (a.score || 0))
             .slice(0, 3);
 
+          const foreignerZ = zScores["외국인 수급"] ?? zScores["외국인 선물"] ?? zScores["외국인"];
+          let interpretation;
+          if (["전시", "위기", "caution", "risk_off"].includes(currentRegime?.regime)) {
+            interpretation = { tone: "risk", text: "⚠️ 위험 국면 — 점수보다 리스크 관리 우선. 신규 진입은 보류하고 비중·손절 기준을 먼저 점검하세요." };
+          } else if (typeof foreignerZ === "number" && foreignerZ > 1.0) {
+            interpretation = { tone: "bull", text: `외국인 매수 우호 국면(수급 Z ${foreignerZ > 0 ? "+" : ""}${foreignerZ.toFixed(2)}) — 금융·수출 업종을 관심 있게 지켜보세요.` };
+          } else if (topFactorEntry && /VIX|공포/i.test(topFactorEntry[0]) && Math.abs(topFactorEntry[1]) > 1.0) {
+            interpretation = { tone: "warn", text: "변동성 확대 신호 — 단기 변동성에 주의하고 포지션 크기를 점검하세요." };
+          } else if (industryPreds[0]) {
+            interpretation = { tone: "info", text: `${industryPreds[0].short} 업종이 상대적으로 강한 흐름 — Score 상위 종목을 관심종목으로 추려보세요.` };
+          } else {
+            interpretation = { tone: "info", text: "데이터를 확인하고 강한 섹터·종목을 관심종목으로 추려보세요." };
+          }
+
           return {
             regime: currentRegime?.regime || null,
             regimeConf: currentRegime?.confidence,
@@ -395,6 +449,7 @@ const { useState, useMemo, useEffect } = React;
             topFactor: topFactorEntry ? { name: topFactorEntry[0], z: topFactorEntry[1] } : null,
             topIndustries: industryPreds.slice(0, 3),
             topPicks,
+            interpretation,
           };
         }, [zScores, weeklyPicks, currentRegime]);
 
@@ -528,6 +583,11 @@ const { useState, useMemo, useEffect } = React;
                           <div className="text-xs text-slate-500 mt-0.5">{todaySummary.topIndustries[0] ? `Top ${fmtPred(todaySummary.topIndustries[0].pred)}` : ""}</div>
                         </div>
                       </div>
+                      {todaySummary.interpretation && (
+                        <div className={`mt-3 rounded-xl border px-3 py-2.5 text-sm font-bold ${todaySummary.interpretation.tone === "risk" ? "bg-red-100 border-red-300 text-red-900" : todaySummary.interpretation.tone === "warn" ? "bg-amber-100 border-amber-300 text-amber-900" : todaySummary.interpretation.tone === "bull" ? "bg-emerald-100 border-emerald-300 text-emerald-900" : "bg-blue-100 border-blue-300 text-blue-900"}`}>
+                          {todaySummary.interpretation.text}
+                        </div>
+                      )}
                       {todaySummary.topPicks.length > 0 && (
                         <div className="mt-3 pt-3 border-t border-slate-200 flex flex-wrap items-center gap-2">
                           <span className="text-xs font-bold text-slate-500">Score 상위:</span>
