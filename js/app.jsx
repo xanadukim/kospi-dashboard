@@ -844,7 +844,6 @@ const { useState, useMemo, useEffect } = React;
                                       </div>
                                     ))}
                                   </div>
-                                  <button onClick={() => { setSelectedIndustry(item.id); setActiveTab("recommend"); }} className="mt-2 text-xs font-bold px-3 py-1.5 rounded-lg bg-[#1e3a8a] text-white hover:bg-[#23408e]">이 업종 추천 보기 →</button>
                                 </div>
                               )}
                             </div>
@@ -859,11 +858,6 @@ const { useState, useMemo, useEffect } = React;
                         <span className="text-xs font-mono bg-white/20 backdrop-blur px-2.5 py-1 rounded-full whitespace-nowrap ml-auto" title={`quality_status=${activeSnapshot?.quality_status || "—"} • fallback_used=${String(Boolean(activeSnapshot?.fallback_used))} • synthetic_data_used=${String(Boolean(activeSnapshot?.synthetic_data_used))}`}>{selectedDate} • {activeSnapshot?.data_status || "NO_DATA"}</span>
                       </div>
                       <div className="mt-1.5 text-xs text-white/85">Score = 6.5 + |Z|×1.2×β_adj + mom×0.3 • 타겟팩터 {Object.entries(currentIndustry.betas).sort((a,b) => Math.abs(b[1])-Math.abs(a[1]))[0]?.[0]} {selectedFactor ? `+ ${selectedFactor} 필터` : ""}</div>
-                      <div className="mt-3 grid grid-cols-3 gap-2">
-                        <div className="rounded-xl bg-white/15 backdrop-blur p-2.5"><div className="text-xs text-white/70">α·β 추정</div><div className="text-sm font-bold">{hasZScores ? `${predText} α·β` : "—"}</div></div>
-                        <div className="rounded-xl bg-white/15 backdrop-blur p-2.5"><div className="text-xs text-white/70">Top 기여도</div><div className="text-sm font-bold">{contributions[0] ? `${contributions[0].factor} ${fmtPred(contributions[0].contrib)}` : "—"}</div></div>
-                        <div className="rounded-xl bg-white/15 backdrop-blur p-2.5"><div className="text-xs text-white/70">R² / 필터</div><div className="text-sm font-bold">{industryR2(currentIndustry.id)} • DART {dartFilterStatus}</div></div>
-                      </div>
                     </div>
 
                     <div className="rounded-2xl bg-white border border-slate-200 p-3">
