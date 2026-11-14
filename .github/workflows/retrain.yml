@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       window_days:
-        description: 'Retrain window days (default 180)'
+        description: 'Retrain window days (default 250 = 1Y)'
         required: false
-        default: '180'
+        default: '250'
         type: string
       force:
         description: 'Force retrain even if recently retrained'
@@ -45,7 +45,7 @@ jobs:
           echo "=== Refresh foreigner_kospi200.csv via pykrx ==="
           python scripts/update_foreigner_csv.py
 
-      - name: Run retrain model - v61.6 REAL_ONLY 180D
+      - name: Run retrain model - v61.6 REAL_ONLY 1Y-zspace
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
@@ -53,11 +53,11 @@ jobs:
           KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
           PRICE_SOURCE: yfinance
         run: |
-          echo "=== Retrain v61.6-stable - REAL_ONLY - 180D ==="
-          echo "- Window: ${{ inputs.window_days || '180' }} days"
+          echo "=== Retrain v61.6-stable - REAL_ONLY - 1Y z-space ==="
+          echo "- Window: ${{ inputs.window_days || '250' }} days"
           echo "- Industries: 8 (elec, auto, chem, fin, bio, steel, const, retail)"
           echo "- Factors: 10 (SP500, US10Y, 외국인, SOX, 원달러, WTI, DXY, VIX, 구리, 상해종합)"
-          echo "- Method: Ridge alpha selection + StandardScaler + 70% new / 30% base blending"
+          echo "- Method: Ridge alpha by holdout R2 + factor z features + OOS gate + 70% new / 30% base blending"
           echo "- Proxy: 삼성전자 005930 등 8개 대표주 yfinance .KS REAL"
           echo "- Price Source: yfinance (KRX OPEN API optional; disabled until endpoint verified)"
           python scripts/retrain_model.py
@@ -87,7 +87,7 @@ jobs:
         if: always()
         run: |
           echo "v61.6-stable Retrain pipeline REAL_ONLY completed"
-          echo "- retrain_history/{today} - 180D Ridge REAL"
+          echo "- retrain_history/{today} - 1Y z-space Ridge REAL"
           echo "- beta_snapshots/{today} - 8 industries new betas REAL"
           echo "- beta_snapshots/latest - always latest - Frontend LIVE"
           echo "- retrain_logs/{today} - summary"

@@ -37,7 +37,8 @@ except ImportError:
 
 
 RETRAIN_VERSION = "v61.6-data-integrity"
-WINDOW_DAYS = 180
+WINDOW_DAYS = 250
+Z_WINDOW = 120
 MIN_FACTOR_SAMPLES = 120
 MIN_INDUSTRY_SAMPLES = 120
 ALPHA_CANDIDATES = [0.1, 0.5, 1.0, 2.0]
@@ -190,6 +191,47 @@ def closes_to_return_map(
     return returns
 
 
+def rolling_z_map(
+    dates: List[str],
+    values: List[float],
+    window: int = Z_WINDOW,
+    negate: bool = False,
+) -> Dict[str, float]:
+    """
+    각 날짜 시점의 trailing z-score 맵을 생성한다.
+
+    price_provider.calc_z_score와 동일한 정의를 날짜별로 적용한다:
+    - trailing window개 관측의 평균/표준편차 기준
+    - 관측 20개 미만이면 해당 날짜 제외
+    - [-3, 3] 클립, 소수점 2자리
+    - negate=True이면 부호 반전 (VIX 위험오프 해석과 동일)
+    """
+    z_map: Dict[str, float] = {}
+    arr = np.asarray(values, dtype=float)
+
+    for index in range(len(arr)):
+        if index + 1 < 20:
+            continue
+
+        w = min(window, index + 1)
+        recent = arr[index - w + 1:index + 1]
+        mean = float(np.mean(recent))
+        std = float(np.std(recent))
+
+        if std < 1e-6:
+            continue
+
+        z = (float(arr[index]) - mean) / std
+        z = round(max(-3.0, min(3.0, z)), 2)
+
+        if negate:
+            z = round(-z, 2)
+
+        z_map[str(dates[index])] = z
+
+    return z_map
+
+
 def _clean_pairs(
     dates: List[str],
     closes: List[float],
@@ -259,6 +301,11 @@ def fetch_factor_history(
             "dates": dates,
             "closes": closes,
             "returns": returns,
+            "z": rolling_z_map(
+                dates,
+                closes,
+                negate=(factor_name == "VIX"),
+            ),
         }
 
         print(
@@ -303,6 +350,7 @@ def fetch_factor_history(
         "dates": foreigner_dates,
         "closes": foreigner_values,
         "returns": foreigner_returns,
+        "z": rolling_z_map(foreigner_dates, foreigner_values),
     }
 
     print(
@@ -465,6 +513,10 @@ def train_industry_model(
     """
     산업별 대표 종목 수익률로 Ridge 모델을 학습한다.
 
+    피처 공간: daily_update와 동일한 팩터 레벨 z-score
+    (rolling 120일, VIX 부호 반전). BASE_BETAS와 β 단위가 일치하므로
+    OOS 게이트 비교가 유효하다.
+
     - 모든 시계열을 공통 거래일로 inner join해 날짜 정렬한다.
     - α는 시간순 holdout(최근 25%) validation R²로 선택한다.
     - retrained 모델의 OOS R²가 BASE_BETAS의 OOS R²보다 낮으면
@@ -473,7 +525,7 @@ def train_industry_model(
     factor_names = list(BASE_BETAS[industry_id].keys())
     industry_returns_map = industry_series[industry_id]["returns"]
 
-    factor_return_maps = {}
+    factor_z_maps = {}
 
     for factor_name in factor_names:
         canonical_name = FACTOR_CANONICAL[factor_name]
@@ -483,16 +535,16 @@ def train_industry_model(
                 f"{industry_id}: factor data missing for {factor_name}"
             )
 
-        factor_return_maps[factor_name] = (
-            factor_series[canonical_name]["returns"]
+        factor_z_maps[factor_name] = (
+            factor_series[canonical_name]["z"]
         )
 
-    # 날짜 inner join: 산업 수익률 + 해당 산업 팩터 전부에 존재하는 공통일
+    # 날짜 inner join: 산업 수익률 + 해당 산업 팩터 z 전부에 존재하는 공통일
     common_dates = sorted(
         set(industry_returns_map.keys())
         & set.intersection(
             *[
-                set(factor_return_maps[f].keys())
+                set(factor_z_maps[f].keys())
                 for f in factor_names
             ]
         )
@@ -508,7 +560,7 @@ def train_industry_model(
 
     x_raw = np.array(
         [
-            [factor_return_maps[f][d] for f in factor_names]
+            [factor_z_maps[f][d] for f in factor_names]
             for d in common_dates
         ],
         dtype=float,
@@ -640,8 +692,9 @@ def train_industry_model(
         "retrain_gate": retrain_gate,
         "validation": "last 25% chronological holdout",
         "method": (
-            "Ridge alpha by holdout R2 + date inner-join alignment + "
-            "OOS gate vs BASE_BETAS; REAL_ONLY inputs"
+            "Ridge alpha by holdout R2 + factor-level z features "
+            "(same space as INDUSTRIES_BETAS) + date inner-join "
+            "alignment + OOS gate vs BASE_BETAS; REAL_ONLY inputs"
         ),
         "factor_names": factor_names,
         "data_status": "REAL_ONLY",
@@ -727,9 +780,11 @@ def build_retrain_snapshot():
         "version": RETRAIN_VERSION,
         "window": WINDOW_DAYS,
         "method": (
-            "Ridge alpha by holdout R2 + date inner-join alignment + "
-            "OOS gate vs BASE_BETAS + 70% new / 30% base blending; "
-            "REAL_ONLY inputs; no synthetic fallback"
+            "Ridge alpha by holdout R2 + factor-level z features "
+            "(same space as INDUSTRIES_BETAS) + date inner-join "
+            "alignment + OOS gate vs BASE_BETAS + "
+            "70% new / 30% base blending; REAL_ONLY inputs; "
+            "no synthetic fallback"
         ),
         "industries": retrained,
         "avg_r2": round(average_r_squared, 3),
