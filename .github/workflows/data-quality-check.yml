@@ -35,3 +35,72 @@ jobs:
         if: always()
         run: |
           echo "QC completed - check data_quality_logs collection in Firebase"
+
+  notify:
+    needs: [quality]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pipeline alert notify
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const outcome = '${{ needs.quality.result }}';
+            const workflowName = '${{ github.workflow }}';
+            const runUrl = '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}';
+            const title = '[ALERT] ' + workflowName;
+
+            try {
+              await github.rest.issues.createLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'pipeline-alert',
+                color: 'd73a4a',
+              });
+            } catch (e) { /* label may already exist */ }
+
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'pipeline-alert',
+              state: 'open',
+              per_page: 100,
+            });
+            const existing = issues.data.find(i => i.title === title);
+
+            if (outcome === 'failure' || outcome === 'cancelled') {
+              const body = 'Workflow **' + workflowName + '** ended with **' + outcome + '**.
+
+Run: ' + runUrl + '
+
+Auto-created by pipeline notify. Closes on next success.';
+              if (existing) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: existing.number,
+                  body: 'Still ' + outcome + '. Latest run: ' + runUrl,
+                });
+              } else {
+                await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title,
+                  body,
+                  labels: ['pipeline-alert'],
+                });
+              }
+            } else if (outcome === 'success' && existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body: 'Recovered. Run: ' + runUrl,
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                state: 'closed',
+              });
+            }

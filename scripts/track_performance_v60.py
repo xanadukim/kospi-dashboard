@@ -182,6 +182,7 @@ batch = db.batch() if db else None
 batch_cnt = 0
 ok = 0
 fail = 0
+miss = 0
 all_returns = []
 all_excess = []
 hits = 0
@@ -281,6 +282,7 @@ for snap_data in target_snapshots:
                         batch = db.batch()
                         batch_cnt = 0
                 fail += 1
+                miss += 1
                 print(f"  [MISS] {ticker} {name} ({target_factor}): {missing_reason}")
                 continue
 
@@ -373,6 +375,10 @@ if all_returns:
         'excessWinRatePct': round(excess_win * 100, 2),
         'ok': ok,
         'fail': fail,
+        'missCount': miss,
+        'missRatePct': round(
+            (miss / (ok + fail)) * 100, 2
+        ) if (ok + fail) > 0 else 0.0,
         'source': 'yfinance-REAL-v60-ChinaProxy-64Picks',
         'version': 'v60-performance-snapshot',
         'chinaProxy': '구리+상해종합 기반 64 Picks 성과',
@@ -401,7 +407,7 @@ Avg Excess vs KOSPI: {avg_excess*100:+.2f}%
 Hit Rate (Score>=7): {hit_rate*100:.1f}% ({hits}/{total_for_hit})
 Win Rate: {win_rate*100:.1f}%
 Excess Win Rate: {excess_win*100:.1f}%
-Success: {ok} Fail: {fail}
+Success: {ok} Fail: {fail} Miss: {miss} ({summary.get('missRatePct', 0)}%)
 Source: yfinance REAL v60 China Proxy 64 Picks
 """)
 else:

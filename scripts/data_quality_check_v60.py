@@ -345,6 +345,80 @@ def check_latest_firestore_snapshot() -> list:
         ]
 
 
+def check_staleness(foreigner_result: dict) -> list:
+    """
+    데이터 신선도 검사 (WARN 수준).
+
+    - 외국인 수급 latest_date가 5일 이상 지남
+    - 최신 factor_snapshots 날짜가 4일 이상 지남 (주말/공휴일 고려)
+    """
+    checks = []
+    today = datetime.now(KST).date()
+
+    latest_date_str = foreigner_result.get("latest_date")
+    if latest_date_str:
+        try:
+            latest_d = datetime.strptime(
+                str(latest_date_str)[:10], "%Y-%m-%d"
+            ).date()
+            age = (today - latest_d).days
+
+            if age > 5:
+                checks.append(
+                    {
+                        "name": "foreigner_staleness",
+                        "status": "WARN",
+                        "reason": (
+                            f"foreigner latest_date {latest_date_str} "
+                            f"is {age} days old"
+                        ),
+                    }
+                )
+        except Exception:
+            pass
+
+    if db is not None:
+        try:
+            documents = list(
+                db.collection("factor_snapshots")
+                .order_by(
+                    "date",
+                    direction=firestore.Query.DESCENDING,
+                )
+                .limit(1)
+                .stream()
+            )
+
+            if documents:
+                snap_date = documents[0].to_dict().get("date")
+                snap_d = datetime.strptime(
+                    str(snap_date)[:10], "%Y-%m-%d"
+                ).date()
+                age = (today - snap_d).days
+
+                if age > 4:
+                    checks.append(
+                        {
+                            "name": "snapshot_staleness",
+                            "status": "WARN",
+                            "reason": (
+                                f"latest factor_snapshot {snap_date} "
+                                f"is {age} days old"
+                            ),
+                        }
+                    )
+        except Exception as exc:
+            checks.append(
+                {
+                    "name": "snapshot_staleness",
+                    "status": "WARN",
+                    "reason": f"staleness check failed: {exc}",
+                }
+            )
+
+    return checks
+
+
 def save_qc_log(
     results: list,
     firebase_checks: list,
@@ -431,6 +505,8 @@ def main():
         results.append(result)
 
     results.append(check_foreigner_factor())
+
+    results.extend(check_staleness(results[-1]))
 
     fail_count = sum(
         1
