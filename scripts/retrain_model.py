@@ -28,6 +28,11 @@ except ImportError:
     )
 
 try:
+    from industry_betas import INDUSTRIES_BETAS as BASE_BETAS
+except ImportError:
+    from scripts.industry_betas import INDUSTRIES_BETAS as BASE_BETAS
+
+try:
     import firebase_admin
     from firebase_admin import credentials, firestore
 except ImportError:
@@ -56,72 +61,9 @@ INDUSTRY_PROXY = {
 }
 
 
-BASE_BETAS = {
-    "elec": {
-        "S&P500": 0.42,
-        "외국인 선물": 0.28,
-        "SOX / 필라": 0.35,
-        "US 10Y": -0.18,
-        "구리": 0.15,
-        "상해종합": 0.10,
-        "DXY": -0.08,
-        "VIX": -0.06,
-    },
-    "auto": {
-        "원달러": 0.25,
-        "WTI": -0.15,
-        "S&P500": 0.20,
-        "구리": 0.12,
-        "상해종합": 0.14,
-        "DXY": 0.10,
-    },
-    "chem": {
-        "구리": 0.32,
-        "상해종합": 0.22,
-        "WTI": -0.18,
-        "원달러": -0.10,
-        "S&P500": 0.12,
-    },
-    "fin": {
-        "US 10Y": -0.30,
-        "DXY": 0.18,
-        "외국인 선물": 0.15,
-        "VIX": -0.15,
-        "S&P500": 0.10,
-    },
-    "bio": {
-        "US 10Y": -0.22,
-        "S&P500": 0.18,
-        "VIX": -0.18,
-        "DXY": -0.06,
-    },
-    "steel": {
-        "구리": 0.35,
-        "상해종합": 0.28,
-        "원달러": 0.15,
-        "WTI": 0.14,
-        "S&P500": 0.08,
-        "DXY": 0.10,
-    },
-    "const": {
-        "구리": 0.22,
-        "상해종합": 0.18,
-        "원달러": 0.15,
-        "WTI": 0.08,
-        "DXY": 0.08,
-    },
-    "retail": {
-        "S&P500": 0.22,
-        "외국인 선물": 0.18,
-        "상해종합": 0.12,
-        "구리": 0.08,
-        "VIX": -0.10,
-    },
-}
-
-
 FACTOR_CANONICAL = {
     "S&P500": "SP500",
+    "외국인 수급": "외국인",
     "외국인 선물": "외국인",
     "SOX / 필라": "SOX",
     "US 10Y": "US10Y",

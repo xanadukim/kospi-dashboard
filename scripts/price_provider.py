@@ -4,7 +4,7 @@ price_provider.py v61 - 10 Factors China Proxy 100% REAL + DART + KRX OPEN API D
 - v61: KRX OPEN API 직접 호출 지원 - 승인 후 PRICE_SOURCE=krx 로 100% REAL
   - KOSPI 시리즈 일별시세정보 (kospi_dd_trd): OutBlock_1.CLSPRC_IDX 파싱
   - 유가증권 일별매매정보 / 코스닥 일별매매정보 (추후 승인 시 추가)
-  - 외국인 선물은 투자자별 매매정보 승인 후 100% REAL (현재는 fallback)
+  - 외국인 수급은 KOSPI 시장 투자자별 매매정보(pykrx) REAL 시계열
 - TEST 결과 기반 파싱 완료: BAS_DD, IDX_NM, CLSPRC_IDX 등
 
 KRX OPEN API Spec (from TEST):

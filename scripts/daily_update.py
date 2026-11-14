@@ -54,6 +54,12 @@ except ImportError:
 
 
 try:
+    from industry_betas import INDUSTRIES_BETAS
+except ImportError:
+    from scripts.industry_betas import INDUSTRIES_BETAS
+
+
+try:
     from fundamental_filter import apply_fundamental_filter
 
     FILTER_ENABLED = True
@@ -567,6 +573,7 @@ def fetch_10_factors_china_proxy() -> Tuple[Dict, Dict]:
     z_scores["S&P500"] = z_scores["SP500"]
     z_scores["US 10Y"] = z_scores["US10Y"]
     z_scores["SOX / 필라"] = z_scores["SOX"]
+    z_scores["외국인 수급"] = z_scores["외국인"]
     z_scores["외국인 선물"] = z_scores["외국인"]
     z_scores["외국인_선물"] = z_scores["외국인"]
 
@@ -578,173 +585,109 @@ def fetch_10_factors_china_proxy() -> Tuple[Dict, Dict]:
     return z_scores, details
 
 
-INDUSTRIES_BETAS = {
-    "elec": {
-        "S&P500": 0.42,
-        "외국인 선물": 0.28,
-        "SOX / 필라": 0.35,
-        "US 10Y": -0.18,
-        "구리": 0.15,
-        "상해종합": 0.10,
-        "DXY": -0.08,
-        "VIX": -0.06,
-    },
-    "auto": {
-        "원달러": 0.25,
-        "WTI": -0.15,
-        "S&P500": 0.20,
-        "구리": 0.12,
-        "상해종합": 0.14,
-        "DXY": 0.10,
-    },
-    "chem": {
-        "구리": 0.32,
-        "상해종합": 0.22,
-        "WTI": -0.18,
-        "원달러": -0.10,
-        "S&P500": 0.12,
-    },
-    "fin": {
-        "US 10Y": -0.30,
-        "DXY": 0.18,
-        "외국인 선물": 0.15,
-        "VIX": -0.15,
-        "S&P500": 0.10,
-    },
-    "bio": {
-        "US 10Y": -0.22,
-        "S&P500": 0.18,
-        "VIX": -0.18,
-        "DXY": -0.06,
-    },
-    "steel": {
-        "구리": 0.35,
-        "상해종합": 0.28,
-        "원달러": 0.15,
-        "WTI": 0.14,
-        "S&P500": 0.08,
-        "DXY": 0.10,
-    },
-    "const": {
-        "구리": 0.22,
-        "상해종합": 0.18,
-        "원달러": 0.15,
-        "WTI": 0.08,
-        "DXY": 0.08,
-    },
-    "retail": {
-        "S&P500": 0.22,
-        "외국인 선물": 0.18,
-        "상해종합": 0.12,
-        "구리": 0.08,
-        "VIX": -0.10,
-    },
-}
-
-
 INDUSTRIES_UNIVERSE = [
     {
         "id": "elec",
         "stocks": [
-            ["005930", "삼성전자", 1.00, 0.8],
-            ["000660", "SK하이닉스", 1.25, 1.2],
-            ["066570", "LG전자", 0.85, 0.3],
-            ["042700", "한미반도체", 1.30, 2.1],
-            ["011070", "LG이노텍", 0.90, 1.5],
-            ["009150", "삼성전기", 0.90, 0.8],
-            ["000990", "DB하이텍", 0.80, 0.9],
-            ["267260", "HD현대일렉트릭", 1.10, 1.2],
+            ["005930", "삼성전자"],
+            ["000660", "SK하이닉스"],
+            ["066570", "LG전자"],
+            ["042700", "한미반도체"],
+            ["011070", "LG이노텍"],
+            ["009150", "삼성전기"],
+            ["000990", "DB하이텍"],
+            ["267260", "HD현대일렉트릭"],
         ],
     },
     {
         "id": "auto",
         "stocks": [
-            ["005380", "현대차", 1.00, 0.7],
-            ["000270", "기아", 1.15, 1.1],
-            ["064350", "현대로템", 1.05, 1.8],
-            ["003490", "대한항공", 0.95, 1.3],
-            ["012330", "현대모비스", 0.90, 0.2],
-            ["086280", "현대글로비스", 0.85, 0.4],
-            ["180640", "한진칼", 0.80, 0.8],
-            ["161390", "한국타이어", 0.75, -0.2],
+            ["005380", "현대차"],
+            ["000270", "기아"],
+            ["064350", "현대로템"],
+            ["003490", "대한항공"],
+            ["012330", "현대모비스"],
+            ["086280", "현대글로비스"],
+            ["180640", "한진칼"],
+            ["161390", "한국타이어"],
         ],
     },
     {
         "id": "chem",
         "stocks": [
-            ["006400", "삼성SDI", 1.20, 0.5],
-            ["247540", "에코프로비엠", 1.30, 1.5],
-            ["373220", "LG에너지솔루션", 1.20, 0.5],
-            ["003670", "포스코퓨처엠", 1.15, 0.9],
-            ["051910", "LG화학", 1.00, -0.3],
-            ["011780", "금호석유", 0.85, 0.1],
-            ["010130", "고려아연", 0.75, 0.4],
-            ["298040", "효성중공업", 0.85, 0.3],
+            ["006400", "삼성SDI"],
+            ["247540", "에코프로비엠"],
+            ["373220", "LG에너지솔루션"],
+            ["003670", "포스코퓨처엠"],
+            ["051910", "LG화학"],
+            ["011780", "금호석유"],
+            ["010130", "고려아연"],
+            ["298040", "효성중공업"],
         ],
     },
     {
         "id": "fin",
         "stocks": [
-            ["071050", "한국금융지주", 1.15, 1.2],
-            ["105560", "KB금융", 1.00, 0.6],
-            ["055550", "신한지주", 0.95, 0.4],
-            ["000810", "삼성화재", 0.85, 0.7],
-            ["086790", "하나금융지주", 0.90, 0.3],
-            ["175330", "JB금융", 0.75, 0.5],
-            ["316140", "우리금융지주", 0.85, 0.1],
-            ["030200", "KT", 0.60, -0.3],
+            ["071050", "한국금융지주"],
+            ["105560", "KB금융"],
+            ["055550", "신한지주"],
+            ["000810", "삼성화재"],
+            ["086790", "하나금융지주"],
+            ["175330", "JB금융"],
+            ["316140", "우리금융지주"],
+            ["030200", "KT"],
         ],
     },
     {
         "id": "bio",
         "stocks": [
-            ["195940", "HLB", 1.20, 2.5],
-            ["207940", "삼성바이오로직스", 1.00, 0.9],
-            ["068270", "셀트리온", 1.10, 0.2],
-            ["000100", "유한양행", 0.80, 0.2],
-            ["145020", "휴젤", 0.90, 1.1],
-            ["326030", "SK바이오팜", 1.05, 0.7],
-            ["128940", "한미약품", 0.85, 0.5],
-            ["001060", "JW중외제약", 0.75, 0.1],
+            ["195940", "HLB"],
+            ["207940", "삼성바이오로직스"],
+            ["068270", "셀트리온"],
+            ["000100", "유한양행"],
+            ["145020", "휴젤"],
+            ["326030", "SK바이오팜"],
+            ["128940", "한미약품"],
+            ["001060", "JW중외제약"],
         ],
     },
     {
         "id": "steel",
         "stocks": [
-            ["005490", "POSCO홀딩스", 1.00, 0.4],
-            ["047050", "포스코인터", 0.95, 0.8],
-            ["010130", "고려아연", 0.90, 0.6],
-            ["009830", "한화솔루션", 0.85, 0.3],
-            ["004020", "현대제철", 0.85, -0.3],
-            ["103140", "풍산", 0.75, 0.2],
-            ["001430", "세아베스틸", 0.70, 0.1],
-            ["010950", "S-Oil", 0.80, -0.6],
+            ["005490", "POSCO홀딩스"],
+            ["047050", "포스코인터"],
+            ["010130", "고려아연"],
+            ["009830", "한화솔루션"],
+            ["004020", "현대제철"],
+            ["103140", "풍산"],
+            ["001430", "세아베스틸"],
+            ["010950", "S-Oil"],
         ],
     },
     {
         "id": "const",
         "stocks": [
-            ["012450", "한화에어로", 1.20, 2.3],
-            ["329180", "HD현대중공업", 1.15, 1.9],
-            ["064350", "현대로템", 1.05, 1.8],
-            ["009540", "HD한국조선해양", 1.00, 1.5],
-            ["010140", "삼성중공업", 0.90, 0.8],
-            ["034020", "두산에너빌리티", 0.95, 0.4],
-            ["028050", "삼성엔지니어링", 0.85, 0.2],
-            ["047040", "대우건설", 0.70, -0.3],
+            ["012450", "한화에어로"],
+            ["329180", "HD현대중공업"],
+            ["064350", "현대로템"],
+            ["009540", "HD한국조선해양"],
+            ["010140", "삼성중공업"],
+            ["034020", "두산에너빌리티"],
+            ["028050", "삼성엔지니어링"],
+            ["047040", "대우건설"],
         ],
     },
     {
         "id": "retail",
         "stocks": [
-            ["352820", "하이브", 0.90, 0.6],
-            ["051900", "LG생활건강", 0.90, 0.0],
-            ["035420", "NAVER", 1.05, -0.2],
-            ["035720", "카카오", 1.10, -0.4],
-            ["030000", "제일기획", 0.65, 0.3],
-            ["017670", "SK텔레콤", 0.65, 0.2],
-            ["004170", "신세계", 0.80, -0.3],
-            ["139480", "이마트", 0.75, -0.8],
+            ["352820", "하이브"],
+            ["051900", "LG생활건강"],
+            ["035420", "NAVER"],
+            ["035720", "카카오"],
+            ["030000", "제일기획"],
+            ["017670", "SK텔레콤"],
+            ["004170", "신세계"],
+            ["139480", "이마트"],
         ],
     },
 ]
@@ -753,6 +696,7 @@ INDUSTRIES_UNIVERSE = [
 FACTOR_ALIAS = {
     "S&P500": "SP500",
     "SP500": "SP500",
+    "외국인 수급": "외국인",
     "외국인 선물": "외국인",
     "외국인": "외국인",
     "외국인_선물": "외국인",
@@ -770,14 +714,153 @@ FACTOR_ALIAS = {
 }
 
 
+MOMENTUM_LOOKBACK = 20
+BETA_LOOKBACK = 120
+
+
+def fetch_stock_metrics() -> Dict[str, Dict]:
+    """
+    64개 추천 후보 종목의 실제 모멘텀과 KOSPI 베타를 계산한다.
+
+    - momentum: 20일 수익률의 우주 내 횡단면 z-score
+      (기존 하드코딩 상수 대체, 상대 강도 비교용)
+    - beta: KOSPI(^KS11) 대비 120일 베타 (cov/var)
+
+    yfinance 일괄 다운로드 1회로 수집한다.
+    개별 종목 실패 시 해당 지표만 0.0으로 두고 로그를 남긴다.
+    """
+    import numpy as np
+    import yfinance as yf
+
+    tickers = [
+        stock[0]
+        for industry in INDUSTRIES_UNIVERSE
+        for stock in industry["stocks"]
+    ]
+
+    yf_tickers = [f"{t}.KS" for t in tickers] + ["^KS11"]
+
+    data = yf.download(
+        yf_tickers,
+        period="6mo",
+        group_by="ticker",
+        auto_adjust=True,
+        progress=False,
+        threads=True,
+    )
+
+    if data is None or data.empty:
+        raise RuntimeError(
+            "stock metrics download returned empty data"
+        )
+
+    def _closes_for(yf_ticker: str):
+        try:
+            if getattr(data.columns, "nlevels", 1) > 1:
+                series = data[(yf_ticker, "Close")].dropna()
+            else:
+                series = data["Close"].dropna()
+            return series
+        except Exception:
+            return None
+
+    kospi_close = _closes_for("^KS11")
+
+    if kospi_close is None or len(kospi_close) < 30:
+        raise RuntimeError(
+            "KOSPI benchmark history unavailable for stock beta"
+        )
+
+    kospi_ret = kospi_close.pct_change().dropna()
+    kospi_var = float(np.var(kospi_ret.values[-BETA_LOOKBACK:]))
+
+    metrics: Dict[str, Dict] = {}
+    ret20_values = []
+    ret20_map: Dict[str, float] = {}
+
+    for ticker in tickers:
+        close = _closes_for(f"{ticker}.KS")
+
+        entry = {"momentum": 0.0, "beta": 0.0}
+
+        if close is not None and len(close) >= MOMENTUM_LOOKBACK + 1:
+            ret20 = float(
+                (close.iloc[-1] / close.iloc[-(MOMENTUM_LOOKBACK + 1)] - 1.0)
+                * 100.0
+            )
+            ret20_map[ticker] = ret20
+            ret20_values.append(ret20)
+
+            if kospi_var > 1e-12:
+                stock_ret = close.pct_change().dropna()
+                aligned = pd_concat_align(stock_ret, kospi_ret)
+                if aligned is not None and len(aligned) >= 60:
+                    stock_v, kospi_v = aligned
+                    cov = float(np.cov(stock_v[-BETA_LOOKBACK:], kospi_v[-BETA_LOOKBACK:])[0, 1])
+                    entry["beta"] = round(cov / kospi_var, 3)
+
+        metrics[ticker] = entry
+
+    if len(ret20_values) >= 10:
+        arr = np.asarray(ret20_values, dtype=float)
+        mean = float(np.mean(arr))
+        std = float(np.std(arr))
+
+        if std > 1e-9:
+            for ticker, ret20 in ret20_map.items():
+                z = (ret20 - mean) / std
+                metrics[ticker]["momentum"] = round(
+                    float(max(-3.0, min(3.0, z))),
+                    3,
+                )
+
+    misses = [
+        t for t in tickers if t not in ret20_map
+    ]
+    if misses:
+        print(
+            f"[Daily] stock metrics missing for {len(misses)} "
+            f"tickers: {misses}"
+        )
+
+    print(
+        f"[Daily] stock metrics computed for "
+        f"{len(ret20_map)}/{len(tickers)} tickers "
+        f"(momentum=z20d, beta=vs KOSPI {BETA_LOOKBACK}d)"
+    )
+
+    return metrics
+
+
+def pd_concat_align(stock_ret, kospi_ret):
+    """종목과 KOSPI 수익률을 날짜 기준으로 정렬한다."""
+    try:
+        joined = stock_ret.to_frame("s").join(
+            kospi_ret.to_frame("k"),
+            how="inner",
+        ).dropna()
+
+        if len(joined) < 30:
+            return None
+
+        return (
+            joined["s"].values.astype(float),
+            joined["k"].values.astype(float),
+        )
+    except Exception:
+        return None
+
+
 def generate_64_picks(
     z_scores: Dict,
     details: Dict,
+    stock_metrics: Dict[str, Dict],
 ) -> List[Dict]:
     """
     8개 산업군의 각 8개 종목, 총 64개 후보를 생성한다.
 
-    기존 v61.6 점수 구조를 유지한다.
+    stock_metrics는 fetch_stock_metrics()가 계산한 실제
+    momentum(20일 수익률 횡단면 z)과 beta(KOSPI 대비)를 사용한다.
     """
     today = now_kst().strftime("%Y-%m-%d")
     all_picks: List[Dict] = []
@@ -821,7 +904,10 @@ def generate_64_picks(
         )
 
         for stock in industry["stocks"]:
-            ticker, name, stock_beta, momentum = stock
+            ticker, name = stock
+            metrics = stock_metrics.get(ticker, {})
+            stock_beta = metrics.get("beta", 0.0)
+            momentum = metrics.get("momentum", 0.0)
 
             score = (
                 6.5
@@ -1203,9 +1289,12 @@ def main():
 
     z_scores, details = fetch_10_factors_china_proxy()
 
+    stock_metrics = fetch_stock_metrics()
+
     weekly_picks = generate_64_picks(
         z_scores,
         details,
+        stock_metrics,
     )
 
     weekly_picks = apply_dart_filter(
