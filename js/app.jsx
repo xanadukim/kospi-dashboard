@@ -614,6 +614,14 @@ const { useState, useMemo, useEffect } = React;
         const fmtNum = (value, digits = 2) => (typeof value === "number" && Number.isFinite(value) ? value.toFixed(digits) : "—");
         const industryR2 = (industryId) => retrainData?.r2?.[industryId] ?? "—";
 
+        const rankedIndustries = useMemo(() => {
+          const withPred = industries.map((ind) => ({
+            ...ind,
+            pred: Object.entries(ind.betas).reduce((s, [f, b]) => s + (zScores[f] ?? 0) * b, 0),
+          }));
+          return hasZScores ? [...withPred].sort((a, b) => b.pred - a.pred) : withPred;
+        }, [zScores, hasZScores]);
+
         if (!dataReady) {
           return (
             <div className="min-h-screen bg-white">
@@ -674,12 +682,12 @@ const { useState, useMemo, useEffect } = React;
                   <div className="flex items-center justify-between"><h3 className="text-xs font-bold tracking-widest text-[#0369a1]">INDUSTRIES • 8</h3><span className="w-2 h-2 rounded-full bg-[#0ea5e9] animate-pulse"></span></div>
                   <div className="mt-1 text-xs text-[#0284c7]">업종 선택 • 중앙 필터</div>
                   <div className="mt-4 space-y-2">
-                    {industries.map((ind) => {
+                    {rankedIndustries.map((ind, idx) => {
                       const isSelected = ind.id === selectedIndustry;
-                      const pred = contributions.filter(c => Object.keys(ind.betas).includes(c.factor)).reduce((s,c) => s + c.contrib, 0);
+                      const pred = ind.pred;
                       return (
                         <button key={ind.id} onClick={() => setSelectedIndustry(ind.id)} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all text-left border ${isSelected ? "bg-white text-[#0c4a6e] border-[#7dd3fc]" : "bg-white/70 hover:bg-white text-[#475569] border-white/50 hover:border-[#7dd3fc]"}`}>
-                          <div className="flex items-center gap-2.5"><div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: `${ind.color}15`, color: ind.color }}>{ind.icon}</div><div><div className="text-xs font-bold">{ind.short}</div><div className="text-xs text-slate-500">R² {industryR2(ind.id)}</div></div></div>
+                          <div className="flex items-center gap-2.5"><span className="text-xs font-mono text-slate-400 w-3">{idx + 1}</span><div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: `${ind.color}15`, color: ind.color }}>{ind.icon}</div><div><div className="text-xs font-bold">{ind.short}</div><div className="text-xs text-slate-500">R² {industryR2(ind.id)}</div></div></div>
                           <div className="text-right"><div className={`text-xs font-mono font-bold ${hasZScores ? (pred>=0 ? "text-emerald-600" : "text-red-600") : "text-slate-400"}`}>{fmtPred(pred)}</div><div className={`w-2 h-2 rounded-full ml-auto mt-1 ${isSelected ? "bg-[#0ea5e9]" : "bg-slate-300"}`}></div></div>
                         </button>
                       );
