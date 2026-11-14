@@ -855,13 +855,18 @@ const { useState, useMemo, useEffect } = React;
 
                 {activeTab === "all64" && (
                   <div className="mt-4 space-y-4">
-                    <div className="rounded-2xl p-5 text-white" style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #1e293b 50%, #334155 100%)" }}>
-                      <div className="flex items-center justify-between"><h3 className="text-base font-extrabold">📋 전체 64종 • 8×8 Industry 전체 보기</h3><span className="px-3 py-1 rounded-full bg-white/15 text-xs font-mono">{all64Filtered.length}종 {selectedFactor ? `• ${selectedFactor} 필터` : ""}</span></div>
-                      <div className="mt-2 text-xs text-slate-300">왼쪽 산업 선택 + 오른쪽 팩터 선택으로 필터링 • Score 높은 순 • 트레이더 스캔용</div>
+                    <div className="rounded-2xl bg-white border border-slate-200 p-4">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div>
+                          <h3 className="text-sm font-extrabold">📋 전체 종목 • 8×8 Industry 전체 보기</h3>
+                          <div className="mt-1 text-xs text-slate-500">왼쪽 산업 + 오른쪽 팩터로 필터링 • Score 높은 순 • 클릭 시 네이버페이증권 새 탭</div>
+                        </div>
+                        <span className="px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs font-mono font-bold text-slate-600">{all64Filtered.length}종{selectedFactor ? ` • ${selectedFactor} 필터` : ""}</span>
+                      </div>
                       <div className="mt-3 grid grid-cols-4 gap-2">
                         {industries.map(ind => {
                           const cnt = all64Filtered.filter(p => p.industryId === ind.id).length;
-                          return <div key={ind.id} className="rounded-xl bg-white/10 border border-white/10 p-2 text-center"><div className="text-xs font-bold" style={{ color: ind.color }}>{ind.short}</div><div className="text-xs font-mono text-white">{cnt}종</div></div>;
+                          return <div key={ind.id} className="rounded-xl bg-slate-50 border border-slate-100 p-2 text-center"><div className="text-xs font-bold" style={{ color: ind.color }}>{ind.short}</div><div className="text-xs font-mono text-slate-500">{cnt}종</div></div>;
                         })}
                       </div>
                     </div>
@@ -872,10 +877,20 @@ const { useState, useMemo, useEffect } = React;
                       {all64Filtered.slice(0,32).map((p) => {
                         const ind = industries.find(i => i.id === p.industryId) || industries[0];
                         return (
-                          <div key={`${p.industryId}-${p.ticker}-all`} className="rounded-xl border bg-white p-3 hover:shadow-md transition-shadow cursor-pointer" title="클릭하면 네이버페이증권 해당 종목 페이지가 새 창으로 열립니다" onClick={() => openNaverStock(p.ticker)}>
-                            <div className="flex items-center justify-between"><span className="text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: ind.color }}>{ind.short}</span><span className="text-xs font-mono">{p.ticker}</span><span className="text-xs font-bold">Score {p.score}</span></div>
-                            <div className="mt-2 text-sm font-bold">{p.name}</div>
-                            <div className="text-xs text-slate-500 font-mono">{p.reason}</div>
+                          <div key={`${p.industryId}-${p.ticker}-all`} className="rounded-xl border bg-white p-3 hover:shadow-md transition-shadow cursor-pointer" title="클릭하면 네이버페이증권 해당 종목 페이지가 새 탭으로 열립니다" onClick={() => openNaverStock(p.ticker)}>
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold shrink-0" style={{ background: `${ind.color}15`, color: ind.color }}>{ind?.icon}</span>
+                              <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: `${ind.color}10`, color: ind.color }}>{ind.short}</span>
+                              <span className="text-xs font-mono text-slate-400 ml-auto">{p.ticker}</span>
+                            </div>
+                            <div className="mt-2 flex items-center justify-between">
+                              <span className="text-sm font-bold">{p.name}</span>
+                              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full text-white" style={{ background: `linear-gradient(135deg, ${ind.color} 0%, ${ind.color}cc 100%)` }}>Score {p.score}</span>
+                            </div>
+                            <div className="mt-1.5 flex items-center gap-2 text-xs">
+                              <span className="px-1.5 py-0.5 rounded-full font-bold" style={{ background: "#ecfdf5", color: "#065f46", border: "1px solid #a7f3d0" }}>예상 +{p.expectedReturn}%</span>
+                              <span className="text-slate-400 font-mono truncate">{p.targetFactor}</span>
+                            </div>
                           </div>
                         );
                       })}
@@ -979,9 +994,9 @@ const { useState, useMemo, useEffect } = React;
                     {!currentRegime ? (
                       <div className="rounded-2xl border bg-white p-6 text-center text-sm text-slate-400">레짐 데이터가 없습니다. regime snapshot 적재 후 표시됩니다.</div>
                     ) : (
-                    <div className="rounded-2xl p-4 text-white" style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #1e293b 100%)" }}>
-                      <div className="flex items-center justify-between"><h3 className="text-sm font-extrabold">🌐 마켓 레짐 • Regime Dashboard</h3><span className={`px-3 py-1 rounded-full text-xs font-bold ${(currentRegime.regime==="normal" || currentRegime.regime==="평시") ? "bg-emerald-500" : (currentRegime.regime==="caution" || currentRegime.regime==="고변동") ? "bg-amber-500" : "bg-red-500"} text-white`}>{currentRegime.regime || "N/A"} • {regimeWindow}일 윈도우</span></div>
-                      <div className="mt-2 text-xs text-slate-300">{currentRegime.date || selectedDate} 기준 • data_status {currentRegime.data_status || "UNKNOWN"}</div>
+                    <div className={`rounded-2xl border p-4 ${(() => { const r = currentRegime.regime; return (r==="normal" || r==="평시") ? "bg-emerald-50 border-emerald-200" : (r==="caution" || r==="고변동") ? "bg-amber-50 border-amber-200" : "bg-red-50 border-red-200"; })()}`}>
+                      <div className="flex items-center justify-between"><h3 className="text-sm font-extrabold text-slate-800">🌐 마켓 레짐 • Regime Dashboard</h3><span className={`px-3 py-1 rounded-full text-xs font-bold ${(currentRegime.regime==="normal" || currentRegime.regime==="평시") ? "bg-emerald-500" : (currentRegime.regime==="caution" || currentRegime.regime==="고변동") ? "bg-amber-500" : "bg-red-500"} text-white`}>{currentRegime.regime || "N/A"} • {regimeWindow}일 윈도우</span></div>
+                      <div className="mt-1 text-xs text-slate-500">{currentRegime.date || selectedDate} 기준 • data_status {currentRegime.data_status || "UNKNOWN"}</div>
                       <div className="mt-4 grid grid-cols-4 gap-2">
                         {[
                           { label: "VIX", value: fmtNum(regimeIndicators.VIX ?? currentRegime.vix), threshold: 22 },
@@ -989,10 +1004,10 @@ const { useState, useMemo, useEffect } = React;
                           { label: "DXY", value: fmtNum(regimeIndicators.DXY ?? currentRegime.dxy), threshold: 105 },
                           { label: "WTI vol", value: regimeIndicators.WTI_vol != null ? `${fmtNum(regimeIndicators.WTI_vol)}%` : "—", threshold: "4%" },
                         ].map((m) => (
-                          <div key={m.label} className="rounded-xl bg-white/10 border border-white/10 p-2.5 text-center"><div className="text-xs text-slate-400">{m.label}</div><div className="text-sm font-bold">{m.value}</div><div className="text-xs text-slate-400">임계 {m.threshold}</div></div>
+                          <div key={m.label} className="rounded-xl bg-white border border-slate-200 p-2.5 text-center"><div className="text-xs text-slate-400">{m.label}</div><div className="text-sm font-bold text-slate-700">{m.value}</div><div className="text-xs text-slate-400">임계 {m.threshold}</div></div>
                         ))}
                       </div>
-                      <div className="mt-3 text-xs text-slate-400">{regimeDescription}</div>
+                      <div className="mt-3 text-xs text-slate-500">{regimeDescription}</div>
                     </div>
                     )}
 
