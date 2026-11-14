@@ -185,6 +185,7 @@ fail = 0
 miss = 0
 all_returns = []
 all_excess = []
+all_kospi_returns = []
 hits = 0
 total_for_hit = 0
 
@@ -367,8 +368,6 @@ try:
         print(f"[KOSPI benchmark] loaded {len(kospi_close_map)} daily closes")
 except Exception as e:
     print(f"[KOSPI benchmark] fetch error: {e}")
-
-all_kospi_returns = []
 
 # ========== Summary Snapshot for Dashboard ==========
 if all_returns:
