@@ -36,6 +36,15 @@ jobs:
           python -c "import firebase_admin; print('firebase-admin OK')"
           python -c "import sklearn; print(f'sklearn {sklearn.__version__} OK')"
 
+      - name: Refresh foreigner supply CSV - pykrx KRX
+        continue-on-error: true
+        env:
+          KRX_ID: ${{ secrets.KRX_ID }}
+          KRX_PW: ${{ secrets.KRX_PW }}
+        run: |
+          echo "=== Refresh foreigner_kospi200.csv via pykrx ==="
+          python scripts/update_foreigner_csv.py
+
       - name: Run retrain model - v61.6 REAL_ONLY 180D
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
