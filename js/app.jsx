@@ -709,7 +709,7 @@ const { useState, useMemo, useEffect } = React;
                 </div>
 
                 {activeTab === "recommend" && (
-                  <div className="mt-4 space-y-4">
+                  <div className="space-y-4">
                     <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4">
                       <div className="flex items-center justify-between flex-wrap gap-2">
                         <h3 className="text-sm font-extrabold flex items-center gap-2">📌 오늘의 요약 <span className="text-xs font-normal text-slate-400">{selectedDate} 스냅샷 기준</span></h3>
@@ -826,7 +826,7 @@ const { useState, useMemo, useEffect } = React;
                 )}
 
                 {activeTab === "top" && (
-                  <div className="mt-4 space-y-4">
+                  <div className="space-y-4">
                     <div className="rounded-2xl bg-white border border-slate-200 p-4">
                       <h3 className="text-sm font-bold flex items-center gap-2">📊 오늘 Top 예측 (α·β) • 8개 업종 랭킹</h3>
                       <div className="mt-1 text-xs text-slate-500">예측수익률 기준 정렬 • Top1이 오늘 최강 업종 • 클릭하면 해당 업종 필터</div>
@@ -854,7 +854,7 @@ const { useState, useMemo, useEffect } = React;
                 )}
 
                 {activeTab === "all64" && (
-                  <div className="mt-4 space-y-4">
+                  <div className="space-y-4">
                     <div className="rounded-2xl bg-white border border-slate-200 p-4">
                       <div className="flex items-center justify-between flex-wrap gap-2">
                         <div>
@@ -901,7 +901,7 @@ const { useState, useMemo, useEffect } = React;
                 )}
 
                 {activeTab === "performance" && (
-                  <div className="mt-4 space-y-4">
+                  <div className="space-y-4">
                     <div className="rounded-2xl border bg-white overflow-hidden" style={{ borderColor: "#e2e8f0" }}>
                       <div className="p-4 border-b bg-gradient-to-r from-violet-50 to-purple-50">
                         <div className="flex items-center justify-between"><h3 className="text-sm font-extrabold">📈 최근 성과 • {currentIndustry.short}</h3><span className="text-xs font-mono px-2 py-1 rounded-full bg-violet-600 text-white">Hit {pastPicksAvg.hit}/{pastPicksAvg.total} • Avg {pastPicksAvg.avg}%</span></div>
@@ -990,7 +990,7 @@ const { useState, useMemo, useEffect } = React;
                 )}
 
                 {activeTab === "market" && (
-                  <div className="mt-4 space-y-4">
+                  <div className="space-y-4">
                     {!currentRegime ? (
                       <div className="rounded-2xl border bg-white p-6 text-center text-sm text-slate-400">레짐 데이터가 없습니다. regime snapshot 적재 후 표시됩니다.</div>
                     ) : (
