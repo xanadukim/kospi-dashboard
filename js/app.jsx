@@ -470,7 +470,13 @@ const { useState, useMemo, useEffect } = React;
         const fmtPred = (v) => hasZScores ? `${v>0 ? "+" : ""}${v.toFixed(2)}%` : "—";
         const openNaverStock = (ticker) => {
           if (!ticker) return;
-          window.open(`https://stock.naver.com/domestic/stock/${ticker}/price`, "_blank", "noopener,noreferrer");
+          const a = document.createElement("a");
+          a.href = `https://stock.naver.com/domestic/stock/${ticker}/price`;
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
         };
         const dartFilterStatus = activeSnapshot?.filter_status || (activeSnapshot?.filter_applied ? "APPLIED" : "UNKNOWN");
         const snapshotDetails = activeSnapshot?.details || {};
