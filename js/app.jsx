@@ -679,7 +679,7 @@ const { useState, useMemo, useEffect } = React;
 
               <aside className="col-span-12 md:col-span-2 space-y-4 md:sticky md:top-[88px] md:h-[calc(100vh-6rem)] md:overflow-auto">
                 <div className="rounded-2xl bg-[#e0f2fe] text-[#0c4a6e] p-4 border border-[#bae6fd]">
-                  <div className="flex items-center justify-between"><h3 className="text-xs font-bold tracking-widest text-[#0369a1]">INDUSTRIES • 8</h3><span className="w-2 h-2 rounded-full bg-[#0ea5e9] animate-pulse"></span></div>
+                  <div className="flex items-center justify-between"><h3 className="text-xs font-bold tracking-widest text-[#0369a1]">오늘의 업종 순위</h3><span className="w-2 h-2 rounded-full bg-[#0ea5e9] animate-pulse"></span></div>
                   <div className="mt-1 text-xs text-[#0284c7]">업종 선택 • 중앙 필터</div>
                   <div className="mt-4 space-y-2">
                     {rankedIndustries.map((ind, idx) => {
