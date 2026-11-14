@@ -12,11 +12,10 @@
     />
     <link rel="stylesheet" href="css/style.css" />
     <style>
-      /* Trader Centric v61 - sticky panels + modern scroll */
+      /* Trader Centric v61 - sticky panels + hidden scrollbars (scroll still works) */
       .trader-sticky { position: sticky; top: 5rem; }
-      ::-webkit-scrollbar { width: 6px; height: 6px; }
-      ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
-      ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      * { scrollbar-width: none; -ms-overflow-style: none; }
+      *::-webkit-scrollbar { width: 0; height: 0; display: none; }
     </style>
   </head>
   <body class="text-slate-900">
