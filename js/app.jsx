@@ -1060,7 +1060,7 @@ const { useState, useMemo, useEffect } = React;
                       {all64Filtered.map((p) => {
                         const ind = industries.find(i => i.id === p.industryId) || industries[0];
                         return (
-                          <div key={`${p.industryId}-${p.ticker}-all`} className="rounded-xl border bg-white p-3 hover:shadow-md transition-shadow cursor-pointer" title="클릭하면 네이버페이증권 해당 종목 페이지가 새 탭으로 열립니다" onClick={() => openNaverStock(p.ticker)}>
+                          <div key={`${p.industryId}-${p.ticker}-all`} className="rounded-xl border bg-white p-3 hover:shadow-md transition-shadow cursor-pointer" title="클릭하면 종목 분석 탭으로 이동" onClick={() => { setSelectedStockKey(p.ticker); setSelectedIndustry(p.industryId); setActiveTab("top"); }}>
                             <div className="flex items-center gap-1.5">
                               <span className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold shrink-0" style={{ background: `${ind.color}15`, color: ind.color }}>{ind?.icon}</span>
                               <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: `${ind.color}10`, color: ind.color }}>{ind.short}</span>
