@@ -159,6 +159,7 @@ const { useState, useMemo, useEffect } = React;
         const [performanceRecords, setPerformanceRecords] = useState([]);
         const [performanceSummary, setPerformanceSummary] = useState(null);
         const [metaSummary, setMetaSummary] = useState(null);
+        const [qcHealth, setQcHealth] = useState(null);
         const [selectedDate, setSelectedDate] = useState("—");
         const [showHistory, setShowHistory] = useState(false);
         const [showDisclaimer, setShowDisclaimer] = useState(false);
@@ -253,10 +254,21 @@ const { useState, useMemo, useEffect } = React;
               setMetaSummary(null);
             });
 
+          const unsubQc = db.collection("data_quality_logs")
+            .orderBy("date", "desc")
+            .limit(1)
+            .onSnapshot((snap) => {
+              setQcHealth(snap.empty ? null : snap.docs[0].data());
+            }, (error) => {
+              console.warn("[data_quality_logs]", error);
+              setQcHealth(null);
+            });
+
           return () => {
             unsubPerformance();
             unsubSummary();
             unsubMeta();
+            unsubQc();
           };
         }, []);
 
@@ -385,6 +397,19 @@ const { useState, useMemo, useEffect } = React;
             topPicks,
           };
         }, [zScores, weeklyPicks, currentRegime]);
+
+        const prevZScores = useMemo(() => {
+          const prev = history[1];
+          return prev?.zScores ? normalizeZScores(prev.zScores) : null;
+        }, [history]);
+
+        const zDelta = (factor) => {
+          if (!prevZScores) return null;
+          const prevV = prevZScores[factor] ?? prevZScores[factorMeta[factor]?.label];
+          const curV = zScores[factor] ?? zScores[factorMeta[factor]?.label];
+          if (typeof prevV !== "number" || typeof curV !== "number") return null;
+          return curV - prevV;
+        };
         const hasZScores = Object.values(zScores).some((v) => typeof v === "number" && v !== 0);
         const predText = hasZScores ? `${predictedReturn>0 ? "+" : ""}${predictedReturn.toFixed(2)}%` : "—";
         const fmtPred = (v) => hasZScores ? `${v>0 ? "+" : ""}${v.toFixed(2)}%` : "—";
@@ -516,6 +541,16 @@ const { useState, useMemo, useEffect } = React;
                           })}
                         </div>
                       )}
+                      <div className="mt-3 pt-2 border-t border-slate-200 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-mono">
+                        <span className="text-slate-400">Δ = 전일({history[1]?.date || "—"}) 대비 Z 변화 • 우측 표 Z 아래 배지</span>
+                        {qcHealth && (
+                          <span className={`px-2 py-0.5 rounded-full border font-bold ${qcHealth.is_fail ? "bg-red-50 text-red-700 border-red-200" : (qcHealth.fail_count + qcHealth.warn_count) > 0 ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
+                            QC {qcHealth.health_score ?? "—"} • FAIL {qcHealth.fail_count ?? 0} WARN {qcHealth.warn_count ?? 0}
+                            {performanceSummary?.missRatePct != null ? ` • miss ${performanceSummary.missRatePct}%` : ""}
+                          </span>
+                        )}
+                        <span className="text-slate-400">Score는 통계 점수이며 투자 권유가 아닙니다</span>
+                      </div>
                     </div>
 
                     <div className="rounded-2xl p-4 text-white" style={{ background: `linear-gradient(135deg, ${currentIndustry.color} 0%, ${currentIndustry.color}dd 100%)` }}>
@@ -765,7 +800,7 @@ const { useState, useMemo, useEffect } = React;
                       return (
                         <div key={c.factor} onClick={() => setSelectedFactor(isSelected ? null : c.factor)} className={`grid grid-cols-12 py-3 border-b border-slate-50 items-center hover:bg-slate-50/80 rounded-lg px-1 transition-colors cursor-pointer ${isSelected ? "bg-emerald-50 border-emerald-200" : ""}`}>
                           <div className="col-span-6"><div className="text-sm font-bold tracking-tight flex items-center gap-1.5">{c.factor} {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>}</div><div className="text-xs text-slate-500">{factorMeta[c.factor]?.desc || ""}</div></div>
-                          <div className="col-span-2 text-right"><span className={`z-badge ${zCls}`}>{c.z>0 ? "+" : ""}{c.z.toFixed(2)}</span></div>
+                          <div className="col-span-2 text-right"><span className={`z-badge ${zCls}`}>{c.z>0 ? "+" : ""}{c.z.toFixed(2)}</span>{(() => { const d = zDelta(c.factor); return d != null && Math.abs(d) >= 0.05 ? <div className={`text-xs font-mono ${d>0 ? "text-emerald-600" : "text-red-600"}`}>{d>0 ? "▲" : "▼"}{Math.abs(d).toFixed(2)}</div> : null; })()}</div>
                           <div className="col-span-2 text-right font-mono text-xs font-semibold text-slate-600">{c.beta>0 ? "+" : ""}{c.beta.toFixed(2)}</div>
                           <div className={`col-span-2 text-right font-mono text-xs font-bold ${hasZScores ? (c.contrib>=0 ? "text-emerald-600" : "text-red-600") : "text-slate-400"}`}>{fmtPred(c.contrib)}</div>
                         </div>

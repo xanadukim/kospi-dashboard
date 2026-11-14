@@ -851,10 +851,77 @@ def pd_concat_align(stock_ret, kospi_ret):
         return None
 
 
+def resolve_industry_betas(
+    retrain_snapshot: Dict = None,
+) -> Tuple[Dict, str]:
+    """
+    추천에 사용할 산업별 베타를 결정한다.
+
+    beta_snapshots/latest의 재학습 β는 OOS 게이트를 통과한 경우에만
+    INDUSTRIES_BETAS를 대체한다.
+
+    조건:
+    - retrain_gate가 PASSED 또는 PARTIAL
+    - 스냅샷 날짜가 40일 이내 (월간 재학습 주기 + 여유)
+    - betas 필드 존재
+
+    Returns: (betas_by_industry, source_label)
+    """
+    if retrain_snapshot:
+        gate = retrain_snapshot.get("retrain_gate")
+        betas = retrain_snapshot.get("betas") or {}
+        retrain_date = str(retrain_snapshot.get("date") or "")
+
+        fresh = False
+        if retrain_date:
+            try:
+                age = (
+                    now_kst().date()
+                    - datetime.strptime(retrain_date, "%Y-%m-%d").date()
+                ).days
+                fresh = 0 <= age <= 40
+            except Exception:
+                fresh = False
+
+        if gate in ("PASSED", "PARTIAL") and betas and fresh:
+            # 구 표시명 → 현행 키 정규화 (외국인 선물 → 외국인 수급)
+            rename = {
+                "외국인 선물": "외국인 수급",
+                "외국인_선물": "외국인 수급",
+            }
+            merged = {}
+            for industry_id in INDUSTRIES_BETAS:
+                retrained = betas.get(industry_id) or {}
+                normalized = {}
+                for k, v in retrained.items():
+                    target = rename.get(k, k)
+                    if target in INDUSTRIES_BETAS[industry_id]:
+                        normalized[target] = v
+                merged[industry_id] = {
+                    **INDUSTRIES_BETAS[industry_id],
+                    **normalized,
+                }
+            print(
+                f"[Daily] using retrained betas "
+                f"date={retrain_date} gate={gate}"
+            )
+            return merged, f"retrain:{retrain_date}"
+
+        print(
+            f"[Daily] retrain betas not adopted "
+            f"gate={gate} date={retrain_date or 'N/A'} "
+            f"fresh={fresh} -> INDUSTRIES_BETAS"
+        )
+
+    return INDUSTRIES_BETAS, "base"
+
+
 def generate_64_picks(
     z_scores: Dict,
     details: Dict,
     stock_metrics: Dict[str, Dict],
+    betas_by_industry: Dict = None,
+    beta_source: str = "base",
 ) -> List[Dict]:
     """
     8개 산업군의 각 8개 종목, 총 64개 후보를 생성한다.
@@ -867,7 +934,7 @@ def generate_64_picks(
 
     for industry in INDUSTRIES_UNIVERSE:
         industry_id = industry["id"]
-        betas = INDUSTRIES_BETAS.get(
+        betas = (betas_by_industry or INDUSTRIES_BETAS).get(
             industry_id,
             {},
         )
@@ -952,6 +1019,7 @@ def generate_64_picks(
                     ),
                     "momentum": momentum,
                     "betaStock": stock_beta,
+                    "betaSource": beta_source,
                     "data_status": "REAL_ONLY",
                     "fallback_used": False,
                     "synthetic_data_used": False,
@@ -1291,10 +1359,18 @@ def main():
 
     stock_metrics = fetch_stock_metrics()
 
+    latest_retrain = fetch_latest_retrain()
+
+    betas_by_industry, beta_source = resolve_industry_betas(
+        latest_retrain
+    )
+
     weekly_picks = generate_64_picks(
         z_scores,
         details,
         stock_metrics,
+        betas_by_industry=betas_by_industry,
+        beta_source=beta_source,
     )
 
     weekly_picks = apply_dart_filter(
@@ -1306,8 +1382,6 @@ def main():
     meta_snapshot = build_optional_meta_snapshot(
         regime_snapshot
     )
-
-    latest_retrain = fetch_latest_retrain()
 
     save_to_firebase(
         z_scores=z_scores,
