@@ -536,6 +536,13 @@ const { useState, useMemo, useEffect } = React;
             .sort((a, b) => (b.score || 0) - (a.score || 0)),
           [weeklyPicks, selectedStock]
         );
+        const selectedStockIndustryTopFactors = useMemo(() => {
+          if (!selectedStockIndustry) return [];
+          return Object.entries(selectedStockIndustry.betas)
+            .map(([f, b]) => ({ factor: f, contrib: b * (zScores[f] ?? 0) }))
+            .sort((a, b) => Math.abs(b.contrib) - Math.abs(a.contrib))
+            .slice(0, 3);
+        }, [selectedStockIndustry, zScores]);
         const selectedStockPerf = useMemo(() => {
           if (!selectedStock?.date || !selectedStock?.ticker) return null;
           const recs = performanceRecords.filter(
@@ -680,8 +687,8 @@ const { useState, useMemo, useEffect } = React;
                   {/* 탭을 먼저, KOSPI R²를 옆으로 - 위치 교체 */}
                   <div className="hidden xl:flex items-center gap-1 p-1 rounded-full bg-[#f1f5f9] border border-[#e5e8eb]">
                     {[
-                      { id: "recommend", label: "추천", icon: "🎯", count: filteredPicks.length, color: "#1e3a8a" },
-                      { id: "top", label: "업종 분석", icon: "📊", count: 8, color: "#f59e0b" },
+                      { id: "recommend", label: "오늘의 추천", icon: "🎯", count: filteredPicks.length, color: "#1e3a8a" },
+                      { id: "top", label: "종목 분석", icon: "📊", count: 8, color: "#f59e0b" },
                       { id: "all64", label: "전체 종목", icon: "📋", count: all64Filtered.length, color: "#334155" },
                       { id: "performance", label: "성과", icon: "📈", count: pastPicks.length, color: "#7c3aed" },
                       { id: "market", label: "마켓", icon: "🌐", count: icStats.count, color: "#059669" },
@@ -728,8 +735,8 @@ const { useState, useMemo, useEffect } = React;
                 {/* 탭은 상단 헤더로 이동 - 여기서는 모바일용 작은 탭 표시 */}
                 <div className="xl:hidden flex items-center gap-1 p-1 rounded-full bg-[#f1f5f9] border border-[#e5e8eb] w-fit flex-wrap mb-4">
                   {[
-                    { id: "recommend", label: "추천", icon: "🎯", count: filteredPicks.length, color: "#1e3a8a" },
-                    { id: "top", label: "업종 분석", icon: "📊", count: 8, color: "#f59e0b" },
+                    { id: "recommend", label: "오늘의 추천", icon: "🎯", count: filteredPicks.length, color: "#1e3a8a" },
+                    { id: "top", label: "종목 분석", icon: "📊", count: 8, color: "#f59e0b" },
                     { id: "all64", label: "전체 종목", icon: "📋", count: all64Filtered.length, color: "#334155" },
                     { id: "performance", label: "성과", icon: "📈", count: pastPicks.length, color: "#7c3aed" },
                     { id: "market", label: "마켓", icon: "🌐", count: icStats.count, color: "#059669" },
@@ -792,6 +799,57 @@ const { useState, useMemo, useEffect } = React;
                           </span>
                         )}
                         <span className="text-xs font-bold text-red-600">⚠️ Score는 통계 점수이며 투자 권유가 아닙니다</span>
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl bg-white border border-slate-200 p-4">
+                      <div className="mb-3">
+                        <h3 className="text-sm font-bold flex items-center gap-2">📊 업종 분석 • 예측 기여도 Breakdown</h3>
+                        <div className="mt-1 text-xs text-slate-500">예측수익률 순 정렬 • 행 클릭 = 업종 필터 • ▸ 클릭 = 기여 팩터 상세</div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {industries.map((ind) => ({ ...ind, pred: Object.entries(ind.betas).reduce((s,[f,b]) => s + (zScores[f] ?? 0)*b, 0) })).sort((a,b) => b.pred - a.pred).map((item, idx) => {
+                          const isSelected = item.id === selectedIndustry;
+                          const isTop = idx === 0;
+                          const isOpen = expandedIndustry === item.id;
+                          const topFactors = Object.entries(item.betas)
+                            .map(([f, b]) => ({ factor: f, beta: b, z: zScores[f] ?? 0, contrib: b * (zScores[f] ?? 0) }))
+                            .sort((a, b2) => Math.abs(b2.contrib) - Math.abs(a.contrib))
+                            .slice(0, 3);
+                          return (
+                            <div key={item.id} className={`rounded-xl border transition-all ${isSelected ? "bg-[#1e3a8a] text-white border-[#1e3a8a]" : "bg-slate-50 hover:bg-white border-slate-200"}`}>
+                              <div className="flex items-center justify-between p-3 cursor-pointer" onClick={() => setSelectedIndustry(item.id)}>
+                                <div className="flex items-center gap-3">
+                                  <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${isTop ? "bg-amber-400 text-[#1e3a8a]" : isSelected ? "bg-white text-[#1e3a8a]" : "bg-white border"}`}>{idx+1}</span>
+                                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: isSelected ? "rgba(255,255,255,0.15)" : `${item.color}15`, color: isSelected ? "white" : item.color }}>{item.icon}</div>
+                                  <div><div className="text-sm font-bold">{item.short}</div><div className={`text-xs ${isSelected ? "text-white/60" : "text-slate-500"}`}>R² {industryR2(item.id)} • {item.name}</div></div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <div className="text-right">
+                                    <div className={`text-sm font-mono font-bold ${hasZScores ? (item.pred>=0 ? (isSelected ? "text-emerald-300" : "text-emerald-600") : (isSelected ? "text-red-300" : "text-red-600")) : "text-slate-400"}`}>{fmtPred(item.pred)}</div>
+                                    <div className={`text-xs ${isSelected ? "text-white/50" : "text-slate-400"}`}>{isTop ? "👑 최강" : `${idx+1}위`}</div>
+                                  </div>
+                                  <button onClick={(e) => { e.stopPropagation(); setExpandedIndustry(isOpen ? null : item.id); }} className={`w-6 h-6 rounded-md flex items-center justify-center text-xs ${isSelected ? "bg-white/15 text-white" : "bg-white border text-slate-500"}`} title="기여 팩터 상세">{isOpen ? "▾" : "▸"}</button>
+                                </div>
+                              </div>
+                              {isOpen && (
+                                <div className="px-3 pb-3 pt-1 border-t border-slate-200/60">
+                                  <div className="text-xs font-bold text-slate-500 mb-2">기여 상위 팩터 (β × Z)</div>
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                    {topFactors.map((c) => (
+                                      <div key={c.factor} className="rounded-lg bg-white border border-slate-200 p-2">
+                                        <div className="text-xs font-bold">{c.factor}</div>
+                                        <div className="text-xs font-mono text-slate-500">Z {c.z>0?"+":""}{c.z.toFixed(2)} × β{c.beta>0?"+":""}{c.beta.toFixed(2)}</div>
+                                        <div className={`text-xs font-mono font-bold ${hasZScores ? (c.contrib>=0 ? "text-emerald-600" : "text-red-600") : "text-slate-400"}`}>{fmtPred(c.contrib)}</div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <button onClick={() => { setSelectedIndustry(item.id); setActiveTab("recommend"); }} className="mt-2 text-xs font-bold px-3 py-1.5 rounded-lg bg-[#1e3a8a] text-white hover:bg-[#23408e]">이 업종 추천 보기 →</button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
 
@@ -864,8 +922,8 @@ const { useState, useMemo, useEffect } = React;
                     <div className="rounded-2xl bg-white border border-slate-200 p-4">
                       <div className="flex items-start justify-between flex-wrap gap-2">
                         <div>
-                          <h3 className="text-sm font-bold flex items-center gap-2">📊 업종 분석 • 예측 기여도 Breakdown</h3>
-                          <div className="mt-1 text-xs text-slate-500">예측수익률 순 정렬 • 행 클릭 = 업종 필터 • ▸ 클릭 = 기여 팩터 상세</div>
+                          <h3 className="text-sm font-bold flex items-center gap-2">📊 종목 분석 • Score Breakdown</h3>
+                          <div className="mt-1 text-xs text-slate-500">드롭다운에서 종목 선택 → 점수 재료·민감도·실측 성과 표시</div>
                         </div>
                         <select
                           value={selectedStockKey || ""}
@@ -883,50 +941,14 @@ const { useState, useMemo, useEffect } = React;
                           ))}
                         </select>
                       </div>
-                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {industries.map((ind) => ({ ...ind, pred: Object.entries(ind.betas).reduce((s,[f,b]) => s + (zScores[f] ?? 0)*b, 0) })).sort((a,b) => b.pred - a.pred).map((item, idx) => {
-                          const isSelected = item.id === selectedIndustry;
-                          const isTop = idx === 0;
-                          const isOpen = expandedIndustry === item.id;
-                          const topFactors = Object.entries(item.betas)
-                            .map(([f, b]) => ({ factor: f, beta: b, z: zScores[f] ?? 0, contrib: b * (zScores[f] ?? 0) }))
-                            .sort((a, b2) => Math.abs(b2.contrib) - Math.abs(a.contrib))
-                            .slice(0, 3);
-                          return (
-                            <div key={item.id} className={`rounded-xl border transition-all ${isSelected ? "bg-[#1e3a8a] text-white border-[#1e3a8a]" : "bg-slate-50 hover:bg-white border-slate-200"}`}>
-                              <div className="flex items-center justify-between p-3 cursor-pointer" onClick={() => setSelectedIndustry(item.id)}>
-                                <div className="flex items-center gap-3">
-                                  <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${isTop ? "bg-amber-400 text-[#1e3a8a]" : isSelected ? "bg-white text-[#1e3a8a]" : "bg-white border"}`}>{idx+1}</span>
-                                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: isSelected ? "rgba(255,255,255,0.15)" : `${item.color}15`, color: isSelected ? "white" : item.color }}>{item.icon}</div>
-                                  <div><div className="text-sm font-bold">{item.short}</div><div className={`text-xs ${isSelected ? "text-white/60" : "text-slate-500"}`}>R² {industryR2(item.id)} • {item.name}</div></div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <div className="text-right">
-                                    <div className={`text-sm font-mono font-bold ${hasZScores ? (item.pred>=0 ? (isSelected ? "text-emerald-300" : "text-emerald-600") : (isSelected ? "text-red-300" : "text-red-600")) : "text-slate-400"}`}>{fmtPred(item.pred)}</div>
-                                    <div className={`text-xs ${isSelected ? "text-white/50" : "text-slate-400"}`}>{isTop ? "👑 최강" : `${idx+1}위`}</div>
-                                  </div>
-                                  <button onClick={(e) => { e.stopPropagation(); setExpandedIndustry(isOpen ? null : item.id); }} className={`w-6 h-6 rounded-md flex items-center justify-center text-xs ${isSelected ? "bg-white/15 text-white" : "bg-white border text-slate-500"}`} title="기여 팩터 상세">{isOpen ? "▾" : "▸"}</button>
-                                </div>
-                              </div>
-                              {isOpen && (
-                                <div className="px-3 pb-3 pt-1 border-t border-slate-200/60">
-                                  <div className="text-xs font-bold text-slate-500 mb-2">기여 상위 팩터 (β × Z)</div>
-                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                                    {topFactors.map((c) => (
-                                      <div key={c.factor} className="rounded-lg bg-white border border-slate-200 p-2">
-                                        <div className="text-xs font-bold">{c.factor}</div>
-                                        <div className="text-xs font-mono text-slate-500">Z {c.z>0?"+":""}{c.z.toFixed(2)} × β{c.beta>0?"+":""}{c.beta.toFixed(2)}</div>
-                                        <div className={`text-xs font-mono font-bold ${hasZScores ? (c.contrib>=0 ? "text-emerald-600" : "text-red-600") : "text-slate-400"}`}>{fmtPred(c.contrib)}</div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                  <button onClick={() => { setSelectedIndustry(item.id); setActiveTab("recommend"); }} className="mt-2 text-xs font-bold px-3 py-1.5 rounded-lg bg-[#1e3a8a] text-white hover:bg-[#23408e]">이 업종 추천 보기 →</button>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
+                      {selectedStock && selectedStockIndustry && (
+                        <div className="mt-3 rounded-lg bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-600">
+                          선택 업종 <b>{selectedStockIndustry.short}</b>: R² <b>{industryR2(selectedStockIndustry.id)}</b> • 기여 상위{" "}
+                          {selectedStockIndustryTopFactors.map((c, i) => (
+                            <span key={c.factor}>{i > 0 && " • "}{c.factor} {c.contrib >= 0 ? "+" : ""}{c.contrib.toFixed(2)}</span>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {selectedStock && (() => {
