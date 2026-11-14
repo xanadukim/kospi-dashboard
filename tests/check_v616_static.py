@@ -27,9 +27,16 @@ def main() -> int:
         if token in jsx:
             failures.append(f"{ACTIVE_JSX.relative_to(ROOT)} contains {token}")
 
-    for legacy in ["js/app.js", "js/regime.js", "js/retrain.js"]:
+    for legacy in ["js/regime.js", "js/retrain.js"]:
         if f'src="{legacy}"' in html:
             failures.append(f"{ACTIVE_HTML.relative_to(ROOT)} still loads {legacy}")
+
+    # js/app.js는 app.jsx의 esbuild 산출물 — 존재하고 index.html이 로드해야 함
+    built = ROOT / "js" / "app.js"
+    if not built.exists():
+        failures.append("js/app.js missing — run `npm run build`")
+    elif f'src="js/app.js"' not in html:
+        failures.append(f"{ACTIVE_HTML.relative_to(ROOT)} does not load js/app.js")
 
     required = [
         "factor_snapshots",

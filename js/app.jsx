@@ -48,6 +48,52 @@ const { useState, useMemo, useEffect } = React;
         );
       }
 
+      function PerfCurveChart({ points, height = 190 }) {
+        // points: [{date, a, b}] — a=보라(picks), b=회색(KOSPI)
+        const W = 640, H = height, P = { l: 46, r: 12, t: 12, b: 26 };
+        const iw = W - P.l - P.r, ih = H - P.t - P.b;
+        const vals = points.flatMap((p) => [p.a, p.b]).filter((v) => typeof v === "number" && Number.isFinite(v));
+        if (points.length < 2 || vals.length === 0) {
+          return <div className="py-8 text-center text-xs text-slate-400">차트 데이터가 부족합니다 (평가일 2일 이상 필요)</div>;
+        }
+        const min = Math.min(0, ...vals), max = Math.max(0, ...vals);
+        const span = (max - min) || 1;
+        const x = (i) => P.l + (i / (points.length - 1)) * iw;
+        const y = (v) => P.t + ih - ((v - min) / span) * ih;
+        const linePath = (key) => {
+          let d = "", pen = false;
+          points.forEach((p, i) => {
+            const v = p[key];
+            if (typeof v === "number" && Number.isFinite(v)) {
+              d += `${pen ? "L" : "M"}${x(i).toFixed(1)} ${y(v).toFixed(1)} `;
+              pen = true;
+            } else pen = false;
+          });
+          return d.trim();
+        };
+        const ticks = [max, (max + min) / 2, min].map((v) => v.toFixed(1));
+        return (
+          <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="성과 곡선 차트">
+            {[max, (max + min) / 2, min].map((v, i) => (
+              <g key={i}>
+                <line x1={P.l} x2={W - P.r} y1={y(v)} y2={y(v)} stroke="#e2e8f0" strokeWidth="1" />
+                <text x={P.l - 6} y={y(v) + 3} textAnchor="end" fontSize="9" fill="#94a3b8" fontFamily="JetBrains Mono">{ticks[i]}</text>
+              </g>
+            ))}
+            {min < 0 && max > 0 && <line x1={P.l} x2={W - P.r} y1={y(0)} y2={y(0)} stroke="#cbd5e1" strokeWidth="1.5" />}
+            <path d={linePath("b")} fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeDasharray="4 3" />
+            <path d={linePath("a")} fill="none" stroke="#7c3aed" strokeWidth="2.2" />
+            <text x={P.l} y={H - 8} fontSize="9" fill="#94a3b8">{points[0].date}</text>
+            <text x={W - P.r} y={H - 8} textAnchor="end" fontSize="9" fill="#94a3b8">{points[points.length - 1].date}</text>
+            {points.map((p, i) => (
+              <circle key={i} cx={x(i)} cy={y(p.a ?? p.b ?? min)} r="2.5" fill={p.a != null ? "#7c3aed" : "#94a3b8"} opacity={p.a != null ? 0.9 : 0.5}>
+                <title>{`${p.date} • picks ${p.a != null ? p.a.toFixed(2) + "%" : "—"} • KOSPI ${p.b != null ? p.b.toFixed(2) + "%" : "—"}`}</title>
+              </circle>
+            ))}
+          </svg>
+        );
+      }
+
       function DisclaimerModal({ open, onClose }) {
         if (!open) return null;
         return (
@@ -198,6 +244,7 @@ const { useState, useMemo, useEffect } = React;
         const [history, setHistory] = useState([]);
         const [performanceRecords, setPerformanceRecords] = useState([]);
         const [performanceSummary, setPerformanceSummary] = useState(null);
+        const [perfSnapshotHistory, setPerfSnapshotHistory] = useState([]);
         const [metaSummary, setMetaSummary] = useState(null);
         const [qcHealth, setQcHealth] = useState(null);
         const [selectedDate, setSelectedDate] = useState("—");
@@ -243,7 +290,7 @@ const { useState, useMemo, useEffect } = React;
 
         useEffect(() => {
           if (!db) { setDataReady(true); return; }
-          const unsub = db.collection("factor_snapshots").orderBy("date", "desc").limit(10).onSnapshot((snap) => {
+          const unsub = db.collection("factor_snapshots").orderBy("date", "desc").limit(40).onSnapshot((snap) => {
             const docs = snap.docs.map((d) => d.data());
             setHistory(docs);
             setLiveCount(docs.length);
@@ -268,7 +315,7 @@ const { useState, useMemo, useEffect } = React;
 
           const unsubPerformance = db.collection("performance_tracking")
             .orderBy("evalDate", "desc")
-            .limit(300)
+            .limit(600)
             .onSnapshot((snap) => {
               setPerformanceRecords(snap.docs.map((d) => d.data()));
             }, (error) => {
@@ -278,9 +325,11 @@ const { useState, useMemo, useEffect } = React;
 
           const unsubSummary = db.collection("performance_snapshots")
             .orderBy("date", "desc")
-            .limit(1)
+            .limit(90)
             .onSnapshot((snap) => {
-              setPerformanceSummary(snap.empty ? null : snap.docs[0].data());
+              const docs = snap.docs.map((d) => d.data());
+              setPerfSnapshotHistory(docs);
+              setPerformanceSummary(docs.length ? docs[0] : null);
             }, (error) => {
               console.warn("[performance_snapshots]", error);
               setPerformanceSummary(null);
@@ -395,6 +444,80 @@ const { useState, useMemo, useEffect } = React;
           const hit = pastPicks.filter((r) => r.returnPct > 0).length;
           return { avg: avg.toFixed(2), vsKospi: vs.toFixed(2), hit, total: pastPicks.length, hitRate: hit / pastPicks.length };
         }, [pastPicks]);
+
+        // 평가일별 picks 평균 누적수익률 vs 동일 기간 KOSPI (performance_snapshots 기반)
+        const perfCurve = useMemo(() => {
+          return [...perfSnapshotHistory]
+            .filter((d) => d && d.date)
+            .sort((a, b) => String(a.date).localeCompare(String(b.date)))
+            .map((d) => ({
+              date: d.date,
+              picks: typeof d.avgReturnPct === "number" ? d.avgReturnPct : null,
+              kospi: typeof d.avgKospiReturnPct === "number" ? d.avgKospiReturnPct : null,
+              hit: typeof d.hitRatePct === "number" ? d.hitRatePct : null,
+            }));
+        }, [perfSnapshotHistory]);
+
+        // 가상 포트폴리오 백테스트: 각 스냅샷의 Score 상위 3종목 → 최신 평가 수익률
+        const backtest = useMemo(() => {
+          const latestEval = new Map();
+          performanceRecords.forEach((r) => {
+            if (!r || typeof r.returnPct !== "number" || !r.recDate || !r.ticker) return;
+            const key = `${r.recDate}|${r.ticker}`;
+            const prev = latestEval.get(key);
+            if (!prev || String(r.evalDate || "") > String(prev.evalDate || "")) latestEval.set(key, r);
+          });
+
+          const cohorts = [];
+          let matched = 0, total = 0;
+          [...history]
+            .filter((s) => s && s.date && s.date < String(performanceSummary?.date || "9999"))
+            .sort((a, b) => String(a.date).localeCompare(String(b.date)))
+            .forEach((snap) => {
+              const picks = Array.isArray(snap.weeklyPicks) ? snap.weeklyPicks : [];
+              const top = [...picks]
+                .filter((p) => p && p.ticker)
+                .sort((a, b) => (b.score || 0) - (a.score || 0))
+                .slice(0, 3);
+              if (top.length === 0) return;
+              const rets = [];
+              const kRets = [];
+              top.forEach((p) => {
+                total += 1;
+                const rec = latestEval.get(`${snap.date}|${p.ticker}`);
+                if (rec) {
+                  matched += 1;
+                  rets.push(rec.returnPct);
+                  if (typeof rec.kospiReturnPct === "number") kRets.push(rec.kospiReturnPct);
+                }
+              });
+              if (rets.length > 0) {
+                cohorts.push({
+                  date: snap.date,
+                  picks: rets.reduce((s, v) => s + v, 0) / rets.length,
+                  kospi: kRets.length ? kRets.reduce((s, v) => s + v, 0) / kRets.length : null,
+                  n: rets.length,
+                });
+              }
+            });
+
+          if (cohorts.length === 0) return { cohorts: [], stats: null, coverage: { matched, total } };
+          const avgPicks = cohorts.reduce((s, c) => s + c.picks, 0) / cohorts.length;
+          const withKospi = cohorts.filter((c) => typeof c.kospi === "number");
+          const avgKospi = withKospi.length ? withKospi.reduce((s, c) => s + c.kospi, 0) / withKospi.length : null;
+          const wins = cohorts.filter((c) => c.picks > 0).length;
+          return {
+            cohorts,
+            coverage: { matched, total },
+            stats: {
+              cohorts: cohorts.length,
+              avgPicks: avgPicks.toFixed(2),
+              avgKospi: avgKospi != null ? avgKospi.toFixed(2) : null,
+              excess: avgKospi != null ? (avgPicks - avgKospi).toFixed(2) : null,
+              winRate: ((wins / cohorts.length) * 100).toFixed(0),
+            },
+          };
+        }, [history, performanceRecords, performanceSummary]);
 
         const icStats = useMemo(() => {
           const entries = metaSummary?.factors
@@ -764,6 +887,43 @@ const { useState, useMemo, useEffect } = React;
 
                 {activeTab === "performance" && (
                   <div className="mt-4 space-y-4">
+                    <div className="rounded-2xl bg-white border border-slate-200 p-4">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <h4 className="text-sm font-extrabold">📈 성과 곡선 • 평가일별 picks 평균 vs KOSPI</h4>
+                        <span className="text-xs text-slate-400">표본 {perfCurve.length}일 • 누적수익률(%)</span>
+                      </div>
+                      <div className="mt-1 text-xs text-slate-500">각 평가일에 추적 중인 picks의 추천일 이후 누적수익률 평균 — KOSPI는 동일 보유구간 수익률</div>
+                      <div className="mt-3 flex items-center gap-4 text-xs">
+                        <span className="flex items-center gap-1.5"><span className="w-4 h-0.5 bg-violet-600 inline-block" />picks 평균</span>
+                        <span className="flex items-center gap-1.5"><span className="w-4 h-0.5 bg-slate-400 inline-block" style={{ backgroundImage: "repeating-linear-gradient(90deg,#94a3b8 0 3px,transparent 3px 6px)", height: 2 }} />KOSPI</span>
+                      </div>
+                      <PerfCurveChart points={perfCurve.map((p) => ({ date: p.date, a: p.picks, b: p.kospi }))} />
+                    </div>
+
+                    <div className="rounded-2xl bg-white border border-slate-200 p-4">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <h4 className="text-sm font-extrabold">🧪 Top-3 Score 추종 백테스트</h4>
+                        <span className="text-xs text-slate-400">{backtest.cohorts.length}개 추천일 • 매칭 {backtest.coverage.matched}/{backtest.coverage.total} picks</span>
+                      </div>
+                      <div className="mt-1 text-xs text-slate-500">매 추천일 Score 상위 3종목의 최신 평가 누적수익률 평균 — 수수료·슬리피지 미반영, 실제 운용 결과 아님</div>
+                      {backtest.stats ? (
+                        <>
+                          <div className="mt-3 grid grid-cols-2 md:grid-cols-5 gap-2">
+                            <div className="rounded-xl bg-slate-50 border p-2.5 text-center"><div className="text-xs text-slate-500">picks 평균</div><div className={`text-sm font-bold ${parseFloat(backtest.stats.avgPicks)>=0 ? "text-emerald-600" : "text-red-600"}`}>{backtest.stats.avgPicks}%</div></div>
+                            <div className="rounded-xl bg-slate-50 border p-2.5 text-center"><div className="text-xs text-slate-500">KOSPI 평균</div><div className={`text-sm font-bold ${parseFloat(backtest.stats.avgKospi)>=0 ? "text-emerald-600" : "text-red-600"}`}>{backtest.stats.avgKospi != null ? `${backtest.stats.avgKospi}%` : "—"}</div></div>
+                            <div className="rounded-xl bg-slate-50 border p-2.5 text-center"><div className="text-xs text-slate-500">초과수익</div><div className={`text-sm font-bold ${parseFloat(backtest.stats.excess)>=0 ? "text-emerald-600" : "text-red-600"}`}>{backtest.stats.excess != null ? `${backtest.stats.excess}%` : "—"}</div></div>
+                            <div className="rounded-xl bg-slate-50 border p-2.5 text-center"><div className="text-xs text-slate-500">승률</div><div className="text-sm font-bold">{backtest.stats.winRate}%</div></div>
+                            <div className="rounded-xl bg-amber-50 border border-amber-200 p-2.5 text-center"><div className="text-xs text-amber-700">표본 경고</div><div className="text-xs font-bold text-amber-800">{backtest.stats.cohorts}일 — 유의성 부족</div></div>
+                          </div>
+                          <div className="mt-3">
+                            <PerfCurveChart points={backtest.cohorts.map((c) => ({ date: c.date, a: c.picks, b: c.kospi }))} height={160} />
+                          </div>
+                        </>
+                      ) : (
+                        <div className="mt-3 p-4 rounded-xl bg-slate-50 border text-center text-xs text-slate-400">백테스트 데이터가 없습니다. performance_tracking 적재 후 표시됩니다.</div>
+                      )}
+                    </div>
+
                     <div className="rounded-2xl border bg-white overflow-hidden" style={{ borderColor: "#e2e8f0" }}>
                       <div className="p-4 border-b bg-gradient-to-r from-violet-50 to-purple-50">
                         <div className="flex items-center justify-between"><h3 className="text-sm font-extrabold">📈 최근 성과 • {currentIndustry.short}</h3><span className="text-xs font-mono px-2 py-1 rounded-full bg-violet-600 text-white">Hit {pastPicksAvg.hit}/{pastPicksAvg.total} • Avg {pastPicksAvg.avg}%</span></div>

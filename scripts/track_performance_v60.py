@@ -244,6 +244,8 @@ for snap_data in target_snapshots:
                 kret_value = float(kret) if kret is not None else None
                 if kret_value is None or not math.isfinite(kret_value):
                     missing_reason = "KOSPI benchmark unavailable"
+                else:
+                    all_kospi_returns.append(kret_value)
 
             doc_id = f"{rec_date}_{ticker}_{today}"
             if missing_reason:
@@ -350,6 +352,24 @@ if db and batch_cnt > 0:
     batch.commit()
     print(f"\nFinal commit {batch_cnt} tracking docs")
 
+# ========== KOSPI Benchmark Series (차트/백테스트용) ==========
+kospi_close_map = {}
+try:
+    import yfinance as yf
+    kos_hist = yf.Ticker("^KS11").history(period="6mo")
+    if not kos_hist.empty and 'Close' in kos_hist:
+        kos_hist.index = kos_hist.index.tz_localize(None)
+        kospi_close_map = {
+            d.strftime('%Y-%m-%d'): float(c)
+            for d, c in zip(kos_hist.index, kos_hist['Close'])
+            if math.isfinite(float(c))
+        }
+        print(f"[KOSPI benchmark] loaded {len(kospi_close_map)} daily closes")
+except Exception as e:
+    print(f"[KOSPI benchmark] fetch error: {e}")
+
+all_kospi_returns = []
+
 # ========== Summary Snapshot for Dashboard ==========
 if all_returns:
     import numpy as np
@@ -379,6 +399,10 @@ if all_returns:
         'missRatePct': round(
             (miss / (ok + fail)) * 100, 2
         ) if (ok + fail) > 0 else 0.0,
+        'kospiClose': kospi_close_map.get(today),
+        'avgKospiReturnPct': round(
+            float(np.mean(all_kospi_returns)) * 100, 2
+        ) if all_kospi_returns else None,
         'source': 'yfinance-REAL-v60-ChinaProxy-64Picks',
         'version': 'v60-performance-snapshot',
         'chinaProxy': '구리+상해종합 기반 64 Picks 성과',
@@ -394,6 +418,30 @@ if all_returns:
             print(f"\n[Summary] Saved performance_snapshots/{today}")
         except Exception as e:
             print(f"Summary save error: {e}")
+
+        # 기존 performance_snapshots에 KOSPI 벤치마크 필드 백필 (self-healing)
+        if kospi_close_map:
+            try:
+                backfilled = 0
+                for doc in db.collection('performance_snapshots').stream():
+                    d = doc.to_dict()
+                    if d.get('kospiClose') is not None:
+                        continue
+                    close = kospi_close_map.get(d.get('date'))
+                    if close is None:
+                        continue
+                    period = d.get('period') or ''
+                    start_date = period.split('~')[0].strip() if '~' in period else None
+                    start_close = kospi_close_map.get(start_date) if start_date else None
+                    patch = {'kospiClose': close}
+                    if start_close and start_close != 0:
+                        patch['avgKospiReturnPct'] = round((close / start_close - 1) * 100, 2)
+                    doc.reference.set(patch, merge=True)
+                    backfilled += 1
+                if backfilled:
+                    print(f"[KOSPI backfill] patched {backfilled} performance_snapshots docs")
+            except Exception as e:
+                print(f"[KOSPI backfill] error: {e}")
     else:
         with open(f"performance_summary_{today}.json", "w", encoding="utf-8") as f:
             json.dump(summary, f, ensure_ascii=False, indent=2)
