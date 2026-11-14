@@ -1042,11 +1042,7 @@ const { useState, useMemo, useEffect } = React;
                         </div>
                         <button onClick={() => setAll64Industry(null)} className={`px-3 py-1 rounded-full text-xs font-bold border transition ${all64Industry ? "bg-[#1e3a8a] text-white border-[#1e3a8a]" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"}`} title="클릭 시 전체 종목 표시">전체 보기</button>
                       </div>
-                      <div className="mt-3 grid grid-cols-3 sm:grid-cols-5 gap-2">
-                        <button onClick={() => setAll64Industry(null)} className={`rounded-xl border p-2 text-center transition ${!all64Industry ? "bg-[#1e3a8a] border-[#1e3a8a] text-white" : "bg-slate-50 border-slate-100 hover:bg-white"}`}>
-                          <div className="text-xs font-bold">전체</div>
-                          <div className={`text-xs font-mono ${!all64Industry ? "text-white/70" : "text-slate-500"}`}>{weeklyPicks.length}종</div>
-                        </button>
+                      <div className="mt-3 grid grid-cols-4 gap-2">
                         {industries.map(ind => {
                           const cnt = weeklyPicks.filter(p => p.industryId === ind.id).length;
                           const active = all64Industry === ind.id;
