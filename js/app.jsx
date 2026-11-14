@@ -564,7 +564,6 @@ const { useState, useMemo, useEffect } = React;
                     <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4">
                       <div className="flex items-center justify-between flex-wrap gap-2">
                         <h3 className="text-sm font-extrabold flex items-center gap-2">📌 오늘의 요약 <span className="text-xs font-normal text-slate-400">{selectedDate} 스냅샷 기준</span></h3>
-                        <span className="text-xs text-slate-400">Score는 통계 점수이며 투자 권유가 아닙니다</span>
                       </div>
                       <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div className={`rounded-xl border p-3 ${todaySummary.regimeIsRisk ? "bg-red-50 border-red-200" : "bg-emerald-50 border-emerald-200"}`}>
@@ -609,7 +608,7 @@ const { useState, useMemo, useEffect } = React;
                             {performanceSummary?.missRatePct != null ? ` • miss ${performanceSummary.missRatePct}%` : ""}
                           </span>
                         )}
-                        <span className="text-slate-400">Score는 통계 점수이며 투자 권유가 아닙니다</span>
+                        <span className="text-xs font-bold text-red-600">⚠️ Score는 통계 점수이며 투자 권유가 아닙니다</span>
                       </div>
                     </div>
 
