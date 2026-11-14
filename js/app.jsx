@@ -129,6 +129,17 @@ const { useState, useMemo, useEffect } = React;
                   <div className="font-bold text-blue-900">💡 트레이더 사용법</div>
                   <div className="mt-1 text-slate-700">• 왼쪽 산업 클릭: 해당 산업 8종 추천 • 오른쪽 팩터 클릭: 해당 팩터에 민감한 종목만 필터 (예: 구리 클릭 → 화학·철강 위주) • DART ON/OFF: 부실주 제거 필터 • 07:30 체크리스트 4개 모두 ✓여야 신뢰도 높음</div>
                 </div>
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs leading-relaxed">
+                  <div className="font-bold text-emerald-900">📖 읽는 법 • 지표 해석</div>
+                  <div className="mt-2 space-y-1.5 text-slate-700">
+                    <div><b>Z-Score</b>: 팩터가 최근 120일 평균 대비 표준편차 몇 개 위치인지. +1.0 이상 강한 우호, -1.0 이하 강한 비우호, ±3 클립. VIX는 부호 반전(높을수록 위험 → 음수로 표시).</div>
+                    <div><b>β (베타)</b>: 팩터 z가 1 움직일 때 산업 수익률에 미치는 민감도. 부호 = 방향(양수 우호/음수 비우호), 크기 = 민감도.</div>
+                    <div><b>기여도</b>: β × Z. 산업 예측 수익률을 만드는 각 팩터의 기여분. 합계 = 예측 산업 수익률.</div>
+                    <div><b>Regime</b>: VIX/OVX/DXY/WTI 등 8개 지표 기반 시장 상태. 평시/주의/전시/위기. 전시 이상이면 리스크 관리 우선 해석.</div>
+                    <div><b>Score</b>: 6.5 + 예측수익률×1.2 + 모멘텀×0.3 + 보정항. 통계적 상대 점수(1~10)이며 <b>매수 추천이 아닙니다.</b> "Score 상위"는 모델 상위권이라는 뜻입니다.</div>
+                    <div><b>예상 수익률</b>: 모델 기반 추정치로 실제 수익을 보장하지 않습니다. 성과 탭의 실측 vs KOSPI가 더 신뢰할 지표입니다.</div>
+                  </div>
+                </div>
                 <div className="p-3 rounded-xl bg-slate-50 border text-xs">
                   <div className="font-bold">DATA PIPELINE</div>
                   <div className="mt-1 font-mono text-slate-600">yfinance(4) + FRED(3) + KRX OPEN API(2) + 15007 CSV(1) → StandardScaler → RidgeCV(λ) → Dashboard • Firebase Live • 매일 07:30 KST</div>
@@ -345,6 +356,35 @@ const { useState, useMemo, useEffect } = React;
 
         const currentRegime = useMemo(() => activeSnapshot?.regime || null, [activeSnapshot]);
         const retrainData = useMemo(() => activeSnapshot?.retrain || activeSnapshot?.beta_snapshot || null, [activeSnapshot]);
+
+        const todaySummary = useMemo(() => {
+          const zEntries = Object.entries(zScores)
+            .filter(([, v]) => typeof v === "number" && Number.isFinite(v));
+          const topFactorEntry = zEntries
+            .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0] || null;
+
+          const industryPreds = industries
+            .map((ind) => ({
+              ...ind,
+              pred: Object.entries(ind.betas).reduce(
+                (s, [f, b]) => s + (zScores[f] ?? 0) * b, 0
+              ),
+            }))
+            .sort((a, b) => b.pred - a.pred);
+
+          const topPicks = [...weeklyPicks]
+            .sort((a, b) => (b.score || 0) - (a.score || 0))
+            .slice(0, 3);
+
+          return {
+            regime: currentRegime?.regime || null,
+            regimeConf: currentRegime?.confidence,
+            regimeIsRisk: ["전시", "위기", "caution", "risk_off"].includes(currentRegime?.regime),
+            topFactor: topFactorEntry ? { name: topFactorEntry[0], z: topFactorEntry[1] } : null,
+            topIndustries: industryPreds.slice(0, 3),
+            topPicks,
+          };
+        }, [zScores, weeklyPicks, currentRegime]);
         const hasZScores = Object.values(zScores).some((v) => typeof v === "number" && v !== 0);
         const predText = hasZScores ? `${predictedReturn>0 ? "+" : ""}${predictedReturn.toFixed(2)}%` : "—";
         const fmtPred = (v) => hasZScores ? `${v>0 ? "+" : ""}${v.toFixed(2)}%` : "—";
@@ -441,10 +481,47 @@ const { useState, useMemo, useEffect } = React;
 
                 {activeTab === "recommend" && (
                   <div className="mt-4 space-y-4">
+                    <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <h3 className="text-sm font-extrabold flex items-center gap-2">📌 오늘의 요약 <span className="text-xs font-normal text-slate-400">{selectedDate} 스냅샷 기준</span></h3>
+                        <span className="text-xs text-slate-400">Score는 통계 점수이며 투자 권유가 아닙니다</span>
+                      </div>
+                      <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className={`rounded-xl border p-3 ${todaySummary.regimeIsRisk ? "bg-red-50 border-red-200" : "bg-emerald-50 border-emerald-200"}`}>
+                          <div className="text-xs text-slate-500">시장 상태 • Regime</div>
+                          <div className="mt-1 text-sm font-bold">{todaySummary.regime || "N/A"}{todaySummary.regimeConf != null ? ` • conf ${Number(todaySummary.regimeConf).toFixed(2)}` : ""}</div>
+                          <div className="text-xs text-slate-500 mt-0.5">{todaySummary.regimeIsRisk ? "위험 국면 — 비중·리스크 관리 우선 해석" : "정상 국면 — 팩터 신호 정상 참조"}</div>
+                        </div>
+                        <div className="rounded-xl bg-blue-50 border border-blue-200 p-3">
+                          <div className="text-xs text-slate-500">가장 강한 팩터 신호</div>
+                          <div className="mt-1 text-sm font-bold">{todaySummary.topFactor ? todaySummary.topFactor.name : "—"}</div>
+                          <div className="text-xs text-slate-500 mt-0.5">{todaySummary.topFactor ? `Z ${todaySummary.topFactor.z > 0 ? "+" : ""}${todaySummary.topFactor.z.toFixed(2)}σ` : "Z 데이터 없음"}</div>
+                        </div>
+                        <div className="rounded-xl bg-amber-50 border border-amber-200 p-3">
+                          <div className="text-xs text-slate-500">예측 강세 섹터 상위</div>
+                          <div className="mt-1 text-sm font-bold">{todaySummary.topIndustries.map((i) => i.short).join(" > ") || "—"}</div>
+                          <div className="text-xs text-slate-500 mt-0.5">{todaySummary.topIndustries[0] ? `Top ${fmtPred(todaySummary.topIndustries[0].pred)}` : ""}</div>
+                        </div>
+                      </div>
+                      {todaySummary.topPicks.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-slate-200 flex flex-wrap items-center gap-2">
+                          <span className="text-xs font-bold text-slate-500">Score 상위:</span>
+                          {todaySummary.topPicks.map((p) => {
+                            const ind = industries.find((i) => i.id === p.industryId) || industries[0];
+                            return (
+                              <span key={`${p.industryId}-${p.ticker}-summary`} className="text-xs px-2.5 py-1 rounded-full bg-white border font-mono">
+                                {p.name} <span className="font-bold" style={{ color: ind?.color }}>{p.score}</span>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
                     <div className="rounded-2xl p-4 text-white" style={{ background: `linear-gradient(135deg, ${currentIndustry.color} 0%, ${currentIndustry.color}dd 100%)` }}>
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <h3 className="text-sm font-extrabold tracking-tight flex items-center gap-2 flex-wrap">{currentIndustry.name} 8종목 <span className="text-xs font-mono opacity-80 bg-white/20 px-2.5 py-1 rounded-full whitespace-nowrap">전체 64종 중 {currentIndustry.short} Top 8 • KRX β·모멘텀</span></h3>
-                        <span className="text-xs font-mono bg-white/20 backdrop-blur px-2.5 py-1 rounded-full whitespace-nowrap ml-auto">{selectedDate} • {activeSnapshot?.data_status || "NO_DATA"} • {activeSnapshot?.quality_status || "—"} • fallback_used={String(Boolean(activeSnapshot?.fallback_used))} • synthetic_data_used={String(Boolean(activeSnapshot?.synthetic_data_used))}</span>
+                        <span className="text-xs font-mono bg-white/20 backdrop-blur px-2.5 py-1 rounded-full whitespace-nowrap ml-auto" title={`quality_status=${activeSnapshot?.quality_status || "—"} • fallback_used=${String(Boolean(activeSnapshot?.fallback_used))} • synthetic_data_used=${String(Boolean(activeSnapshot?.synthetic_data_used))}`}>{selectedDate} • {activeSnapshot?.data_status || "NO_DATA"}</span>
                       </div>
                       <div className="mt-1.5 text-xs text-white/85">Score = 6.5 + |Z|×1.2×β_adj + mom×0.3 • 타겟팩터 {Object.entries(currentIndustry.betas).sort((a,b) => Math.abs(b[1])-Math.abs(a[1]))[0]?.[0]} {selectedFactor ? `+ ${selectedFactor} 필터` : ""}</div>
                       <div className="mt-3 grid grid-cols-3 gap-2">
@@ -644,6 +721,12 @@ const { useState, useMemo, useEffect } = React;
                       <div className="mt-3 grid grid-cols-2 gap-3">
                         <div className="p-3 rounded-xl bg-slate-50 border"><div className="text-xs text-slate-500">KOSPI α·β 추정</div><div className="text-sm font-bold">{hasZScores ? `${predText} α·β` : "—"}</div><div className="text-xs text-slate-400">평균 R² {fmtNum(retrainData?.avg_r2, 3)} • {retrainData?.version || "retrain N/A"}</div></div>
                         <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200"><div className="text-xs text-emerald-700">Meta 유효 팩터</div><div className="text-sm font-bold">{icStats.count}개 유효</div><div className="text-xs text-emerald-600">meta {metaSummary?.date || activeSnapshot?.meta?.date || "N/A"}</div></div>
+                      </div>
+                      <div className="mt-3 p-2.5 rounded-xl bg-slate-50 border text-xs font-mono text-slate-500">
+                        <div className="font-bold text-slate-600 mb-1">운영 메타데이터</div>
+                        <div>snapshot {activeSnapshot?.date || "—"} • data_status {activeSnapshot?.data_status || "NO_DATA"} • quality_status {activeSnapshot?.quality_status || "—"}</div>
+                        <div>fallback_used={String(Boolean(activeSnapshot?.fallback_used))} • synthetic_data_used={String(Boolean(activeSnapshot?.synthetic_data_used))} • filter_applied={String(Boolean(activeSnapshot?.filter_applied))}</div>
+                        <div>app_version {activeSnapshot?.app_version || "—"} • model_version {activeSnapshot?.model_version || "—"} • data_policy {activeSnapshot?.data_policy || "—"}</div>
                       </div>
                       <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
                         {contributions.slice(0,5).map((c) => (
