@@ -887,6 +887,30 @@ const { useState, useMemo, useEffect } = React;
 
                 {activeTab === "performance" && (
                   <div className="mt-4 space-y-4">
+                    <div className="rounded-2xl border bg-white overflow-hidden" style={{ borderColor: "#e2e8f0" }}>
+                      <div className="p-4 border-b bg-gradient-to-r from-violet-50 to-purple-50">
+                        <div className="flex items-center justify-between"><h3 className="text-sm font-extrabold">📈 최근 성과 • {currentIndustry.short}</h3><span className="text-xs font-mono px-2 py-1 rounded-full bg-violet-600 text-white">Hit {pastPicksAvg.hit}/{pastPicksAvg.total} • Avg {pastPicksAvg.avg}%</span></div>
+                        <div className="mt-1 text-xs text-slate-500">performance_tracking 기반 • vs KOSPI 초과 수익 • {performanceSummary?.source || "실제 종가 데이터"}</div>
+                      </div>
+                      <div className="p-3 grid grid-cols-3 gap-3">
+                        <div className="rounded-xl bg-slate-50 border p-3 text-center"><div className="text-xs text-slate-500">평균 수익</div><div className={`text-sm font-bold ${parseFloat(pastPicksAvg.avg)>=0 ? "text-emerald-600" : "text-red-600"}`}>{pastPicksAvg.avg}%</div></div>
+                        <div className="rounded-xl bg-slate-50 border p-3 text-center"><div className="text-xs text-slate-500">vs KOSPI</div><div className={`text-sm font-bold ${parseFloat(pastPicksAvg.vsKospi)>=0 ? "text-emerald-600" : "text-red-600"}`}>{pastPicksAvg.vsKospi>0 ? "+" : ""}{pastPicksAvg.vsKospi}%</div></div>
+                        <div className="rounded-xl bg-slate-50 border p-3 text-center"><div className="text-xs text-slate-500">Hit Rate</div><div className="text-sm font-bold">{pastPicksAvg.total ? `${pastPicksAvg.hit}/${pastPicksAvg.total} (${(pastPicksAvg.hitRate*100).toFixed(0)}%)` : "—"}</div></div>
+                      </div>
+                      {pastPicks.length === 0 ? (
+                        <div className="p-6 text-center text-sm text-slate-400">성과 데이터가 없습니다. performance_tracking 적재 후 표시됩니다.</div>
+                      ) : (
+                      <div className="p-3 grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {pastPicks.map((r) => (
+                          <div key={`${r.recDate || r.evalDate}-${r.ticker}`} className="flex items-center justify-between p-2.5 rounded-xl border bg-white hover:bg-slate-50 cursor-pointer" title="클릭하면 네이버페이증권 해당 종목 페이지가 새 창으로 열립니다" onClick={() => openNaverStock(r.ticker)}>
+                            <div className="flex items-center gap-2"><span className="text-xs font-mono px-2 py-0.5 rounded-full bg-slate-100">{r.ticker}</span><span className="text-sm font-bold">{r.name}</span><span className={`text-xs px-1.5 py-0.5 rounded-full ${r.status==="성공" ? "bg-emerald-100 text-emerald-700" : r.status==="보류" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}`}>{r.status}</span></div>
+                            <div className="flex items-center gap-3"><span className={`text-xs font-mono font-bold ${r.returnPct>=0 ? "text-emerald-600" : "text-red-600"}`}>{r.returnPct>0 ? "+" : ""}{r.returnPct}%</span><span className="text-xs text-slate-400">vs {r.vsKospi>0 ? "+" : ""}{r.vsKospi}%</span></div>
+                          </div>
+                        ))}
+                      </div>
+                      )}
+                    </div>
+
                     <div className="rounded-2xl bg-white border border-slate-200 p-4">
                       <div className="flex items-center justify-between flex-wrap gap-2">
                         <h4 className="text-sm font-extrabold">📈 성과 곡선 • 평가일별 picks 평균 vs KOSPI</h4>
@@ -921,30 +945,6 @@ const { useState, useMemo, useEffect } = React;
                         </>
                       ) : (
                         <div className="mt-3 p-4 rounded-xl bg-slate-50 border text-center text-xs text-slate-400">백테스트 데이터가 없습니다. performance_tracking 적재 후 표시됩니다.</div>
-                      )}
-                    </div>
-
-                    <div className="rounded-2xl border bg-white overflow-hidden" style={{ borderColor: "#e2e8f0" }}>
-                      <div className="p-4 border-b bg-gradient-to-r from-violet-50 to-purple-50">
-                        <div className="flex items-center justify-between"><h3 className="text-sm font-extrabold">📈 최근 성과 • {currentIndustry.short}</h3><span className="text-xs font-mono px-2 py-1 rounded-full bg-violet-600 text-white">Hit {pastPicksAvg.hit}/{pastPicksAvg.total} • Avg {pastPicksAvg.avg}%</span></div>
-                        <div className="mt-1 text-xs text-slate-500">performance_tracking 기반 • vs KOSPI 초과 수익 • {performanceSummary?.source || "실제 종가 데이터"}</div>
-                      </div>
-                      <div className="p-3 grid grid-cols-3 gap-3">
-                        <div className="rounded-xl bg-slate-50 border p-3 text-center"><div className="text-xs text-slate-500">평균 수익</div><div className={`text-sm font-bold ${parseFloat(pastPicksAvg.avg)>=0 ? "text-emerald-600" : "text-red-600"}`}>{pastPicksAvg.avg}%</div></div>
-                        <div className="rounded-xl bg-slate-50 border p-3 text-center"><div className="text-xs text-slate-500">vs KOSPI</div><div className={`text-sm font-bold ${parseFloat(pastPicksAvg.vsKospi)>=0 ? "text-emerald-600" : "text-red-600"}`}>{pastPicksAvg.vsKospi>0 ? "+" : ""}{pastPicksAvg.vsKospi}%</div></div>
-                        <div className="rounded-xl bg-slate-50 border p-3 text-center"><div className="text-xs text-slate-500">Hit Rate</div><div className="text-sm font-bold">{pastPicksAvg.total ? `${pastPicksAvg.hit}/${pastPicksAvg.total} (${(pastPicksAvg.hitRate*100).toFixed(0)}%)` : "—"}</div></div>
-                      </div>
-                      {pastPicks.length === 0 ? (
-                        <div className="p-6 text-center text-sm text-slate-400">성과 데이터가 없습니다. performance_tracking 적재 후 표시됩니다.</div>
-                      ) : (
-                      <div className="p-3 grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {pastPicks.map((r) => (
-                          <div key={`${r.recDate || r.evalDate}-${r.ticker}`} className="flex items-center justify-between p-2.5 rounded-xl border bg-white hover:bg-slate-50 cursor-pointer" title="클릭하면 네이버페이증권 해당 종목 페이지가 새 창으로 열립니다" onClick={() => openNaverStock(r.ticker)}>
-                            <div className="flex items-center gap-2"><span className="text-xs font-mono px-2 py-0.5 rounded-full bg-slate-100">{r.ticker}</span><span className="text-sm font-bold">{r.name}</span><span className={`text-xs px-1.5 py-0.5 rounded-full ${r.status==="성공" ? "bg-emerald-100 text-emerald-700" : r.status==="보류" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}`}>{r.status}</span></div>
-                            <div className="flex items-center gap-3"><span className={`text-xs font-mono font-bold ${r.returnPct>=0 ? "text-emerald-600" : "text-red-600"}`}>{r.returnPct>0 ? "+" : ""}{r.returnPct}%</span><span className="text-xs text-slate-400">vs {r.vsKospi>0 ? "+" : ""}{r.vsKospi}%</span></div>
-                          </div>
-                        ))}
-                      </div>
                       )}
                     </div>
 
