@@ -9,6 +9,7 @@ retrain_model.py v61.6-data-integrity
 """
 
 import json
+import math
 import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
@@ -17,14 +18,12 @@ import numpy as np
 
 try:
     from price_provider import (
-        get_foreigner_factor_real,
-        get_market_indicator,
+        get_foreigner_factor_dated,
         get_stock_prices,
     )
 except ImportError:
     from scripts.price_provider import (
-        get_foreigner_factor_real,
-        get_market_indicator,
+        get_foreigner_factor_dated,
         get_stock_prices,
     )
 
@@ -164,38 +163,63 @@ def init_firebase():
 db = init_firebase()
 
 
-def to_returns(closes: List[float]) -> List[float]:
-    """가격 시계열을 일간 단순 수익률(%)로 변환한다."""
-    if len(closes) < 2:
-        return []
+def closes_to_return_map(
+    dates: List[str],
+    closes: List[float],
+) -> Dict[str, float]:
+    """
+    날짜-정렬된 종가 시계열을 {date: 일간 수익률(%)} 맵으로 변환한다.
 
-    returns = []
+    수익률은 당일 종가 기준 (prev -> cur)이며, 첫 관측치는 수익률이 없다.
+    """
+    returns: Dict[str, float] = {}
 
     for index in range(1, len(closes)):
         previous = float(closes[index - 1])
         current = float(closes[index])
 
-        if previous == 0:
+        if (
+            previous == 0
+            or not math.isfinite(previous)
+            or not math.isfinite(current)
+        ):
             continue
 
-        returns.append((current - previous) / previous * 100)
+        returns[dates[index]] = (current - previous) / previous * 100
 
     return returns
 
 
+def _clean_pairs(
+    dates: List[str],
+    closes: List[float],
+    days: int,
+) -> Tuple[List[str], List[float]]:
+    """finite 값만 남기고 최근 days개 관측치로 자른다."""
+    pairs = [
+        (str(d), float(c))
+        for d, c in zip(dates, closes)
+        if c is not None and math.isfinite(float(c))
+    ]
+    pairs = pairs[-days:]
+    return [p[0] for p in pairs], [p[1] for p in pairs]
+
+
 def fetch_factor_history(
     days: int = WINDOW_DAYS,
-) -> Tuple[Dict[str, List[float]], Dict[str, List[float]], Dict]:
+) -> Tuple[Dict[str, Dict], Dict]:
     """
     재학습용 팩터 시계열을 실제 데이터에서만 가져온다.
+
+    반환 구조: factor_series[canonical] = {"dates", "closes", "returns"}
+    returns는 {date: 일간 수익률(%)} 맵으로 날짜 정보가 유지된다.
 
     하나라도 최소 표본 기준을 충족하지 못하면 RuntimeError를 발생시켜
     재학습 workflow가 실패하도록 만든다.
     """
-    print(f"[Retrain] loading {days} days of REAL factor history")
+    print(f"[Retrain] loading {days} days of REAL factor history (dated)")
 
-    factor_closes: Dict[str, List[float]] = {}
-    factor_returns: Dict[str, List[float]] = {}
+    factor_series: Dict[str, Dict] = {}
 
     market_factors = [
         "SP500",
@@ -210,12 +234,12 @@ def fetch_factor_history(
     ]
 
     for factor_name in market_factors:
-        closes, _ = get_market_indicator(factor_name, period="1y")
-        closes = [
-            float(value)
-            for value in closes
-            if value is not None
-        ][-days:]
+        closes, dates = get_stock_prices(
+            factor_name,
+            period="1y",
+            source="yfinance",
+        )
+        dates, closes = _clean_pairs(dates, closes, days)
 
         if len(closes) < MIN_FACTOR_SAMPLES:
             raise RuntimeError(
@@ -223,7 +247,7 @@ def fetch_factor_history(
                 f"{len(closes)} < {MIN_FACTOR_SAMPLES}"
             )
 
-        returns = to_returns(closes)
+        returns = closes_to_return_map(dates, closes)
 
         if len(returns) < MIN_FACTOR_SAMPLES - 1:
             raise RuntimeError(
@@ -231,19 +255,26 @@ def fetch_factor_history(
                 f"{len(returns)} < {MIN_FACTOR_SAMPLES - 1}"
             )
 
-        factor_closes[factor_name] = closes
-        factor_returns[factor_name] = returns
+        factor_series[factor_name] = {
+            "dates": dates,
+            "closes": closes,
+            "returns": returns,
+        }
 
         print(
             f"[Retrain] factor={factor_name} "
             f"closes={len(closes)} returns={len(returns)} "
-            f"latest={closes[-1]:.4f}"
+            f"latest={closes[-1]:.4f} last_date={dates[-1]}"
         )
 
-    foreigner_values, foreigner_latest, _, foreigner_meta = (
-        get_foreigner_factor_real(
-            min_samples=MIN_FACTOR_SAMPLES
-        )
+    (
+        foreigner_dates,
+        foreigner_values,
+        foreigner_latest,
+        _,
+        foreigner_meta,
+    ) = get_foreigner_factor_dated(
+        min_samples=MIN_FACTOR_SAMPLES
     )
 
     if foreigner_meta.get("status") != "REAL":
@@ -252,13 +283,15 @@ def fetch_factor_history(
             f"{foreigner_meta.get('reason', 'unknown error')}"
         )
 
-    foreigner_values = [
-        float(value)
-        for value in foreigner_values
-        if value is not None
-    ][-days:]
-
-    foreigner_returns = to_returns(foreigner_values)
+    foreigner_dates, foreigner_values = _clean_pairs(
+        foreigner_dates,
+        foreigner_values,
+        days,
+    )
+    foreigner_returns = closes_to_return_map(
+        foreigner_dates,
+        foreigner_values,
+    )
 
     if len(foreigner_returns) < MIN_FACTOR_SAMPLES - 1:
         raise RuntimeError(
@@ -266,8 +299,11 @@ def fetch_factor_history(
             f"{len(foreigner_returns)} < {MIN_FACTOR_SAMPLES - 1}"
         )
 
-    factor_closes["외국인"] = foreigner_values
-    factor_returns["외국인"] = foreigner_returns
+    factor_series["외국인"] = {
+        "dates": foreigner_dates,
+        "closes": foreigner_values,
+        "returns": foreigner_returns,
+    }
 
     print(
         f"[Retrain] factor=외국인 "
@@ -284,30 +320,29 @@ def fetch_factor_history(
         "foreigner": foreigner_meta,
     }
 
-    return factor_closes, factor_returns, data_meta
+    return factor_series, data_meta
 
 
-def fetch_industry_returns(days: int = WINDOW_DAYS) -> Dict[str, List[float]]:
+def fetch_industry_returns(days: int = WINDOW_DAYS) -> Dict[str, Dict]:
     """
-    8개 산업 대표주의 실제 수익률만 반환한다.
+    8개 산업 대표주의 실제 수익률을 날짜 맵과 함께 반환한다.
 
     일부 종목 데이터가 부족해도 난수를 만들지 않는다.
     하나라도 실패하면 재학습 전체를 실패 처리한다.
     """
-    print("[Retrain] loading REAL industry proxy returns")
+    print("[Retrain] loading REAL industry proxy returns (dated)")
 
-    industry_returns: Dict[str, List[float]] = {}
+    industry_series: Dict[str, Dict] = {}
     failed_industries = []
 
     for industry_id, ticker in INDUSTRY_PROXY.items():
         try:
-            closes, _ = get_stock_prices(ticker, period="1y")
-
-            closes = [
-                float(value)
-                for value in closes
-                if value is not None
-            ][-days:]
+            closes, dates = get_stock_prices(
+                ticker,
+                period="1y",
+                source="yfinance",
+            )
+            dates, closes = _clean_pairs(dates, closes, days)
 
             if len(closes) < MIN_INDUSTRY_SAMPLES:
                 raise ValueError(
@@ -315,7 +350,7 @@ def fetch_industry_returns(days: int = WINDOW_DAYS) -> Dict[str, List[float]]:
                     f"{len(closes)} < {MIN_INDUSTRY_SAMPLES}"
                 )
 
-            returns = to_returns(closes)
+            returns = closes_to_return_map(dates, closes)
 
             if len(returns) < MIN_INDUSTRY_SAMPLES - 1:
                 raise ValueError(
@@ -323,13 +358,17 @@ def fetch_industry_returns(days: int = WINDOW_DAYS) -> Dict[str, List[float]]:
                     f"{len(returns)} < {MIN_INDUSTRY_SAMPLES - 1}"
                 )
 
-            industry_returns[industry_id] = returns
+            industry_series[industry_id] = {
+                "dates": dates,
+                "closes": closes,
+                "returns": returns,
+            }
 
             print(
                 f"[Retrain] industry={industry_id} "
                 f"ticker={ticker} "
                 f"returns={len(returns)} "
-                f"latest={closes[-1]:.0f}"
+                f"latest={closes[-1]:.0f} last_date={dates[-1]}"
             )
 
         except Exception as exc:
@@ -343,7 +382,7 @@ def fetch_industry_returns(days: int = WINDOW_DAYS) -> Dict[str, List[float]]:
             + " | ".join(failed_industries)
         )
 
-    return industry_returns
+    return industry_series
 
 
 def ridge_regression(
@@ -379,37 +418,87 @@ def ridge_regression(
         raise RuntimeError(f"ridge regression failed: {exc}") from exc
 
 
+def _r_squared(predictions: np.ndarray, actual: np.ndarray) -> float:
+    """결정계수 R²를 계산한다. 분산이 0이면 0.0을 반환한다."""
+    total_sum = float(np.sum((actual - np.mean(actual)) ** 2))
+
+    if total_sum <= 0:
+        return 0.0
+
+    residual_sum = float(np.sum((actual - predictions) ** 2))
+    return float(1 - residual_sum / total_sum)
+
+
+def fetch_previous_betas() -> Dict[str, Dict[str, float]]:
+    """
+    beta_snapshots/latest의 이전 재학습 β를 읽는다.
+
+    beta_changes 비교 기준으로 사용하며, 없으면 빈 dict를 반환한다.
+    """
+    if db is None:
+        return {}
+
+    try:
+        doc = db.collection("beta_snapshots").document("latest").get()
+
+        if doc.exists:
+            data = doc.to_dict() or {}
+            betas = data.get("betas") or {}
+            if betas:
+                print(
+                    f"[Retrain] previous betas loaded "
+                    f"date={data.get('date')} industries={len(betas)}"
+                )
+                return betas
+
+    except Exception as exc:
+        print(f"[Retrain] previous beta_snapshots load failed: {exc}")
+
+    return {}
+
+
 def train_industry_model(
-    factor_returns: Dict[str, List[float]],
-    industry_returns: List[float],
+    factor_series: Dict[str, Dict],
+    industry_series: Dict[str, Dict],
     industry_id: str,
 ) -> Dict:
     """
     산업별 대표 종목 수익률로 Ridge 모델을 학습한다.
 
-    주의:
-    - 이 단계에서는 날짜 기반 정렬이 아직 구현되지 않았다.
-    - 다음 단계에서 모든 시계열을 기준일로 inner join해야 한다.
+    - 모든 시계열을 공통 거래일로 inner join해 날짜 정렬한다.
+    - α는 시간순 holdout(최근 25%) validation R²로 선택한다.
+    - retrained 모델의 OOS R²가 BASE_BETAS의 OOS R²보다 낮으면
+      재학습 β를 채택하지 않고 base β를 유지한다 (retrain_gate=REJECTED).
     """
     factor_names = list(BASE_BETAS[industry_id].keys())
+    industry_returns_map = industry_series[industry_id]["returns"]
 
-    required_factor_returns = []
+    factor_return_maps = {}
 
     for factor_name in factor_names:
         canonical_name = FACTOR_CANONICAL[factor_name]
-        values = factor_returns.get(canonical_name, [])
 
-        if not values:
+        if canonical_name not in factor_series:
             raise RuntimeError(
                 f"{industry_id}: factor data missing for {factor_name}"
             )
 
-        required_factor_returns.append(values)
+        factor_return_maps[factor_name] = (
+            factor_series[canonical_name]["returns"]
+        )
 
-    sample_count = min(
-        len(industry_returns),
-        *[len(values) for values in required_factor_returns],
+    # 날짜 inner join: 산업 수익률 + 해당 산업 팩터 전부에 존재하는 공통일
+    common_dates = sorted(
+        set(industry_returns_map.keys())
+        & set.intersection(
+            *[
+                set(factor_return_maps[f].keys())
+                for f in factor_names
+            ]
+        )
     )
+
+    sample_count = len(common_dates)
 
     if sample_count < MIN_INDUSTRY_SAMPLES - 1:
         raise RuntimeError(
@@ -417,80 +506,143 @@ def train_industry_model(
             f"{sample_count}"
         )
 
-    x_columns = [
-        values[-sample_count:]
-        for values in required_factor_returns
-    ]
-
-    x_matrix = np.array(x_columns, dtype=float).T
+    x_raw = np.array(
+        [
+            [factor_return_maps[f][d] for f in factor_names]
+            for d in common_dates
+        ],
+        dtype=float,
+    )
     y_values = np.array(
-        industry_returns[-sample_count:],
+        [industry_returns_map[d] for d in common_dates],
         dtype=float,
     )
 
-    x_mean = np.mean(x_matrix, axis=0)
-    x_std = np.std(x_matrix, axis=0)
+    # 시간순 holdout: 최근 25%를 validation으로 사용
+    val_count = max(15, int(round(sample_count * 0.25)))
+    train_count = sample_count - val_count
+
+    if train_count < 40:
+        raise RuntimeError(
+            f"{industry_id}: train split too small: {train_count}"
+        )
+
+    x_train = x_raw[:train_count]
+    y_train = y_values[:train_count]
+    x_val = x_raw[train_count:]
+    y_val = y_values[train_count:]
+
+    x_mean = np.mean(x_train, axis=0)
+    x_std = np.std(x_train, axis=0)
 
     if np.any(x_std < 1e-8):
         raise RuntimeError(
             f"{industry_id}: at least one factor has near-zero variance"
         )
 
-    x_normalized = (x_matrix - x_mean) / x_std
+    x_train_norm = (x_train - x_mean) / x_std
+    x_val_norm = (x_val - x_mean) / x_std
 
+    # α 선택: validation R² 기준 (in-sample R²는 과적합으로 α=0.1에 편향)
     best_alpha = None
-    best_r_squared = -np.inf
-    best_betas = None
+    best_val_r2 = -np.inf
 
     for alpha in ALPHA_CANDIDATES:
-        candidate_betas, candidate_r_squared = ridge_regression(
-            x_normalized,
-            y_values,
+        candidate_betas, _ = ridge_regression(
+            x_train_norm,
+            y_train,
             alpha,
         )
+        candidate_pred = x_val_norm @ candidate_betas
+        candidate_r2 = _r_squared(candidate_pred, y_val)
 
-        if candidate_r_squared > best_r_squared:
+        if candidate_r2 > best_val_r2:
             best_alpha = alpha
-            best_r_squared = candidate_r_squared
-            best_betas = candidate_betas
+            best_val_r2 = float(candidate_r2)
 
-    if best_betas is None:
+    if best_alpha is None:
         raise RuntimeError(
             f"{industry_id}: no valid ridge model produced"
         )
 
-    original_scale_betas = best_betas / x_std
-    blended_betas = {}
+    # BASE_BETAS의 validation 성능 (게이트 비교 기준)
+    base_vector = np.array(
+        [BASE_BETAS[industry_id][f] for f in factor_names],
+        dtype=float,
+    )
+    base_val_pred = x_val @ base_vector
+    base_val_r2 = _r_squared(base_val_pred, y_val)
 
-    for index, factor_name in enumerate(factor_names):
-        new_beta = float(
-            np.clip(original_scale_betas[index], -0.6, 0.6)
-        )
-        base_beta = BASE_BETAS[industry_id][factor_name]
+    retrain_gate = (
+        "PASSED" if best_val_r2 > base_val_r2 else "REJECTED"
+    )
 
-        blended_beta = (
-            0.7 * new_beta
-            + 0.3 * base_beta
-        )
+    # 최종 β 결정
+    if retrain_gate == "PASSED":
+        # 전체 공통 표본으로 재적합 후 70/30 블렌딩
+        x_all_mean = np.mean(x_raw, axis=0)
+        x_all_std = np.std(x_raw, axis=0)
 
-        blended_betas[factor_name] = round(
-            float(blended_beta),
-            3,
+        if np.any(x_all_std < 1e-8):
+            raise RuntimeError(
+                f"{industry_id}: near-zero variance on full sample"
+            )
+
+        x_all_norm = (x_raw - x_all_mean) / x_all_std
+        final_betas_norm, final_insample_r2 = ridge_regression(
+            x_all_norm,
+            y_values,
+            best_alpha,
         )
+        original_scale_betas = final_betas_norm / x_all_std
+
+        blended_betas = {}
+        for index, factor_name in enumerate(factor_names):
+            new_beta = float(
+                np.clip(original_scale_betas[index], -0.6, 0.6)
+            )
+            base_beta = BASE_BETAS[industry_id][factor_name]
+            blended_betas[factor_name] = round(
+                float(0.7 * new_beta + 0.3 * base_beta),
+                3,
+            )
+
+        final_r2 = float(final_insample_r2)
+    else:
+        # OOS에서 base보다 못하면 재학습 β를 채택하지 않는다
+        blended_betas = {
+            factor_name: round(
+                float(BASE_BETAS[industry_id][factor_name]),
+                3,
+            )
+            for factor_name in factor_names
+        }
+        base_insample_pred = x_raw @ base_vector
+        final_r2 = _r_squared(base_insample_pred, y_values)
 
     print(
         f"[Retrain] industry={industry_id} "
-        f"alpha={best_alpha} "
-        f"r2={best_r_squared:.3f} "
-        f"samples={sample_count}"
+        f"alpha={best_alpha} gate={retrain_gate} "
+        f"oos_r2={best_val_r2:.3f} base_oos_r2={base_val_r2:.3f} "
+        f"r2={final_r2:.3f} samples={sample_count} "
+        f"common={common_dates[0]}..{common_dates[-1]}"
     )
 
     return {
         "betas": blended_betas,
-        "r2": round(float(best_r_squared), 3),
+        "r2": round(final_r2, 3),
         "alpha": best_alpha,
         "samples": sample_count,
-        "method": "Ridge real-only inputs; no synthetic fallback",
+        "common_start": common_dates[0],
+        "common_end": common_dates[-1],
+        "oos_r2": round(best_val_r2, 3),
+        "base_oos_r2": round(base_val_r2, 3),
+        "retrain_gate": retrain_gate,
+        "validation": "last 25% chronological holdout",
+        "method": (
+            "Ridge alpha by holdout R2 + date inner-join alignment + "
+            "OOS gate vs BASE_BETAS; REAL_ONLY inputs"
+        ),
         "factor_names": factor_names,
         "data_status": "REAL_ONLY",
         "synthetic_data_used": False,
@@ -504,19 +656,19 @@ def build_retrain_snapshot():
 
     date_string = datetime.now().strftime("%Y-%m-%d")
 
-    factor_closes, factor_returns, data_meta = (
-        fetch_factor_history(WINDOW_DAYS)
-    )
+    factor_series, data_meta = fetch_factor_history(WINDOW_DAYS)
 
-    industry_returns = fetch_industry_returns(WINDOW_DAYS)
+    industry_series = fetch_industry_returns(WINDOW_DAYS)
+
+    previous_betas = fetch_previous_betas()
 
     retrained = {}
     r_squared_values = []
 
     for industry_id in INDUSTRY_PROXY:
         result = train_industry_model(
-            factor_returns,
-            industry_returns[industry_id],
+            factor_series,
+            industry_series,
             industry_id,
         )
 
@@ -532,13 +684,14 @@ def build_retrain_snapshot():
     beta_changes = {}
 
     for industry_id, result in retrained.items():
-        previous_betas = BASE_BETAS[industry_id]
+        # 비교 기준: 이전 재학습 β (없으면 BASE_BETAS)
+        previous = previous_betas.get(industry_id) or BASE_BETAS[industry_id]
         new_betas = result["betas"]
 
         changes = {}
 
         for factor_name, new_beta in new_betas.items():
-            old_beta = previous_betas.get(factor_name, 0.0)
+            old_beta = previous.get(factor_name, 0.0)
             difference = round(new_beta - old_beta, 3)
 
             if abs(difference) > 0.02:
@@ -551,14 +704,31 @@ def build_retrain_snapshot():
         if changes:
             beta_changes[industry_id] = changes
 
+    passed_count = sum(
+        1
+        for result in retrained.values()
+        if result.get("retrain_gate") == "PASSED"
+    )
+    total_count = len(retrained)
+
+    retrain_gate = (
+        "PASSED"
+        if passed_count == total_count
+        else (
+            "PARTIAL"
+            if passed_count > 0
+            else "REJECTED"
+        )
+    )
+
     snapshot = {
         "date": date_string,
         "timestamp": datetime.now().isoformat(),
         "version": RETRAIN_VERSION,
         "window": WINDOW_DAYS,
         "method": (
-            "Ridge alpha selection [0.1,0.5,1.0,2.0] + "
-            "StandardScaler + 70% new / 30% base blending; "
+            "Ridge alpha by holdout R2 + date inner-join alignment + "
+            "OOS gate vs BASE_BETAS + 70% new / 30% base blending; "
             "REAL_ONLY inputs; no synthetic fallback"
         ),
         "industries": retrained,
@@ -573,8 +743,8 @@ def build_retrain_snapshot():
             for changes in beta_changes.values()
         ),
         "factor_closes_count": {
-            factor_name: len(values)
-            for factor_name, values in factor_closes.items()
+            factor_name: len(series["dates"])
+            for factor_name, series in factor_series.items()
         },
         "proxy_tickers": INDUSTRY_PROXY,
         "next_retrain": (
@@ -588,7 +758,11 @@ def build_retrain_snapshot():
         "data_status": "REAL_ONLY",
         "synthetic_data_used": False,
         "fallback_used": False,
-        "retrain_gate": "PASSED",
+        "retrain_gate": retrain_gate,
+        "retrain_gate_detail": {
+            "passed": passed_count,
+            "total": total_count,
+        },
         "foreigner_metadata": data_meta["foreigner"],
         "china_proxy": (
             "구리(HG=F) + 상해종합(000001.SS); "
@@ -652,7 +826,7 @@ def save_to_firebase(snapshot: Dict):
         "data_status": snapshot["data_status"],
         "synthetic_data_used": False,
         "fallback_used": False,
-        "retrain_gate": "PASSED",
+        "retrain_gate": snapshot.get("retrain_gate", "PASSED"),
         "foreigner_metadata": snapshot["foreigner_metadata"],
     }
 
@@ -674,7 +848,7 @@ def save_to_firebase(snapshot: Dict):
         "data_status": snapshot["data_status"],
         "synthetic_data_used": False,
         "fallback_used": False,
-        "retrain_gate": "PASSED",
+        "retrain_gate": snapshot.get("retrain_gate", "PASSED"),
         "createdAt": firestore.SERVER_TIMESTAMP,
     }
 

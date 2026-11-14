@@ -307,19 +307,12 @@ def calc_z_score(series, window=120):
         return 0.0
 
 
-def get_foreigner_factor_real(min_samples: int = 20):
+def _load_foreigner_factor(min_samples: int = 20):
     """
-    KOSPI 전체시장 외국인 순매수 시계열을 표준 CSV에서 읽는다.
-
-    표준 CSV 스키마:
-        date,institution,other_corp,individual,foreigner,total
-
-    운영 원칙:
-    - date와 foreigner 열이 반드시 있어야 한다.
-    - 난수, 0.85 fallback, 임의 추정값을 생성하지 않는다.
-    - 데이터가 부족하거나 훼손되면 빈 값과 MISSING 상태를 반환한다.
+    외국인 수급 CSV 공통 로더.
 
     Returns:
+        dates: 오래된 날짜 -> 최신 날짜 순의 날짜 문자열 목록
         values: 오래된 날짜 -> 최신 날짜 순의 외국인 순매수 시계열
         latest: 최신 외국인 순매수값
         z_score: 최근 120개 관측치 기준 Z-score
@@ -389,6 +382,7 @@ def get_foreigner_factor_real(min_samples: int = 20):
                     f"{len(normalized)} < {min_samples}"
                 )
 
+            dates = normalized["date"].dt.strftime("%Y-%m-%d").tolist()
             values = normalized["foreigner"].astype(float).tolist()
             latest = values[-1]
 
@@ -396,7 +390,7 @@ def get_foreigner_factor_real(min_samples: int = 20):
                 raise ValueError("latest foreigner value is zero")
 
             z_score = calc_z_score(values, window=120)
-            latest_date = normalized["date"].iloc[-1].strftime("%Y-%m-%d")
+            latest_date = dates[-1]
 
             metadata = {
                 "status": "REAL",
@@ -417,7 +411,7 @@ def get_foreigner_factor_real(min_samples: int = 20):
                 f"z={z_score:+.2f}"
             )
 
-            return values, latest, z_score, metadata
+            return dates, values, latest, z_score, metadata
 
         except Exception as exc:
             last_error = f"{csv_path}: {exc}"
@@ -435,7 +429,43 @@ def get_foreigner_factor_real(min_samples: int = 20):
 
     print(f"[FOREIGNER REAL] unavailable: {error_message}")
 
-    return [], 0.0, 0.0, metadata
+    return [], [], 0.0, 0.0, metadata
+
+
+def get_foreigner_factor_real(min_samples: int = 20):
+    """
+    KOSPI 전체시장 외국인 순매수 시계열을 표준 CSV에서 읽는다.
+
+    표준 CSV 스키마:
+        date,institution,other_corp,individual,foreigner,total
+
+    운영 원칙:
+    - date와 foreigner 열이 반드시 있어야 한다.
+    - 난수, 0.85 fallback, 임의 추정값을 생성하지 않는다.
+    - 데이터가 부족하거나 훼손되면 빈 값과 MISSING 상태를 반환한다.
+
+    Returns:
+        values: 오래된 날짜 -> 최신 날짜 순의 외국인 순매수 시계열
+        latest: 최신 외국인 순매수값
+        z_score: 최근 120개 관측치 기준 Z-score
+        metadata: 데이터 출처와 품질 상태
+    """
+    _dates, values, latest, z_score, metadata = _load_foreigner_factor(
+        min_samples=min_samples
+    )
+    return values, latest, z_score, metadata
+
+
+def get_foreigner_factor_dated(min_samples: int = 20):
+    """
+    get_foreigner_factor_real과 동일한 데이터를 날짜 포함으로 반환한다.
+
+    retrain_model.py의 날짜 기반 inner join 정렬에 사용한다.
+
+    Returns:
+        dates, values, latest, z_score, metadata
+    """
+    return _load_foreigner_factor(min_samples=min_samples)
 
 
 def get_all_factor_z_scores():
