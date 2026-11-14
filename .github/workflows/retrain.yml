@@ -128,11 +128,7 @@ jobs:
             const existing = issues.data.find(i => i.title === title);
 
             if (outcome === 'failure' || outcome === 'cancelled') {
-              const body = 'Workflow **' + workflowName + '** ended with **' + outcome + '**.
-
-Run: ' + runUrl + '
-
-Auto-created by pipeline notify. Closes on next success.';
+              const body = 'Workflow **' + workflowName + '** ended with **' + outcome + '**. Run: ' + runUrl + ' - auto-created by pipeline notify; closes on next success.';
               if (existing) {
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
