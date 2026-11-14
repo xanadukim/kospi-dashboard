@@ -1038,7 +1038,7 @@ const { useState, useMemo, useEffect } = React;
                       <div className="flex items-center justify-between flex-wrap gap-2">
                         <div>
                           <h3 className="text-sm font-extrabold">📋 전체 종목 • 8×8 Industry 전체 보기</h3>
-                          <div className="mt-1 text-xs text-slate-500">업종 칩 클릭 = 해당 업종만 표시 • 전체 보기 = 초기화 • Score 높은 순 • 클릭 시 네이버페이증권 새 탭</div>
+                          <div className="mt-1 text-xs text-slate-500">업종 칩 클릭 = 해당 업종만 표시 • 전체 보기 = 초기화 • Score 높은 순 • 클릭 시 해당 종목 페이지로 이동</div>
                         </div>
                         <button onClick={() => setAll64Industry(null)} className={`px-3 py-1 rounded-full text-xs font-bold border transition ${all64Industry ? "bg-[#1e3a8a] text-white border-[#1e3a8a]" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"}`} title="클릭 시 전체 종목 표시">전체 보기</button>
                       </div>
@@ -1060,7 +1060,7 @@ const { useState, useMemo, useEffect } = React;
                       {all64Filtered.map((p) => {
                         const ind = industries.find(i => i.id === p.industryId) || industries[0];
                         return (
-                          <div key={`${p.industryId}-${p.ticker}-all`} className="rounded-xl border bg-white p-3 hover:shadow-md transition-shadow cursor-pointer" title="클릭하면 종목 분석 탭으로 이동" onClick={() => { setSelectedStockKey(p.ticker); setSelectedIndustry(p.industryId); setActiveTab("top"); }}>
+                          <div key={`${p.industryId}-${p.ticker}-all`} className="rounded-xl border bg-white p-3 hover:shadow-md transition-shadow cursor-pointer" title="클릭하면 네이버페이증권 해당 종목 페이지가 새 탭으로 열립니다" onClick={() => openNaverStock(p.ticker)}>
                             <div className="flex items-center gap-1.5">
                               <span className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold shrink-0" style={{ background: `${ind.color}15`, color: ind.color }}>{ind?.icon}</span>
                               <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: `${ind.color}10`, color: ind.color }}>{ind.short}</span>
