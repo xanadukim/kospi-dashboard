@@ -113,7 +113,7 @@ const { useState, useMemo, useEffect } = React;
                 <div className="p-4 rounded-xl bg-red-50 border border-red-200">
                   <div className="font-extrabold text-red-900 text-sm flex items-center gap-2"><span>🚨</span> 본 서비스는 투자 조언이 아닙니다</div>
                   <div className="mt-2 text-xs text-slate-700 leading-relaxed">
-                    예상 수익률, Score, 64 Picks, Factor Betas, Z-Scores는 과거 데이터 기반 통계적 예측이며 <b>투자 자문, 매수/매도 추천이 아닙니다.</b> 
+                    예상 수익률, Score, {weeklyPicks.length} Picks, Factor Betas, Z-Scores는 과거 데이터 기반 통계적 예측이며 <b>투자 자문, 매수/매도 추천이 아닙니다.</b>
                     모든 투자 결정은 본인 판단과 책임 하에 이루어져야 하며, 원금 손실이 발생할 수 있습니다. 본 모델의 과거 설명력은 미래 수익을 보장하지 않습니다.
                   </div>
                 </div>
@@ -141,7 +141,7 @@ const { useState, useMemo, useEffect } = React;
                     본 대시보드는 개인 연구용으로 제작되었습니다. FRED, yfinance, KRX, DART 데이터는 각 출처의 이용 약관을 따릅니다. 
                     Firebase Firestore는 읽기 전용(read=true, write=false)으로 설정되어 있으며 쓰기는 Admin SDK만 가능합니다. 
                     Google API Key는 Firebase 공개키이며 비밀키가 아닙니다. 비밀키는 GitHub Secrets에만 보관됩니다.<br/>
-                    10 Factors China Proxy + DART + 64 Picks + Regime + Retrain • 6개월 운영 • © 2026 Quant Lab
+                    10 Factors China Proxy + DART + {weeklyPicks.length} Picks + Regime + Retrain • 6개월 운영 • © 2026 Quant Lab
                   </div>
                 </div>
               </div>
@@ -169,7 +169,7 @@ const { useState, useMemo, useEffect } = React;
                 <div className="p-4 rounded-xl bg-[#1e3a8a] text-white">
                   <div className="text-sm font-extrabold">⚡ 30초 요약</div>
                   <div className="mt-2 text-xs text-slate-200 leading-relaxed">
-                    이 사이트는 매일 아침 KOSPI 64개 종목에 대해 <b>10개 시장 지표(외국인 수급, 환율, 금리, 유가 등)가 얼마나 강하거나 약한지</b> 계산해서 점수로 보여줍니다.
+                    이 사이트는 매일 아침 KOSPI {weeklyPicks.length}개 종목에 대해 <b>10개 시장 지표(외국인 수급, 환율, 금리, 유가 등)가 얼마나 강하거나 약한지</b> 계산해서 점수로 보여줍니다.
                     <br/>• 데이터는 <b>매일 오전 7시 30분</b> 자동 갱신됩니다
                     <br/>• <b>투자 추천이 아니라 통계 점수</b>입니다 — 최종 판단은 본인 몫입니다
                   </div>
@@ -180,7 +180,7 @@ const { useState, useMemo, useEffect } = React;
                   <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div className="p-3 rounded-xl bg-white border"><div className="text-xs font-bold">1️⃣ 왼쪽 • 업종 선택</div><div className="text-xs mt-1 text-slate-600">전기전자·자동차·화학·금융·바이오·철강·건설·유통 8개 중 하나를 클릭하면 가운데가 그 업종 8종목으로 바뀝니다</div></div>
                     <div className="p-3 rounded-xl bg-white border"><div className="text-xs font-bold">2️⃣ 오른쪽 • 지표 선택</div><div className="text-xs mt-1 text-slate-600">10개 지표(Z 표시)를 클릭하면 그 지표에 민감한 종목만 걸러집니다. 예: 구리 클릭 → 화학·철강 위주</div></div>
-                    <div className="p-3 rounded-xl bg-white border"><div className="text-xs font-bold">3️⃣ 가운데 • 탭 확인</div><div className="text-xs mt-1 text-slate-600">추천(8) / 전체64 / 성과 / 마켓 — 위쪽 "오늘의 요약" 카드가 오늘의 핵심입니다</div></div>
+                    <div className="p-3 rounded-xl bg-white border"><div className="text-xs font-bold">3️⃣ 가운데 • 탭 확인</div><div className="text-xs mt-1 text-slate-600">오늘의 추천 / 종목 분석 / 전체 종목 / 성과 / 마켓 — 위쪽 "오늘의 요약" 카드가 오늘의 핵심입니다</div></div>
                   </div>
                   <div className="mt-2 text-xs text-slate-400">💡 아무거나 클릭해보세요. 화면이 깨지거나 데이터가 사라지지 않습니다.</div>
                 </div>
@@ -528,6 +528,10 @@ const { useState, useMemo, useEffect } = React;
           () => weeklyPicks.find((p) => p.ticker === selectedStockKey) || null,
           [weeklyPicks, selectedStockKey]
         );
+        // 히스토리/다른 날짜 스냅샷에서 선택 종목이 없으면 선택 해제
+        useEffect(() => {
+          if (selectedStockKey && !selectedStock) setSelectedStockKey(null);
+        }, [selectedStock, selectedStockKey]);
         const selectedStockIndustry = useMemo(
           () => industries.find((i) => i.id === selectedStock?.industryId) || null,
           [selectedStock]
@@ -856,7 +860,7 @@ const { useState, useMemo, useEffect } = React;
 
                     <div className="rounded-2xl p-4 text-white" style={{ background: `linear-gradient(135deg, ${currentIndustry.color} 0%, ${currentIndustry.color}dd 100%)` }}>
                       <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <h3 className="text-sm font-extrabold tracking-tight flex items-center gap-2 flex-wrap">{currentIndustry.name} 8종목 <span className="text-xs font-mono opacity-80 bg-white/20 px-2.5 py-1 rounded-full whitespace-nowrap">전체 64종 중 {currentIndustry.short} Top 8 • KRX β·모멘텀</span></h3>
+                        <h3 className="text-sm font-extrabold tracking-tight flex items-center gap-2 flex-wrap">{currentIndustry.name} 8종목 <span className="text-xs font-mono opacity-80 bg-white/20 px-2.5 py-1 rounded-full whitespace-nowrap">전체 {weeklyPicks.length}종 중 {currentIndustry.short} Top 8 • KRX β·모멘텀</span></h3>
                         <span className="text-xs font-mono bg-white/20 backdrop-blur px-2.5 py-1 rounded-full whitespace-nowrap ml-auto" title={`quality_status=${activeSnapshot?.quality_status || "—"} • fallback_used=${String(Boolean(activeSnapshot?.fallback_used))} • synthetic_data_used=${String(Boolean(activeSnapshot?.synthetic_data_used))}`}>{selectedDate} • {activeSnapshot?.data_status || "NO_DATA"}</span>
                       </div>
                       <div className="mt-1.5 text-xs text-white/85">Score = 6.5 + |Z|×1.2×β_adj + mom×0.3 • 타겟팩터 {Object.entries(currentIndustry.betas).sort((a,b) => Math.abs(b[1])-Math.abs(a[1]))[0]?.[0]} {selectedFactor ? `+ ${selectedFactor} 필터` : ""}</div>
@@ -1037,7 +1041,7 @@ const { useState, useMemo, useEffect } = React;
                     <div className="rounded-2xl bg-white border border-slate-200 p-4">
                       <div className="flex items-center justify-between flex-wrap gap-2">
                         <div>
-                          <h3 className="text-sm font-extrabold">📋 전체 종목 • 8×8 Industry 전체 보기</h3>
+                          <h3 className="text-sm font-extrabold">📋 전체 종목 • {weeklyPicks.length}종 전체 보기</h3>
                           <div className="mt-1 text-xs text-slate-500">업종 칩 클릭 = 해당 업종만 표시 • 전체 보기 = 초기화 • Score 높은 순 • 클릭 시 해당 종목 페이지로 이동</div>
                         </div>
                         <button onClick={() => setAll64Industry(null)} className={`px-3 py-1 rounded-full text-xs font-bold border transition ${all64Industry ? "bg-[#1e3a8a] text-white border-[#1e3a8a]" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"}`} title="클릭 시 전체 종목 표시">전체 보기</button>
