@@ -5,7 +5,9 @@ meta_factor_tracker_v60.py - KOSPI Quant Terminal v60 - IC/HitRate 100% REAL + C
 - China Proxy 팩터 (구리, 상해종합) IC 계산 추가
 - 10 Factors 전체: S&P500, US10Y, 외국인, SOX, 원달러, WTI, DXY, VIX, 구리, 상해종합
 - performance_tracking 기반 REAL IC (yfinance .KS REAL 수익률)
-- IC = corr(Z_at_Rec, ExcessReturn) - 팩터 예측력
+- IC = corr(스냅샷 z-score @ recDate, ExcessReturn) - 팩터 예측력
+- 10개 전체 팩터 IC: performance_tracking을 factor_snapshots zScores와 recDate로 조인
+  (targetFactor는 산업별 대표 1개만 기록하므로 팩터 단위 IC는 스냅샷 zScores 기준)
 - Hit Rate = sign(Z) == sign(ExcessReturn)
 - t-stat, avg_excess, n_samples
 
@@ -71,39 +73,70 @@ for doc in perf_docs:
 deduped_docs = list(latest_by_pick.values())
 print(f"Deduped performance docs: {len(deduped_docs)} / {len(perf_docs)}")
 
-# Group by factor
+# 10개 전체 팩터 IC를 위해 recDate별 스냅샷 zScores를 로드한다.
+# targetFactor는 산업별 대표 팩터 1개만 기록하므로, 이를 그대로 쓰면
+# IC가 대표 팩터(실측 4개)에만 계산된다.
+FACTOR_ALIAS = {
+    "S&P500": "SP500", "SP500": "SP500",
+    "SOX / 필라": "SOX", "반도체팩터": "SOX", "SOX": "SOX",
+    "US 10Y": "US10Y", "US10Y": "US10Y",
+    "외국인 선물": "외국인", "외국인": "외국인", "외국인_선물": "외국인",
+    "원달러": "원달러", "WTI": "WTI", "DXY": "DXY", "VIX": "VIX",
+    "구리": "구리", "상해종합": "상해종합",
+}
+ALL_FACTORS = [
+    "SP500", "US10Y", "SOX", "원달러", "WTI",
+    "DXY", "VIX", "구리", "상해종합", "외국인",
+]
+
+snapshot_z = {}
+try:
+    snap_docs = list(
+        db.collection('factor_snapshots')
+        .order_by('date', direction=firestore.Query.DESCENDING)
+        .limit(60)
+        .stream()
+    )
+    for s in snap_docs:
+        sd = s.to_dict()
+        sdate = sd.get('date')
+        zs = sd.get('zScores') or {}
+        if not sdate or not isinstance(zs, dict):
+            continue
+        canon = {}
+        for k, v in zs.items():
+            ck = FACTOR_ALIAS.get(str(k).strip(), str(k).strip())
+            try:
+                fv = float(v)
+            except (TypeError, ValueError):
+                continue
+            if np.isfinite(fv):
+                canon[ck] = fv
+        if canon:
+            snapshot_z[sdate] = canon
+    print(f"Loaded {len(snapshot_z)} snapshot zScores for factor-level IC")
+except Exception as e:
+    print(f"factor_snapshots load error: {e}")
+
+# Group by factor: recDate의 스냅샷 z-score × 종목 초과수익률
 factor_data = defaultdict(list)  # factor -> list of (z, excess_return, return, score)
-factor_details = defaultdict(list)
 
 for d in deduped_docs:
-    factor = d.get('targetFactor', '').strip()
-    if not factor:
+    zs_map = snapshot_z.get(d.get('recDate', ''))
+    if not zs_map:
         continue
-    z = d.get('zAtRec', 0)
-    excess = d.get('excessReturn', d.get('return', 0))
-    ret = d.get('return', 0)
-    score = d.get('score', 0)
-    
-    # Normalize factor names
-    factor_alias = {
-        "S&P500": "SP500", "SP500": "SP500",
-        "SOX / 필라": "SOX", "반도체팩터": "SOX", "SOX": "SOX",
-        "US 10Y": "US10Y", "US10Y": "US10Y",
-        "외국인 선물": "외국인", "외국인": "외국인",
-        "원달러": "원달러", "WTI": "WTI", "DXY": "DXY", "VIX": "VIX",
-        "구리": "구리", "상해종합": "상해종합"
-    }
-    canonical = factor_alias.get(factor, factor)
-    
     try:
-        z_f = float(z)
-        excess_f = float(excess)
-        ret_f = float(ret)
-        if np.isnan(z_f) or np.isnan(excess_f):
-            continue
-        factor_data[canonical].append((z_f, excess_f, ret_f, float(score)))
-    except:
+        excess_f = float(d.get('excessReturn'))
+        ret_f = float(d.get('return'))
+        score_f = float(d.get('score', 0))
+    except (TypeError, ValueError):
         continue
+    if not (np.isfinite(excess_f) and np.isfinite(ret_f)):
+        continue
+    for f in ALL_FACTORS:
+        z_f = zs_map.get(f)
+        if z_f is not None:
+            factor_data[f].append((z_f, excess_f, ret_f, score_f))
 
 print(f"\nFactors found: {list(factor_data.keys())}")
 print(f"China Proxy factors: 구리={len(factor_data.get('구리',[]))}, 상해종합={len(factor_data.get('상해종합',[]))}")
@@ -177,7 +210,7 @@ for factor, tuples in factor_data.items():
         'win_rate': round(win_abs, 4),
         'score_ic': round(score_ic, 4),
         'is_china_proxy': factor in ['구리', '상해종합'],
-        'source': 'REAL performance_tracking yfinance v60 China Proxy 64 Picks'
+        'source': 'REAL performance_tracking × factor_snapshots zScores v61.6',
     }
     
     china_tag = " [China Proxy]" if factor in ['구리', '상해종합'] else ""
@@ -194,7 +227,7 @@ for factor, metrics in results.items():
         'factor': factor,
         **metrics,
         'createdAt': firestore.SERVER_TIMESTAMP,
-        'version': 'v60-ChinaProxy-10Factors-REAL',
+        'version': 'v61.6-meta-factorlevel-10factors',
         'real_data_ratio': 1.0,
     }
     batch.set(db.collection('factor_validity').document(doc_id), doc_data, merge=True)
@@ -216,8 +249,8 @@ summary = {
         '구리': results.get('구리', {}),
         '상해종합': results.get('상해종합', {})
     },
-    'source': 'yfinance-REAL-v60-ChinaProxy-10Factors',
-    'version': 'v60-meta-tracker-real-10factors',
+    'source': 'yfinance-REAL-v61.6-factorlevel-10factors',
+    'version': 'v61.6-meta-tracker-factorlevel-10factors',
     'real_data_ratio': 1.0,
     'createdAt': firestore.SERVER_TIMESTAMP,
     'note': '구리/상해종합 IC가 높으면 중국 경기가 KOSPI 예측에 유효함'
