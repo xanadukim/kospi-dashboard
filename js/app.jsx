@@ -468,6 +468,10 @@ const { useState, useMemo, useEffect } = React;
         const hasZScores = Object.values(zScores).some((v) => typeof v === "number" && v !== 0);
         const predText = hasZScores ? `${predictedReturn>0 ? "+" : ""}${predictedReturn.toFixed(2)}%` : "—";
         const fmtPred = (v) => hasZScores ? `${v>0 ? "+" : ""}${v.toFixed(2)}%` : "—";
+        const openNaverStock = (ticker) => {
+          if (!ticker) return;
+          window.open(`https://stock.naver.com/domestic/stock/${ticker}/price`, "_blank", "noopener,noreferrer");
+        };
         const dartFilterStatus = activeSnapshot?.filter_status || (activeSnapshot?.filter_applied ? "APPLIED" : "UNKNOWN");
         const snapshotDetails = activeSnapshot?.details || {};
         const foreignerDetail = snapshotDetails["외국인"] || {};
@@ -593,7 +597,7 @@ const { useState, useMemo, useEffect } = React;
                           {todaySummary.topPicks.map((p) => {
                             const ind = industries.find((i) => i.id === p.industryId) || industries[0];
                             return (
-                              <span key={`${p.industryId}-${p.ticker}-summary`} className="text-xs px-2.5 py-1 rounded-full bg-white border font-mono">
+                              <span key={`${p.industryId}-${p.ticker}-summary`} className="text-xs px-2.5 py-1 rounded-full bg-white border font-mono cursor-pointer hover:bg-slate-50" title="클릭하면 네이버페이증권 해당 종목 페이지가 새 창으로 열립니다" onClick={() => openNaverStock(p.ticker)}>
                                 {p.name} <span className="font-bold" style={{ color: ind?.color }}>{p.score}</span>
                               </span>
                             );
@@ -651,7 +655,7 @@ const { useState, useMemo, useEffect } = React;
                       {filteredPicks.map((p) => {
                         const ind = industries.find((i) => i.id === p.industryId) || industries[0];
                         return (
-                          <div key={`${p.industryId}-${p.ticker}`} className={`pick-card ${p.industryId} card-hover`}>
+                          <div key={`${p.industryId}-${p.ticker}`} className={`pick-card ${p.industryId} card-hover cursor-pointer`} title="클릭하면 네이버페이증권 해당 종목 페이지가 새 창으로 열립니다" onClick={() => openNaverStock(p.ticker)}>
                             <div className="p-4">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
@@ -723,7 +727,7 @@ const { useState, useMemo, useEffect } = React;
                       {all64Filtered.slice(0,32).map((p) => {
                         const ind = industries.find(i => i.id === p.industryId) || industries[0];
                         return (
-                          <div key={`${p.industryId}-${p.ticker}-all`} className="rounded-xl border bg-white p-3 hover: transition-shadow">
+                          <div key={`${p.industryId}-${p.ticker}-all`} className="rounded-xl border bg-white p-3 hover:shadow-md transition-shadow cursor-pointer" title="클릭하면 네이버페이증권 해당 종목 페이지가 새 창으로 열립니다" onClick={() => openNaverStock(p.ticker)}>
                             <div className="flex items-center justify-between"><span className="text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: ind.color }}>{ind.short}</span><span className="text-xs font-mono">{p.ticker}</span><span className="text-xs font-bold">Score {p.score}</span></div>
                             <div className="mt-2 text-sm font-bold">{p.name}</div>
                             <div className="text-xs text-slate-500 font-mono">{p.reason}</div>
@@ -753,7 +757,7 @@ const { useState, useMemo, useEffect } = React;
                       ) : (
                       <div className="p-3 grid grid-cols-1 md:grid-cols-2 gap-2">
                         {pastPicks.map((r) => (
-                          <div key={`${r.recDate || r.evalDate}-${r.ticker}`} className="flex items-center justify-between p-2.5 rounded-xl border bg-white hover:bg-slate-50">
+                          <div key={`${r.recDate || r.evalDate}-${r.ticker}`} className="flex items-center justify-between p-2.5 rounded-xl border bg-white hover:bg-slate-50 cursor-pointer" title="클릭하면 네이버페이증권 해당 종목 페이지가 새 창으로 열립니다" onClick={() => openNaverStock(r.ticker)}>
                             <div className="flex items-center gap-2"><span className="text-xs font-mono px-2 py-0.5 rounded-full bg-slate-100">{r.ticker}</span><span className="text-sm font-bold">{r.name}</span><span className={`text-xs px-1.5 py-0.5 rounded-full ${r.status==="성공" ? "bg-emerald-100 text-emerald-700" : r.status==="보류" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}`}>{r.status}</span></div>
                             <div className="flex items-center gap-3"><span className={`text-xs font-mono font-bold ${r.returnPct>=0 ? "text-emerald-600" : "text-red-600"}`}>{r.returnPct>0 ? "+" : ""}{r.returnPct}%</span><span className="text-xs text-slate-400">vs {r.vsKospi>0 ? "+" : ""}{r.vsKospi}%</span></div>
                           </div>
